@@ -70,7 +70,18 @@ async function setup() {
     try {
       await pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS pin_hash VARCHAR(255)')
       await pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS is_crew_lead BOOLEAN DEFAULT false')
-    } catch { /* columns already exist */ }
+      await pool.query(`CREATE TABLE IF NOT EXISTS daily_crew_rosters (
+        id SERIAL PRIMARY KEY, crew_id INTEGER REFERENCES crews(id), crew_name VARCHAR(100) NOT NULL,
+        submitted_by_id INTEGER REFERENCES employees(id), submitted_by_name VARCHAR(200) NOT NULL,
+        work_date DATE NOT NULL DEFAULT CURRENT_DATE, notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`)
+      await pool.query(`CREATE TABLE IF NOT EXISTS daily_roster_members (
+        id SERIAL PRIMARY KEY, roster_id INTEGER REFERENCES daily_crew_rosters(id) ON DELETE CASCADE,
+        employee_id INTEGER REFERENCES employees(id), employee_name VARCHAR(200) NOT NULL, present BOOLEAN DEFAULT true, created_at TIMESTAMPTZ DEFAULT NOW())`)
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_rosters_date ON daily_crew_rosters(work_date DESC)')
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_rosters_crew ON daily_crew_rosters(crew_id)')
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_roster_members_roster ON daily_roster_members(roster_id)')
+      await pool.query('ALTER TABLE daily_roster_members ADD COLUMN IF NOT EXISTS present BOOLEAN DEFAULT true')
+    } catch { /* tables/columns already exist */ }
 
     // Create uploads directory
     const uploadsDir = path.join(__dirname, '..', 'uploads')
@@ -94,9 +105,8 @@ async function setup() {
     console.log(`    ${c.vehicles} vehicle(s)  │ ${c.equipment} equipment`)
     console.log(`    ${c.chemicals} chemicals  │ ${c.employees} employees`)
     console.log('\n  Default logins:')
-    console.log('    Crew:    Any employee → PIN 1111')
-    console.log('    Vehicle: Truck 1      → PIN 1234')
-    console.log('    Admin:   Admin        → PIN 0000')
+    console.log('    Crew:  Any crew lead → PIN 1111')
+    console.log('    Admin: Admin         → PIN 0000')
     console.log('\n  Run: npm run dev\n')
   } catch (err) {
     console.error('  ✗', err.message)

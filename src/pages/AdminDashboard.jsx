@@ -3,14 +3,16 @@ import { APP, C, MONO, SIG_COLORS, cardStyle, labelStyle, inputStyle, btnStyle }
 import { createVehicle, updateVehicle, deleteVehicle, createCrew, updateCrew, deleteCrew,
   createEquipment, updateEquipment, deleteEquipment, createChemical, updateChemical, deleteChemical,
   getVehicles, getEmployees, createEmployee, updateEmployee, deleteEmployee,
-  getAllSprayLogs, getPurReport } from '../lib/api.js'
+  getAllSprayLogs, deleteSprayLog, getPurReport, getPurReportRange,
+  getRosters, deleteRoster, getRosterReport, getAttendanceToday } from '../lib/api.js'
 import { openPdf } from '../components/PdfExport.js'
 
 export default function AdminDashboard({ page, chemicals, equipment, crews, employees, logs, onRefresh, showToast, onNav }) {
-  if (page === 'admin-home') return <AdminHome logs={logs} crews={crews} employees={employees} chemicals={chemicals} equipment={equipment} onNav={onNav} />
-  if (page === 'admin-spraylogs') return <SprayLogsSection logs={logs} />
+  if (page === 'admin-home') return <AdminHome crews={crews} employees={employees} onNav={onNav} />
+  if (page === 'admin-spraylogs') return <SprayLogsSection logs={logs} showToast={showToast} onRefresh={onRefresh} />
+  if (page === 'admin-rosters') return <CrewRostersSection crews={crews} employees={employees} showToast={showToast} />
   if (page === 'admin-vehicles') return <VehiclesSection crews={crews} onRefresh={onRefresh} showToast={showToast} />
-  if (page === 'admin-crews') return <CrewsSection crews={crews} onRefresh={onRefresh} showToast={showToast} />
+  if (page === 'admin-crews') return <CrewsSection crews={crews} employees={employees} onRefresh={onRefresh} showToast={showToast} />
   if (page === 'admin-employees') return <EmployeesSection employees={employees} crews={crews} onRefresh={onRefresh} showToast={showToast} />
   if (page === 'admin-chemicals') return <ChemicalsSection chemicals={chemicals} onRefresh={onRefresh} showToast={showToast} />
   if (page === 'admin-equipment') return <EquipmentSection equipment={equipment} onRefresh={onRefresh} showToast={showToast} />
@@ -129,33 +131,30 @@ const Field = ({ label, value, onChange, placeholder, type, required }) => (
 // ═══════════════════════════════════════════
 // ADMIN HOME
 // ═══════════════════════════════════════════
-function AdminHome({ logs, crews, employees, chemicals, equipment, onNav }) {
+function AdminHome({ crews, employees, onNav }) {
+  const [attendance, setAttendance] = useState(null)
+  const [expanded, setExpanded] = useState(null)
   const today = new Date()
-  const todayStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  const todaysLogs = logs.filter(l => l.date === todayStr)
-  const activeCrews = [...new Set(todaysLogs.map(l => l.crewName).filter(Boolean))]
+  const h = today.getHours()
+  const greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
 
-  // Check for alerts
+  useEffect(() => { getAttendanceToday().then(setAttendance).catch(() => setAttendance({ crews: [], unrostered: [], totalWorking: 0, totalEmployees: 0 })) }, [])
+
+  // Alerts
   const alerts = []
   const currentMonth = today.getMonth() + 1
   const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1
   const prevMonthName = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][prevMonth]
   if (today.getDate() <= 10) {
-    alerts.push({ type: 'warning', icon: '📊', title: `PUR Report Due`, desc: `${prevMonthName} report due by the 10th — submit to County Ag Commissioner` })
+    alerts.push({ type: 'warning', icon: '📊', title: `PUR Report Due`, desc: `${prevMonthName} report due by the 10th` })
   }
-  const empsNoCrew = employees.filter(e => !e.default_crew_id)
-  if (empsNoCrew.length > 0) {
-    alerts.push({ type: 'info', icon: '👷', title: `${empsNoCrew.length} Employee${empsNoCrew.length > 1 ? 's' : ''} Unassigned`, desc: 'Employees without a default crew' })
+  const empsNoPIN = employees.filter(e => e.is_crew_lead && !e.has_pin)
+  if (empsNoPIN.length > 0) {
+    alerts.push({ type: 'warning', icon: '🔑', title: `${empsNoPIN.length} Crew Lead${empsNoPIN.length > 1 ? 's' : ''} Missing PIN`, desc: 'Can\'t sign in without a PIN' })
   }
-  const empsNoLicense = employees.filter(e => !e.license_number)
-  if (empsNoLicense.length > 0) {
-    alerts.push({ type: 'info', icon: '📋', title: `${empsNoLicense.length} Missing License #`, desc: 'Employees without a license/cert on file' })
-  }
-  if (crews.length === 0) alerts.push({ type: 'warning', icon: '👥', title: 'No Crews Set Up', desc: 'Create crews to organize your team' })
-  if (chemicals.length === 0) alerts.push({ type: 'warning', icon: '🧪', title: 'No Chemicals Added', desc: 'Add your chemical inventory for spray logs' })
 
-  const h = today.getHours()
-  const greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
+  const rostersSubmitted = attendance ? attendance.crews.filter(c => c.submitted).length : 0
+  const totalCrews = attendance ? attendance.crews.length : 0
 
   return (
     <div>
@@ -168,85 +167,122 @@ function AdminHome({ logs, crews, employees, chemicals, equipment, onNav }) {
       {alerts.length > 0 && (
         <div style={{ marginBottom: 14 }}>
           {alerts.map((a, i) => (
-            <div key={i} style={{
-              ...cardStyle({ marginBottom: 8 }),
-              background: a.type === 'warning' ? C.amberLight : C.blueLight,
-              borderColor: a.type === 'warning' ? C.amberBorder : C.blueBorder,
-            }}>
+            <div key={i} style={{ ...cardStyle({ marginBottom: 8 }), background: a.type === 'warning' ? C.amberLight : C.blueLight, borderColor: a.type === 'warning' ? C.amberBorder : C.blueBorder }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span style={{ fontSize: 22 }}>{a.icon}</span>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: a.type === 'warning' ? C.amber : C.blue }}>{a.title}</div>
-                  <div style={{ fontSize: 13, color: C.textMed }}>{a.desc}</div>
-                </div>
+                <div><div style={{ fontSize: 15, fontWeight: 800, color: a.type === 'warning' ? C.amber : C.blue }}>{a.title}</div>
+                  <div style={{ fontSize: 13, color: C.textMed }}>{a.desc}</div></div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Activity Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
-        {[
-          { label: 'Logs Today', value: todaysLogs.length, color: C.accent, icon: '📋' },
-          { label: 'Crews Active', value: activeCrews.length, color: C.blue, icon: '👥' },
-          { label: 'Total Logs', value: logs.length, color: C.textMed, icon: '📊' },
-        ].map(s => (
-          <div key={s.label} style={cardStyle({ textAlign: 'center', padding: '16px 12px' })}>
-            <div style={{ fontSize: 20, marginBottom: 4 }}>{s.icon}</div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
-            <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 4 }}>{s.label}</div>
+      {/* Attendance summary */}
+      {attendance && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
+          <div style={cardStyle({ textAlign: 'center', padding: '16px 12px' })}>
+            <div style={{ fontSize: 28, fontWeight: 900, color: C.accent, lineHeight: 1 }}>{attendance.totalWorking}</div>
+            <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 4 }}>Working</div>
           </div>
-        ))}
-      </div>
+          <div style={cardStyle({ textAlign: 'center', padding: '16px 12px' })}>
+            <div style={{ fontSize: 28, fontWeight: 900, color: attendance.unrostered.length > 0 ? C.amber : C.textLight, lineHeight: 1 }}>{attendance.unrostered.length}</div>
+            <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 4 }}>Unrostered</div>
+          </div>
+          <div style={cardStyle({ textAlign: 'center', padding: '16px 12px' })}>
+            <div style={{ fontSize: 28, fontWeight: 900, color: rostersSubmitted === totalCrews && totalCrews > 0 ? C.accent : C.amber, lineHeight: 1 }}>{rostersSubmitted}/{totalCrews}</div>
+            <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 4 }}>Rosters In</div>
+          </div>
+        </div>
+      )}
 
-      {/* Quick Links */}
-      <div style={cardStyle()}>
-        <div style={labelStyle}>Quick Links</div>
+      {/* Crew attendance cards */}
+      <div style={{ ...labelStyle, marginBottom: 10 }}>Today's Crews</div>
+      {!attendance ? (
+        <div style={{ textAlign: 'center', padding: 24, color: C.textLight }}>Loading...</div>
+      ) : attendance.crews.length === 0 ? (
+        <div style={{ ...cardStyle(), textAlign: 'center', padding: 24 }}>
+          <div style={{ fontSize: 14, color: C.textLight }}>No crews set up yet.</div>
+        </div>
+      ) : attendance.crews.map(crew => (
+        <div key={crew.crewId} style={{ marginBottom: 8 }}>
+          <div tabIndex={0} role="button"
+            onClick={() => crew.submitted && setExpanded(expanded === crew.crewId ? null : crew.crewId)}
+            onKeyDown={e => e.key === 'Enter' && crew.submitted && setExpanded(expanded === crew.crewId ? null : crew.crewId)}
+            style={{
+              ...cardStyle({ marginBottom: 0, cursor: crew.submitted ? 'pointer' : 'default' }),
+              borderRadius: expanded === crew.crewId ? '16px 16px 0 0' : 16,
+              borderColor: !crew.submitted ? C.amberBorder : C.accentBorder,
+              background: !crew.submitted ? C.amberLight : C.card,
+            }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{crew.crewName}</div>
+                <div style={{ fontSize: 13, color: C.textMed, marginTop: 2 }}>
+                  {crew.submitted
+                    ? `${crew.memberCount} member${crew.memberCount !== 1 ? 's' : ''} · by ${crew.submittedBy}`
+                    : 'No roster submitted yet'}
+                </div>
+              </div>
+              {crew.submitted ? (
+                <div style={{ padding: '4px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, background: C.accentLight, color: C.accent }}>
+                  {crew.memberCount} ✓
+                </div>
+              ) : (
+                <div style={{ padding: '4px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, background: C.amberLight, color: C.amber }}>Pending</div>
+              )}
+            </div>
+          </div>
+          {expanded === crew.crewId && crew.submitted && (
+            <div style={{ background: '#FAFAF7', border: `1.5px solid ${C.cardBorder}`, borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '12px 16px' }}>
+              {crew.members.map((name, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderTop: i > 0 ? `1px solid ${C.cardBorder}` : 'none' }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Unrostered employees */}
+      {attendance && attendance.unrostered.length > 0 && (
+        <div style={{ ...cardStyle(), marginTop: 8, borderColor: C.amberBorder, background: C.amberLight }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.amber, marginBottom: 8 }}>
+            Not On Any Roster ({attendance.unrostered.length})
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {attendance.unrostered.map(emp => (
+              <div key={emp.id} style={{ fontSize: 13, color: C.textMed, display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: 600 }}>{emp.name}</span>
+                {emp.defaultCrew && <span style={{ color: C.textLight }}>Default: {emp.defaultCrew}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quick links */}
+      <div style={{ ...cardStyle(), marginTop: 14 }}>
+        <div style={labelStyle}>Manage</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
           {[
-            { k: 'admin-spraylogs', icon: '📋', label: 'Spray Logs', count: logs.length },
-            { k: 'admin-employees', icon: '👷', label: 'Employees', count: employees.length },
-            { k: 'admin-crews', icon: '👥', label: 'Crews', count: crews.length },
+            { k: 'admin-spraylogs', icon: '📋', label: 'Spray Logs' },
+            { k: 'admin-rosters', icon: '👷', label: 'Crew Rosters' },
+            { k: 'admin-employees', icon: '👤', label: 'Employees' },
+            { k: 'admin-crews', icon: '👥', label: 'Crews' },
             { k: 'admin-vehicles', icon: '🚛', label: 'Vehicles' },
-            { k: 'admin-chemicals', icon: '🧪', label: 'Chemicals', count: chemicals.length },
-            { k: 'admin-equipment', icon: '🔧', label: 'Equipment', count: equipment.length },
+            { k: 'admin-chemicals', icon: '🧪', label: 'Chemicals' },
           ].map(link => (
             <div key={link.k} tabIndex={0} role="button" onClick={() => onNav(link.k)} onKeyDown={e => e.key === 'Enter' && onNav(link.k)}
               style={{ padding: '14px 16px', borderRadius: 12, background: '#FAFAF7', border: `1.5px solid ${C.cardBorder}`, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 10, transition: 'border-color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = C.accent} onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
               <span style={{ fontSize: 20 }}>{link.icon}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>{link.label}</div>
-                {link.count !== undefined && <div style={{ fontSize: 12, color: C.textLight }}>{link.count} total</div>}
-              </div>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{link.label}</div>
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Recent Logs */}
-      <div style={cardStyle()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={labelStyle}>Recent Spray Logs</div>
-          <div tabIndex={0} role="button" onClick={() => onNav('admin-spraylogs')} onKeyDown={e => e.key === 'Enter' && onNav('admin-spraylogs')}
-            style={{ fontSize: 13, color: C.accent, fontWeight: 700, cursor: 'pointer' }}>View All →</div>
-        </div>
-        {logs.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '16px 0', color: C.textLight, fontSize: 14 }}>No spray logs yet.</div>
-        ) : logs.slice(0, 6).map(log => (
-          <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${C.cardBorder}` }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{log.property}</div>
-              <div style={{ fontSize: 12, color: C.textLight }}>{log.crewName} · {log.crewLead} · {log.products.length} product{log.products.length !== 1 ? 's' : ''}</div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>{log.date}</div>
-              <div style={{ fontSize: 11, color: C.textLight }}>{log.time}</div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   )
@@ -255,22 +291,32 @@ function AdminHome({ logs, crews, employees, chemicals, equipment, onNav }) {
 // ═══════════════════════════════════════════
 // SPRAY LOGS — sub-tabs: All Logs | Reports
 // ═══════════════════════════════════════════
-function SprayLogsSection({ logs }) {
+function SprayLogsSection({ logs, showToast, onRefresh }) {
   const [subTab, setSubTab] = useState('logs')
   return (
     <div>
       <SubTabs tabs={[{ key: 'logs', label: '📋 All Logs' }, { key: 'reports', label: '📊 Reports' }]} active={subTab} onChange={setSubTab} />
-      {subTab === 'logs' && <AllLogsView logs={logs} />}
+      {subTab === 'logs' && <AllLogsView logs={logs} showToast={showToast} onRefresh={onRefresh} />}
       {subTab === 'reports' && <ReportsView />}
     </div>
   )
 }
 
-function AllLogsView({ logs }) {
+function AllLogsView({ logs, showToast, onRefresh }) {
   const [expanded, setExpanded] = useState(null)
   const [filterCrew, setFilterCrew] = useState('')
+  const [deleteId, setDeleteId] = useState(null)
   const filtered = filterCrew ? logs.filter(l => l.crewName === filterCrew) : logs
   const crewNames = [...new Set(logs.map(l => l.crewName).filter(Boolean))]
+
+  const handleDelete = async () => {
+    try {
+      await deleteSprayLog(deleteId)
+      showToast('Spray log deleted ✓')
+      setDeleteId(null); setExpanded(null)
+      if (onRefresh) await onRefresh()
+    } catch { showToast('Failed to delete') }
+  }
 
   return (
     <div>
@@ -338,11 +384,15 @@ function AllLogsView({ logs }) {
               )}
               {log.notes && <><div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>Notes</div>
                 <div style={{ fontSize: 14, color: C.textMed, marginBottom: 14 }}>{log.notes}</div></>}
-              <button tabIndex={0} onClick={() => openPdf(log)} style={{ ...btnStyle(C.blue, '#fff', { fontSize: 14, marginTop: 8 }) }}>📄 Export PDF</button>
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <button tabIndex={0} onClick={() => openPdf(log)} style={{ ...btnStyle(C.blue, '#fff', { flex: 1, fontSize: 14 }) }}>📄 Export PDF</button>
+                <button tabIndex={0} onClick={() => setDeleteId(log.id)} style={{ ...btnStyle('#fff', C.red, { width: 'auto', padding: '10px 16px', fontSize: 14, border: `2px solid ${C.red}`, boxShadow: 'none' }) }}>🗑️</button>
+              </div>
             </div>
           )}
         </div>
       ))}
+      {deleteId && <ConfirmDelete name="this spray log" onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />}
     </div>
   )
 }
@@ -493,6 +543,261 @@ ${rangeType === 'monthly' ? `<div class="note">Submit DPR-PML-060 to County Agri
 }
 
 // ═══════════════════════════════════════════
+// CREW ROSTERS — sub-tabs: All Rosters | Reports
+// ═══════════════════════════════════════════
+function CrewRostersSection({ crews, employees, showToast }) {
+  const [subTab, setSubTab] = useState('rosters')
+  const [refreshKey, setRefreshKey] = useState(0)
+  const refresh = () => setRefreshKey(k => k + 1)
+  return (
+    <div>
+      <SubTabs tabs={[{ key: 'rosters', label: '👷 All Rosters' }, { key: 'reports', label: '📊 Reports' }]} active={subTab} onChange={setSubTab} />
+      {subTab === 'rosters' && <AllRostersView key={refreshKey} crews={crews} employees={employees} showToast={showToast} onRefresh={refresh} />}
+      {subTab === 'reports' && <RosterReportsView />}
+    </div>
+  )
+}
+
+function AllRostersView({ crews, employees, showToast, onRefresh }) {
+  const [rosters, setRosters] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState(null)
+  const [filterCrew, setFilterCrew] = useState('')
+  const [deleteId, setDeleteId] = useState(null)
+
+  const load = async () => { try { setRosters(await getRosters({ limit: 100 })) } catch {} setLoading(false) }
+  useEffect(() => { load() }, [])
+
+  const handleDelete = async () => {
+    try {
+      await deleteRoster(deleteId)
+      showToast('Roster deleted ✓')
+      setDeleteId(null); setExpanded(null)
+      await load()
+    } catch { showToast('Failed to delete') }
+  }
+
+  const filtered = filterCrew ? rosters.filter(r => r.crewName === filterCrew) : rosters
+  const crewNames = [...new Set(rosters.map(r => r.crewName).filter(Boolean))]
+
+  return (
+    <div>
+      <SectionHeader title="Daily Crew Rosters" count={filtered.length} />
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div tabIndex={0} role="button" onClick={() => setFilterCrew('')} onKeyDown={e => e.key === 'Enter' && setFilterCrew('')}
+          style={{ padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            background: !filterCrew ? C.accent : '#eee', color: !filterCrew ? '#fff' : C.textMed }}>All Crews</div>
+        {crewNames.map(c => (
+          <div key={c} tabIndex={0} role="button" onClick={() => setFilterCrew(c)} onKeyDown={e => e.key === 'Enter' && setFilterCrew(c)}
+            style={{ padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              background: filterCrew === c ? C.accent : '#eee', color: filterCrew === c ? '#fff' : C.textMed }}>{c}</div>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 40, color: C.textLight }}>Loading...</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: 40, color: C.textLight }}><div style={{ fontSize: 40, marginBottom: 12 }}>👷</div><div style={{ fontSize: 16, fontWeight: 700 }}>No rosters found</div>
+          <div style={{ fontSize: 13, color: C.textLight, marginTop: 4 }}>Crew leaders submit daily rosters from the field app</div></div>
+      ) : filtered.map(roster => (
+        <div key={roster.id} style={{ marginBottom: 10 }}>
+          <div tabIndex={0} role="button" onClick={() => setExpanded(expanded === roster.id ? null : roster.id)} onKeyDown={e => e.key === 'Enter' && setExpanded(expanded === roster.id ? null : roster.id)}
+            style={{ ...cardStyle({ marginBottom: 0, cursor: 'pointer' }), borderRadius: expanded === roster.id ? '16px 16px 0 0' : 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800 }}>{roster.crewName}</div>
+                <div style={{ fontSize: 13, color: C.textLight, marginTop: 2 }}>Submitted by {roster.submittedBy} · {roster.members.length} member{roster.members.length !== 1 ? 's' : ''}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.blue }}>{roster.date}</div>
+              </div>
+            </div>
+          </div>
+          {expanded === roster.id && (
+            <div style={{ background: '#FAFAF7', border: `1.5px solid ${C.cardBorder}`, borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '16px 18px' }}>
+              <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>Crew Members ({roster.members.length})</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                {roster.members.map((m, i) => {
+                  const emp = employees.find(e => e.id === m.employeeId)
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: C.blueLight, border: `1px solid ${C.blueBorder}` }}>
+                      {emp?.photo_filename ? (
+                        <img src={`/uploads/${emp.photo_filename}`} alt="" style={{ width: 28, height: 28, borderRadius: 14, objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: 28, height: 28, borderRadius: 14, background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#fff', fontWeight: 800 }}>
+                          {m.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                      )}
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.blue }}>{m.name}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              {roster.notes && (
+                <div><div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>Notes</div>
+                <div style={{ fontSize: 14, color: C.textMed, marginBottom: 10 }}>{roster.notes}</div></div>
+              )}
+              <button tabIndex={0} onClick={() => setDeleteId(roster.id)}
+                style={{ ...btnStyle('#fff', C.red, { width: 'auto', padding: '8px 16px', fontSize: 13, border: `2px solid ${C.red}`, boxShadow: 'none' }) }}>
+                🗑️ Delete Roster
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+      {deleteId && <ConfirmDelete name="this roster" onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />}
+    </div>
+  )
+}
+
+function RosterReportsView() {
+  const now = new Date()
+  const [rangeType, setRangeType] = useState('monthly')
+  const [month, setMonth] = useState(now.getMonth() + 1)
+  const [year, setYear] = useState(now.getFullYear())
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [report, setReport] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December']
+
+  const getDateRange = () => {
+    if (rangeType === 'monthly') {
+      return { start: `${year}-${String(month).padStart(2,'0')}-01`, end: new Date(year, month, 1).toISOString().split('T')[0], label: `${monthNames[month]} ${year}` }
+    } else if (rangeType === 'biweekly') {
+      const s = new Date(); s.setDate(s.getDate() - 14)
+      return { start: s.toISOString().split('T')[0], end: new Date().toISOString().split('T')[0], label: 'Last 14 Days' }
+    } else {
+      return { start: startDate, end: endDate, label: `${startDate} to ${endDate}` }
+    }
+  }
+
+  const generate = async () => {
+    const range = getDateRange()
+    if (!range.start || !range.end) return
+    setLoading(true)
+    try { setReport(await getRosterReport(range.start, range.end)) }
+    catch { setReport(null) }
+    setLoading(false)
+  }
+
+  const exportRosterReport = () => {
+    if (!report) return
+    const range = getDateRange()
+    const crewRows = report.crews.map(c => {
+      const memberRows = c.rosters.map(r =>
+        `<tr><td style="padding:6px 12px;border:1px solid #ddd">${r.date}</td>
+          <td style="padding:6px 12px;border:1px solid #ddd">${r.lead}</td>
+          <td style="padding:6px 12px;border:1px solid #ddd">${r.memberCount}</td>
+          <td style="padding:6px 12px;border:1px solid #ddd">${r.members.join(', ')}</td></tr>`).join('')
+      return `<div style="margin-bottom:24px"><h3 style="font-size:16px;margin:8px 0">${c.crewName} — ${c.daysWorked} day${c.daysWorked !== 1 ? 's' : ''}, ${c.totalMembers} unique member${c.totalMembers !== 1 ? 's' : ''}</h3>
+        <table><thead><tr><th>Date</th><th>Lead</th><th># Members</th><th>Members</th></tr></thead><tbody>${memberRows}</tbody></table></div>`
+    }).join('')
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Crew Roster Report — ${range.label}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:32px;color:#1a1a18;font-size:13px}
+.header{border-bottom:3px solid #2563EB;padding-bottom:12px;margin-bottom:20px}.brand{font-size:11px;text-transform:uppercase;letter-spacing:3px;color:#2563EB;font-weight:800}
+h1{font-size:22px;margin:4px 0}h3{color:#2563EB}table{width:100%;border-collapse:collapse;margin-top:8px}
+th{background:#f4f4f0;padding:6px 12px;border:1px solid #ddd;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666}
+.footer{margin-top:24px;border-top:2px solid #eee;padding-top:12px;font-size:9px;color:#999}@media print{body{padding:16px}}</style></head><body>
+<div class="header"><div class="brand">${APP.name} — Crew Roster Report</div>
+<h1>${range.label}</h1></div>
+<div style="margin-bottom:16px;font-size:14px"><strong>Total Rosters:</strong> ${report.totalRosters} · <strong>Crews:</strong> ${report.crews.length}</div>
+${crewRows}
+<div class="footer">Generated by ${APP.name} · ${new Date().toLocaleString()}</div></body></html>`
+
+    const w = window.open('', '_blank', 'width=800,height=900')
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+  }
+
+  return (
+    <div>
+      <SectionHeader title="Roster Reports" />
+      <div style={{ ...cardStyle(), padding: 20 }}>
+        <div style={{ fontSize: 14, color: C.textMed, marginBottom: 16, lineHeight: 1.6 }}>
+          Generate crew roster reports to see which crews worked which days and who was on each crew.
+        </div>
+
+        <div style={labelStyle}>Report Period</div>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+          {[{ k: 'monthly', l: 'Monthly' }, { k: 'biweekly', l: 'Bi-Weekly' }, { k: 'custom', l: 'Custom Range' }].map(r => (
+            <div key={r.k} tabIndex={0} role="button" onClick={() => setRangeType(r.k)} onKeyDown={e => e.key === 'Enter' && setRangeType(r.k)}
+              style={{ padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                background: rangeType === r.k ? C.blue : '#eee', color: rangeType === r.k ? '#fff' : C.textMed }}>
+              {r.l}
+            </div>
+          ))}
+        </div>
+
+        {rangeType === 'monthly' && (
+          <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+            <div style={{ flex: 1 }}><div style={labelStyle}>Month</div>
+              <select value={month} onChange={e => setMonth(Number(e.target.value))} style={inputStyle()}>
+                {monthNames.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}</select></div>
+            <div style={{ flex: 1 }}><div style={labelStyle}>Year</div>
+              <select value={year} onChange={e => setYear(Number(e.target.value))} style={inputStyle()}>
+                {[2024,2025,2026,2027].map(y => <option key={y} value={y}>{y}</option>)}</select></div>
+          </div>
+        )}
+
+        {rangeType === 'biweekly' && (
+          <div style={{ padding: '12px 16px', borderRadius: 12, background: C.blueLight, border: `1.5px solid ${C.blueBorder}`, marginBottom: 16, fontSize: 14, color: C.blue, fontWeight: 600 }}>
+            Last 14 days from today
+          </div>
+        )}
+
+        {rangeType === 'custom' && (
+          <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+            <div style={{ flex: 1 }}><div style={labelStyle}>Start Date</div>
+              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle()} /></div>
+            <div style={{ flex: 1 }}><div style={labelStyle}>End Date</div>
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle()} /></div>
+          </div>
+        )}
+
+        <button tabIndex={0} onClick={generate} disabled={loading} style={btnStyle(C.blue, '#fff', { opacity: loading ? 0.6 : 1 })}>
+          {loading ? 'Generating...' : 'Generate Report'}
+        </button>
+      </div>
+
+      {report && (
+        <div style={{ marginTop: 16 }}>
+          <div style={cardStyle({ background: C.blueLight, borderColor: C.blueBorder })}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: C.blue }}>{getDateRange().label}</div>
+            <div style={{ fontSize: 14, color: C.textMed, marginTop: 4 }}>{report.totalRosters} roster{report.totalRosters !== 1 ? 's' : ''} · {report.crews.length} crew{report.crews.length !== 1 ? 's' : ''}</div>
+          </div>
+          {report.crews.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 32, color: C.textLight }}>No rosters for this period.</div>
+          ) : (
+            <>
+              {report.crews.map((c, i) => (
+                <div key={i} style={cardStyle()}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                    <div><div style={{ fontSize: 16, fontWeight: 800 }}>{c.crewName}</div></div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: C.blue }}>{c.daysWorked} day{c.daysWorked !== 1 ? 's' : ''}</div>
+                      <div style={{ fontSize: 12, color: C.textLight }}>{c.totalMembers} unique member{c.totalMembers !== 1 ? 's' : ''}</div>
+                    </div>
+                  </div>
+                  {c.rosters.map((r, j) => (
+                    <div key={j} style={{ fontSize: 13, color: C.textMed, padding: '6px 0', display: 'flex', justifyContent: 'space-between', borderTop: j > 0 ? `1px solid ${C.cardBorder}` : 'none' }}>
+                      <span><span style={{ fontWeight: 700, color: C.text }}>{r.date}</span> · {r.lead}</span>
+                      <span style={{ fontWeight: 700, color: C.blue }}>{r.memberCount} member{r.memberCount !== 1 ? 's' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+              <button tabIndex={0} onClick={exportRosterReport} style={btnStyle(C.blue, '#fff')}>📄 Export / Print Report</button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════
 // VEHICLES (standalone)
 // ═══════════════════════════════════════════
 function VehiclesSection({ crews, onRefresh, showToast }) {
@@ -502,7 +807,6 @@ function VehiclesSection({ crews, onRefresh, showToast }) {
   const [deleteItem, setDeleteItem] = useState(null)
   const [saving, setSaving] = useState(false)
   const [vName, setVName] = useState('')
-  const [vPin, setVPin] = useState('')
   const [vCrew, setVCrew] = useState('')
   const [vPlate, setVPlate] = useState('')
   const [vVin, setVVin] = useState('')
@@ -514,11 +818,11 @@ function VehiclesSection({ crews, onRefresh, showToast }) {
 
   const openForm = (v) => {
     if (v) {
-      setEditItem(v); setVName(v.name); setVPin(''); setVCrew(v.crew_name || '')
+      setEditItem(v); setVName(v.name); setVCrew(v.crew_name || '')
       setVPlate(v.license_plate || ''); setVVin(v.vin || ''); setVMakeModel(v.make_model || '')
       setVYear(v.year ? String(v.year) : ''); setVTruckNum(v.truck_number || '')
     } else {
-      setEditItem(null); setVName(''); setVPin(''); setVCrew(''); setVPlate(''); setVVin('')
+      setEditItem(null); setVName(''); setVCrew(''); setVPlate(''); setVVin('')
       setVMakeModel(''); setVYear(''); setVTruckNum('')
     }
     setShowForm(true)
@@ -528,11 +832,8 @@ function VehiclesSection({ crews, onRefresh, showToast }) {
     if (!vName.trim()) return; setSaving(true)
     try {
       const data = { name: vName, crewName: vCrew, licensePlate: vPlate, vin: vVin, makeModel: vMakeModel, year: vYear, truckNumber: vTruckNum }
-      if (editItem) { await updateVehicle(editItem.id, { ...data, pin: vPin || undefined }) }
-      else {
-        if (!vPin || vPin.length < 4) { showToast('PIN must be at least 4 digits'); setSaving(false); return }
-        await createVehicle({ ...data, pin: vPin })
-      }
+      if (editItem) { await updateVehicle(editItem.id, data) }
+      else { await createVehicle(data) }
       showToast(editItem ? 'Vehicle updated ✓' : 'Vehicle created ✓')
       setShowForm(false); await onRefresh(); setVehicles(await getVehicles())
     } catch { showToast('Failed to save') }
@@ -568,7 +869,6 @@ function VehiclesSection({ crews, onRefresh, showToast }) {
       {showForm && (
         <FormModal title={editItem ? 'Edit Vehicle' : 'New Vehicle'} onSave={save} onCancel={() => setShowForm(false)} onDelete={editItem ? handleFormDelete : undefined} saving={saving}>
           <Field label="Vehicle Name" value={vName} onChange={setVName} placeholder="e.g. Truck 2" required />
-          <Field label={editItem ? "New PIN (leave blank to keep)" : "PIN (4-6 digits)"} value={vPin} onChange={v => setVPin(v.replace(/\D/g, ''))} placeholder="e.g. 1234" required={!editItem} />
           <div style={{ marginBottom: 14 }}>
             <div style={labelStyle}>Assign to Crew</div>
             <select value={vCrew} onChange={e => setVCrew(e.target.value)} style={inputStyle()}>
@@ -594,25 +894,32 @@ function VehiclesSection({ crews, onRefresh, showToast }) {
 // ═══════════════════════════════════════════
 // CREWS (standalone)
 // ═══════════════════════════════════════════
-function CrewsSection({ crews, onRefresh, showToast }) {
+function CrewsSection({ crews, employees, onRefresh, showToast }) {
   const [showForm, setShowForm] = useState(false)
   const [editItem, setEditItem] = useState(null)
   const [deleteItem, setDeleteItem] = useState(null)
   const [saving, setSaving] = useState(false)
   const [cName, setCName] = useState('')
-  const [cLead, setCLead] = useState('')
+  const [cLeadId, setCLeadId] = useState('')
 
   const openForm = (c) => {
-    if (c) { setEditItem(c); setCName(c.name); setCLead(c.lead_name || '') }
-    else { setEditItem(null); setCName(''); setCLead('') }
+    if (c) {
+      setEditItem(c); setCName(c.name)
+      // Try to match lead_name to an employee
+      const lead = employees.find(e => `${e.first_name} ${e.last_name}` === c.lead_name)
+      setCLeadId(lead ? String(lead.id) : '')
+    }
+    else { setEditItem(null); setCName(''); setCLeadId('') }
     setShowForm(true)
   }
 
   const save = async () => {
     if (!cName.trim()) return; setSaving(true)
     try {
-      if (editItem) await updateCrew(editItem.id, { name: cName, leadName: cLead })
-      else await createCrew({ name: cName, leadName: cLead })
+      const leadEmp = employees.find(e => String(e.id) === cLeadId)
+      const leadName = leadEmp ? `${leadEmp.first_name} ${leadEmp.last_name}` : ''
+      if (editItem) await updateCrew(editItem.id, { name: cName, leadName })
+      else await createCrew({ name: cName, leadName })
       showToast(editItem ? 'Crew updated ✓' : 'Crew created ✓')
       setShowForm(false); await onRefresh()
     } catch { showToast('Failed to save') }
@@ -625,25 +932,45 @@ function CrewsSection({ crews, onRefresh, showToast }) {
   }
   const handleFormDelete = () => { setShowForm(false); setDeleteItem(editItem) }
 
+  // Group employees by crew for display
+  const getCrewEmployees = (crewId) => employees.filter(e => e.default_crew_id === crewId)
+
   return (
     <div>
       <SectionHeader title="Crews" count={crews.length} onAdd={() => openForm(null)} addLabel="Add Crew" />
-      {crews.map(c => (
-        <div key={c.id} tabIndex={0} role="button" onClick={() => openForm(c)} onKeyDown={e => e.key === 'Enter' && openForm(c)}
-          style={{ ...cardStyle({ cursor: 'pointer' }), transition: 'border-color 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = C.accent} onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div><div style={{ fontSize: 16, fontWeight: 800 }}>{c.name}</div>
-              {c.lead_name && <div style={{ fontSize: 13, color: C.textLight }}>Lead: {c.lead_name}</div>}</div>
-            <div style={{ fontSize: 13, color: C.textLight, fontWeight: 600 }}>Edit →</div>
+      {crews.map(c => {
+        const crewEmps = getCrewEmployees(c.id)
+        return (
+          <div key={c.id} tabIndex={0} role="button" onClick={() => openForm(c)} onKeyDown={e => e.key === 'Enter' && openForm(c)}
+            style={{ ...cardStyle({ cursor: 'pointer' }), transition: 'border-color 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = C.accent} onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800 }}>{c.name}</div>
+                <div style={{ fontSize: 13, color: C.textLight }}>
+                  {c.lead_name ? `Lead: ${c.lead_name}` : 'No lead assigned'} · {crewEmps.length} member{crewEmps.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+              <div style={{ fontSize: 13, color: C.textLight, fontWeight: 600 }}>Edit →</div>
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
 
       {showForm && (
         <FormModal title={editItem ? 'Edit Crew' : 'New Crew'} onSave={save} onCancel={() => setShowForm(false)} onDelete={editItem ? handleFormDelete : undefined} saving={saving}>
           <Field label="Crew Name" value={cName} onChange={setCName} placeholder="e.g. Crew C" required />
-          <Field label="Default Lead Name" value={cLead} onChange={setCLead} placeholder="e.g. Carlos M." />
+          <div style={{ marginBottom: 14 }}>
+            <div style={labelStyle}>Crew Lead</div>
+            <select value={cLeadId} onChange={e => setCLeadId(e.target.value)} style={inputStyle()}>
+              <option value="">No lead assigned</option>
+              {employees.filter(e => e.is_crew_lead || e.has_pin).map(e => (
+                <option key={e.id} value={e.id}>
+                  {e.first_name} {e.last_name}{e.is_crew_lead ? ' (Lead)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
         </FormModal>
       )}
       {deleteItem && <ConfirmDelete name={deleteItem.name} onConfirm={handleDelete} onCancel={() => setDeleteItem(null)} />}
@@ -729,16 +1056,22 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
               </div>
             )}
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 {emp.first_name} {emp.last_name}
-                {emp.is_crew_lead && <span style={{ fontSize: 11, color: C.blue, fontWeight: 700, marginLeft: 8, padding: '2px 8px', borderRadius: 6, background: C.blueLight }}>Lead</span>}
+                {emp.is_crew_lead && <span style={{ fontSize: 11, color: C.blue, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: C.blueLight }}>Lead</span>}
               </div>
-              <div style={{ fontSize: 13, color: C.textLight }}>
+              <div style={{ fontSize: 13, color: C.textLight, marginTop: 2 }}>
                 {emp.crew_name || 'No crew'}{emp.license_number ? ` · ${emp.license_number}` : ''}{emp.phone ? ` · ${emp.phone}` : ''}
-                {emp.has_pin ? '' : ' · ⚠️ No PIN'}
               </div>
             </div>
-            <div style={{ fontSize: 13, color: C.textLight, fontWeight: 600 }}>Edit →</div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+              <div style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700,
+                background: emp.has_pin ? C.accentLight : '#FFF5F5',
+                color: emp.has_pin ? C.accent : C.red }}>
+                {emp.has_pin ? '🔑 PIN Set' : '⚠️ No PIN'}
+              </div>
+              <div style={{ fontSize: 12, color: C.textLight, fontWeight: 600 }}>Edit →</div>
+            </div>
           </div>
         </div>
       ))}
@@ -765,7 +1098,25 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
           </div>
           <Field label="Phone" value={phone} onChange={setPhone} placeholder="e.g. (555) 123-4567" />
           <Field label="License / Cert #" value={licenseNum} onChange={setLicenseNum} placeholder="e.g. QAL-48271" />
-          <Field label={editItem ? "New PIN (leave blank to keep)" : "Login PIN (4-6 digits)"} value={empPin} onChange={v => setEmpPin(v.replace(/\D/g, ''))} placeholder="e.g. 1234" required={!editItem} />
+          <div style={{ marginBottom: 14 }}>
+            <div style={labelStyle}>
+              Login PIN
+              {editItem && (
+                <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6,
+                  background: editItem.has_pin ? C.accentLight : '#FFF5F5',
+                  color: editItem.has_pin ? C.accent : C.red }}>
+                  {editItem.has_pin ? 'Currently set ✓' : 'Not set'}
+                </span>
+              )}
+            </div>
+            <input value={empPin} onChange={e => setEmpPin(e.target.value.replace(/\D/g, ''))}
+              placeholder={editItem ? 'Enter new PIN to change' : '4-6 digit PIN'}
+              maxLength={6} inputMode="numeric" type="password"
+              style={inputStyle({ letterSpacing: 4, fontSize: 18, fontWeight: 700 })} />
+            <div style={{ fontSize: 12, color: C.textLight, marginTop: 4 }}>
+              {isCrewLead ? 'Required for crew lead login' : 'Only needed if this employee is a crew lead'}
+            </div>
+          </div>
           <div style={{ marginBottom: 14 }}>
             <div style={labelStyle}>Default Crew</div>
             <select value={crewId} onChange={e => setCrewId(e.target.value)} style={inputStyle()}>

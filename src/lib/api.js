@@ -58,7 +58,14 @@ export const deleteChemical = (id) => request(`/chemicals/${id}`, { method: 'DEL
 
 // Spray logs
 export const createSprayLog = (d) => request('/spray-logs', { method: 'POST', body: JSON.stringify(d) })
-export const getSprayLogs = (vehicleId) => request(`/spray-logs${vehicleId ? `?vehicleId=${vehicleId}` : ''}`)
+export const getSprayLogs = (params = {}) => {
+  const q = new URLSearchParams()
+  if (params.vehicleId) q.set('vehicleId', params.vehicleId)
+  if (params.crewName) q.set('crewName', params.crewName)
+  const qs = q.toString()
+  return request(`/spray-logs${qs ? `?${qs}` : ''}`)
+}
+export const deleteSprayLog = (id) => request(`/spray-logs/${id}`, { method: 'DELETE' })
 export const getAllSprayLogs = () => request('/spray-logs?limit=500')
 export const uploadPhotos = async (logId, files) => {
   const fd = new FormData(); files.forEach(f => fd.append('photos', f))
@@ -66,6 +73,18 @@ export const uploadPhotos = async (logId, files) => {
   if (!res.ok) throw new Error('Upload failed'); return res.json()
 }
 
+// Daily crew rosters
+export const submitRoster = (d) => request('/rosters', { method: 'POST', body: JSON.stringify(d) })
+export const getRosters = (params = {}) => {
+  const qs = Object.entries(params).filter(([,v]) => v).map(([k,v]) => `${k}=${v}`).join('&')
+  return request(`/rosters${qs ? `?${qs}` : ''}`)
+}
+export const getTodayRoster = (crewId) => request(`/rosters/today${crewId ? `?crewId=${crewId}` : ''}`)
+export const getAttendanceToday = () => request('/rosters/attendance-today')
+export const deleteRoster = (id) => request(`/rosters/${id}`, { method: 'DELETE' })
+
 // Reports
-export const getPurReport = (m, y) => request(`/reports/pur?month=${m}&year=${y}`)
+export const getPurReport = (month, year) => request(`/reports/pur?month=${month}&year=${year}`)
+export const getPurReportRange = (start, end) => request(`/reports/pur?start=${start}&end=${end}`)
+export const getRosterReport = (start, end) => request(`/reports/rosters?start=${start}&end=${end}`)
 export const checkHealth = () => request('/health')

@@ -1,14 +1,9 @@
 import { APP, C } from '../config.js'
 
 const NAV_ITEMS = [
-  { key: 'home', icon: '🏠', label: 'Home', active: true },
-  { key: 'spray', icon: '💧', label: 'Spray Tracker', active: true },
-  { key: 'routes', icon: '🗺️', label: 'Routes', active: false },
-  { key: 'properties', icon: '🏘️', label: 'Properties', active: false },
-  { key: 'crew', icon: '👷', label: 'Crew', active: false },
-  { key: 'schedule', icon: '📅', label: 'Schedule', active: false },
-  { key: 'reports', icon: '📊', label: 'Reports', active: false },
-  { key: 'settings', icon: '⚙️', label: 'Settings', active: false },
+  { key: 'home', icon: '🏠', label: 'Home' },
+  { key: 'crew', icon: '👷', label: 'Crew' },
+  { key: 'spray', icon: '💧', label: 'Spray Tracker' },
 ]
 
 export default function Sidebar({ open, onClose, currentPage, onNav }) {
@@ -49,17 +44,16 @@ export default function Sidebar({ open, onClose, currentPage, onNav }) {
           {NAV_ITEMS.map(it => (
             <div
               key={it.key}
-              tabIndex={it.active ? 0 : -1}
+              tabIndex={0}
               role="button"
-              onClick={() => { if (it.active) { onNav(it.key); onClose(); } }}
-              onKeyDown={e => { if (e.key === 'Enter' && it.active) { onNav(it.key); onClose(); } }}
+              onClick={() => { onNav(it.key); onClose(); }}
+              onKeyDown={e => { if (e.key === 'Enter') { onNav(it.key); onClose(); } }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
                 padding: '14px 24px',
-                cursor: it.active ? 'pointer' : 'default',
+                cursor: 'pointer',
                 background: currentPage === it.key ? C.sidebarHover : 'transparent',
                 borderLeft: currentPage === it.key ? `3px solid ${C.accent}` : '3px solid transparent',
-                opacity: it.active ? 1 : 0.35,
                 transition: 'all 0.15s',
               }}
             >
@@ -67,14 +61,6 @@ export default function Sidebar({ open, onClose, currentPage, onNav }) {
               <span style={{ fontSize: 15, fontWeight: 700, color: currentPage === it.key ? '#fff' : '#aaa' }}>
                 {it.label}
               </span>
-              {!it.active && (
-                <span style={{
-                  marginLeft: 'auto', fontSize: 10, padding: '2px 8px',
-                  borderRadius: 6, background: '#333', color: '#666', fontWeight: 700,
-                }}>
-                  Soon
-                </span>
-              )}
             </div>
           ))}
         </div>

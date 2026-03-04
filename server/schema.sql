@@ -97,6 +97,27 @@ CREATE TABLE IF NOT EXISTS spray_log_members (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Daily crew rosters submitted by crew leads
+CREATE TABLE IF NOT EXISTS daily_crew_rosters (
+  id SERIAL PRIMARY KEY,
+  crew_id INTEGER REFERENCES crews(id),
+  crew_name VARCHAR(100) NOT NULL,
+  submitted_by_id INTEGER REFERENCES employees(id),
+  submitted_by_name VARCHAR(200) NOT NULL,
+  work_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS daily_roster_members (
+  id SERIAL PRIMARY KEY,
+  roster_id INTEGER REFERENCES daily_crew_rosters(id) ON DELETE CASCADE,
+  employee_id INTEGER REFERENCES employees(id),
+  employee_name VARCHAR(200) NOT NULL,
+  present BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Seed
 INSERT INTO admins (name, pin_hash, role) VALUES ('Admin', '$2a$10$placeholder', 'owner');
 INSERT INTO crews (name) VALUES ('Crew A'), ('Crew B');
@@ -136,3 +157,6 @@ CREATE INDEX IF NOT EXISTS idx_spray_log_products_log ON spray_log_products(spra
 CREATE INDEX IF NOT EXISTS idx_spray_log_photos_log ON spray_log_photos(spray_log_id);
 CREATE INDEX IF NOT EXISTS idx_spray_log_members_log ON spray_log_members(spray_log_id);
 CREATE INDEX IF NOT EXISTS idx_employees_crew ON employees(default_crew_id);
+CREATE INDEX IF NOT EXISTS idx_daily_rosters_date ON daily_crew_rosters(work_date DESC);
+CREATE INDEX IF NOT EXISTS idx_daily_rosters_crew ON daily_crew_rosters(crew_id);
+CREATE INDEX IF NOT EXISTS idx_daily_roster_members_roster ON daily_roster_members(roster_id);

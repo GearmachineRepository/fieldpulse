@@ -5,7 +5,7 @@ import { uploadPhotos } from '../lib/api.js'
 import WindCompass from '../components/WindCompass.jsx'
 import { openPdf } from '../components/PdfExport.js'
 
-export default function SprayTracker({ vehicle, chemicals, equipment, crews, employees, logs, weather, onRefreshWeather, onSubmitLog, onLogsUpdated, loggedInEmployee, loggedInCrew }) {
+export default function SprayTracker({ vehicle, chemicals, equipment, crews, logs, weather, onRefreshWeather, onSubmitLog, onLogsUpdated, loggedInEmployee, loggedInCrew }) {
   const [tab, setTab] = useState('log')
   const tabs = [{ key: 'log', label: 'New Log', icon: '📝' }, { key: 'history', label: 'History', icon: '📋' }, { key: 'sds', label: 'SDS', icon: '☣️' }]
   return (
@@ -19,7 +19,7 @@ export default function SprayTracker({ vehicle, chemicals, equipment, crews, emp
           </div>
         ))}
       </div>
-      {tab === 'log' && <NewLogTab vehicle={vehicle} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees} weather={weather} onRefresh={onRefreshWeather} onSubmit={onSubmitLog} onLogsUpdated={onLogsUpdated} loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />}
+      {tab === 'log' && <NewLogTab vehicle={vehicle} chemicals={chemicals} equipment={equipment} crews={crews} weather={weather} onRefresh={onRefreshWeather} onSubmit={onSubmitLog} onLogsUpdated={onLogsUpdated} loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />}
       {tab === 'history' && <HistoryTab logs={logs} />}
       {tab === 'sds' && <SdsTab chemicals={chemicals} />}
     </div>
@@ -29,7 +29,7 @@ export default function SprayTracker({ vehicle, chemicals, equipment, crews, emp
 // ═══════════════════════════════════════════
 // NEW LOG TAB
 // ═══════════════════════════════════════════
-function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, onRefresh, onSubmit, onLogsUpdated, loggedInEmployee, loggedInCrew }) {
+function NewLogTab({ vehicle, chemicals, equipment, crews, weather, onRefresh, onSubmit, onLogsUpdated, loggedInEmployee, loggedInCrew }) {
   // Crew — separate "useCustomCrew" flag so typing doesn't reset
   const [crewSelect, setCrewSelect] = useState(loggedInCrew?.name || vehicle.crewName || '')
   const [customCrewName, setCustomCrewName] = useState('')
@@ -55,10 +55,6 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, o
   const [photos, setPhotos] = useState([])
   const [photoPreviews, setPhotoPreviews] = useState([])
 
-  // Crew members for this log
-  const [selectedMembers, setSelectedMembers] = useState([])
-  const [showMemberPicker, setShowMemberPicker] = useState(false)
-
   const [manualWx, setManualWx] = useState(false)
   const [mw, setMw] = useState({ temp: '', humidity: '', windSpeed: '', windDir: 'N', conditions: 'Clear' })
   const [errors, setErrors] = useState({})
@@ -73,12 +69,6 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, o
   const removeProduct = (idx) => setProducts(products.filter((_, i) => i !== idx))
   const updateOz = (idx, val) => { setProducts(products.map((p, i) => i === idx ? { ...p, ozConcentrate: val } : p)); setErrors(e => ({ ...e, [`oz-${idx}`]: undefined })) }
   const updateUnit = (idx, unit) => setProducts(products.map((p, i) => i === idx ? { ...p, unit } : p))
-
-  const toggleMember = (emp) => {
-    const exists = selectedMembers.find(m => m.id === emp.id)
-    if (exists) setSelectedMembers(selectedMembers.filter(m => m.id !== emp.id))
-    else setSelectedMembers([...selectedMembers, { id: emp.id, name: `${emp.first_name} ${emp.last_name}` }])
-  }
 
   const handlePhotos = (e) => {
     const files = Array.from(e.target.files)
@@ -132,7 +122,6 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, o
       equipmentId: equipItem?.id || null, equipmentName: selectedEquip,
       totalMixVol: `${totalMixVol} ${mixVolUnit}`, targetPest, notes,
       products: products.map(p => ({ chemicalId: p.id, name: p.name, epa: p.epa, amount: `${p.ozConcentrate} ${p.unit || 'oz'}` })),
-      crewMembers: selectedMembers,
       weather: wx,
     })
 
@@ -148,19 +137,13 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, o
     if (success) {
       setProperty(''); setSelectedEquip(''); setTotalMixVol(''); setTargetPest('')
       setProducts([]); setNotes(''); setLocMode('none'); setGps(null); setManualAddr('')
-      setPhotos([]); setPhotoPreviews([]); setSelectedMembers([])
+      setPhotos([]); setPhotoPreviews([])
     }
   }
 
   const Req = () => <span style={{ color: C.red, marginLeft: 3 }}>*</span>
   const errMsg = (key) => errors[key] ? <div style={{ fontSize: 12, color: C.red, fontWeight: 600, marginTop: 4 }}>{errors[key]}</div> : null
   const errBorder = (key) => errors[key] ? { borderColor: C.red, background: '#FFFBFB' } : {}
-
-  // Filter employees by selected crew
-  const crewEmployees = employees.filter(emp => {
-    const crew = crews.find(c => c.name === crewName)
-    return crew ? emp.default_crew_id === crew.id : true
-  })
 
   return (
     <div>
@@ -245,64 +228,6 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, o
         <div style={labelStyle}>Business License / Cert #<Req /></div>
         <input value={license} onChange={e => { setLicense(e.target.value); setErrors(er => ({ ...er, license: undefined })) }} placeholder="e.g. QAL-48271" style={inputStyle(errBorder('license'))} />
         {errMsg('license')}
-      </div>
-
-      {/* Crew Members */}
-      <div style={cardStyle()}>
-        <div style={{ ...labelStyle, fontSize: 14, color: C.blue, marginBottom: 8, letterSpacing: 2 }}>Crew Members Today</div>
-        <div style={{ fontSize: 12, color: C.textLight, marginBottom: 12 }}>Select who's on this crew for today's applications.</div>
-
-        {selectedMembers.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-            {selectedMembers.map(m => (
-              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 10, background: C.blueLight, border: `1.5px solid ${C.blueBorder}` }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: C.blue }}>{m.name}</span>
-                <span onClick={() => toggleMember({ id: m.id })} style={{ cursor: 'pointer', color: C.blue, fontSize: 18, lineHeight: 1, fontWeight: 800 }}>×</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {showMemberPicker ? (
-          <div style={{ background: '#FAFAF7', border: `1.5px solid ${C.cardBorder}`, borderRadius: 14, padding: 14 }}>
-            {(crewEmployees.length > 0 ? crewEmployees : employees).map(emp => {
-              const isSelected = selectedMembers.some(m => m.id === emp.id)
-              return (
-                <div key={emp.id} tabIndex={0} role="button"
-                  onClick={() => toggleMember(emp)}
-                  onKeyDown={e => e.key === 'Enter' && toggleMember(emp)}
-                  style={{ padding: '12px 14px', borderRadius: 12, cursor: 'pointer', marginBottom: 6, outline: 'none',
-                    background: isSelected ? C.blueLight : C.card, border: `1.5px solid ${isSelected ? C.blueBorder : C.cardBorder}`,
-                    display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {emp.photo_filename ? (
-                    <img src={`/uploads/${emp.photo_filename}`} alt="" style={{ width: 40, height: 40, borderRadius: 20, objectFit: 'cover', border: `2px solid ${isSelected ? C.blue : C.cardBorder}` }} />
-                  ) : (
-                    <div style={{ width: 40, height: 40, borderRadius: 20, background: isSelected ? C.blue : '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#fff', fontWeight: 800 }}>
-                      {emp.first_name[0]}{emp.last_name[0]}
-                    </div>
-                  )}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{emp.first_name} {emp.last_name}</div>
-                    {emp.crew_name && <div style={{ fontSize: 12, color: C.textLight }}>{emp.crew_name}</div>}
-                  </div>
-                  <div style={{ width: 24, height: 24, borderRadius: 6, border: `2px solid ${isSelected ? C.blue : C.cardBorder}`, background: isSelected ? C.blue : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {isSelected && <span style={{ color: '#fff', fontSize: 14, fontWeight: 900 }}>✓</span>}
-                  </div>
-                </div>
-              )
-            })}
-            {employees.length === 0 && <div style={{ padding: 16, textAlign: 'center', color: C.textLight }}>No employees yet. Add them in the admin dashboard.</div>}
-            <button tabIndex={0} onClick={() => setShowMemberPicker(false)}
-              style={{ ...btnStyle(C.blue, '#fff', { fontSize: 14, marginTop: 8 }) }}>
-              Done ({selectedMembers.length} selected)
-            </button>
-          </div>
-        ) : (
-          <div tabIndex={0} role="button" onClick={() => setShowMemberPicker(true)} onKeyDown={e => e.key === 'Enter' && setShowMemberPicker(true)}
-            style={{ padding: 16, borderRadius: 14, border: `2px dashed ${C.blueBorder}`, textAlign: 'center', cursor: 'pointer', fontSize: 16, color: C.blue, fontWeight: 700, background: C.blueLight, outline: 'none' }}>
-            👷 {selectedMembers.length > 0 ? `${selectedMembers.length} Member${selectedMembers.length > 1 ? 's' : ''} Selected — Tap to Change` : 'Select Crew Members'}
-          </div>
-        )}
       </div>
 
       {/* Application Details */}
@@ -435,7 +360,7 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, o
 
         <div style={{ marginTop: 16 }}>
           <div style={labelStyle}>Photos / Attachments</div>
-          <input ref={fileInput} type="file" accept="image/*" multiple capture="environment" onChange={handlePhotos} style={{ display: 'none' }} />
+          <input ref={fileInput} type="file" accept="image/*" multiple onChange={handlePhotos} style={{ display: 'none' }} />
           {photoPreviews.length > 0 && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
               {photoPreviews.map((p, i) => (

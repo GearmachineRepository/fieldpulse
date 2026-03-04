@@ -301,15 +301,18 @@ app.post('/api/spray-logs/:id/photos', upload.array('photos', 10), async (req, r
 
 app.get('/api/spray-logs', async (req, res) => {
   try {
-    const { vehicleId, limit = 50 } = req.query
-    let where = '', params = []
-    if (vehicleId) { where = 'WHERE sl.vehicle_id = $1'; params.push(vehicleId) }
+    const { vehicleId, crewName, limit = 50 } = req.query
+    let where = [], params = []
+    if (vehicleId) { params.push(vehicleId); where.push(`sl.vehicle_id = $${params.length}`) }
+    if (crewName) { params.push(crewName); where.push(`sl.crew_name = $${params.length}`) }
+    const whereStr = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
+    params.push(limit)
     const result = await db.query(`
       SELECT sl.*,
         COALESCE((SELECT json_agg(json_build_object('id',slp.id,'chemicalName',slp.chemical_name,'epa',slp.epa,'amount',slp.amount)) FROM spray_log_products slp WHERE slp.spray_log_id=sl.id),'[]') as products,
         COALESCE((SELECT json_agg(json_build_object('id',ph.id,'filename',ph.filename,'originalName',ph.original_name)) FROM spray_log_photos ph WHERE ph.spray_log_id=sl.id),'[]') as photos,
         COALESCE((SELECT json_agg(json_build_object('id',sm.id,'employeeId',sm.employee_id,'name',sm.employee_name)) FROM spray_log_members sm WHERE sm.spray_log_id=sl.id),'[]') as members
-      FROM spray_logs sl ${where} ORDER BY sl.created_at DESC LIMIT $${params.length+1}`, [...params, limit])
+      FROM spray_logs sl ${whereStr} ORDER BY sl.created_at DESC LIMIT $${params.length}`, params)
 
     res.json(result.rows.map(row => ({
       id: row.id, crewName: row.crew_name, crewLead: row.crew_lead, license: row.license,
@@ -326,12 +329,181 @@ app.get('/api/spray-logs', async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Server error' }) }
 })
 
+app.delete('/api/spray-logs/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM spray_logs WHERE id = $1', [req.params.id])
+    res.json({ success: true })
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Failed to delete' }) }
+})
+
+// ── DAILY CREW ROSTERS ──
+app.post('/api/rosters', async (req, res) => {
+  const client = await db.connect()
+  try {
+    await client.query('BEGIN')
+    const { crewId, crewName, submittedById, submittedByName, workDate, members, notes } = req.body
+    const date = workDate || new Date().toISOString().split('T')[0]
+    // Upsert: delete existing roster for this crew+date
+    if (crewId) {
+      const existing = await client.query('SELECT id FROM daily_crew_rosters WHERE crew_id = $1 AND work_date = $2', [crewId, date])
+      for (const row of existing.rows) {
+        await client.query('DELETE FROM daily_roster_members WHERE roster_id = $1', [row.id])
+        await client.query('DELETE FROM daily_crew_rosters WHERE id = $1', [row.id])
+      }
+    }
+    const rosterR = await client.query(
+      `INSERT INTO daily_crew_rosters (crew_id, crew_name, submitted_by_id, submitted_by_name, work_date, notes) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, created_at`,
+      [crewId, crewName, submittedById, submittedByName, date, notes || null])
+    const rosterId = rosterR.rows[0].id
+    for (const m of members) {
+      await client.query('INSERT INTO daily_roster_members (roster_id, employee_id, employee_name, present) VALUES ($1,$2,$3,$4)',
+        [rosterId, m.id, m.name, m.present !== false])
+    }
+    await client.query('COMMIT')
+    res.json({ id: rosterId, createdAt: rosterR.rows[0].created_at })
+  } catch (e) { await client.query('ROLLBACK'); console.error(e); res.status(500).json({ error: 'Failed' }) }
+  finally { client.release() }
+})
+
+app.get('/api/rosters', async (req, res) => {
+  try {
+    const { crewId, date, limit = 50 } = req.query
+    let where = [], params = []
+    if (crewId) { params.push(crewId); where.push(`r.crew_id = $${params.length}`) }
+    if (date) { params.push(date); where.push(`r.work_date = $${params.length}`) }
+    const whereStr = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
+    params.push(limit)
+    const result = await db.query(`
+      SELECT r.*,
+        COALESCE((SELECT json_agg(json_build_object('id',m.id,'employeeId',m.employee_id,'name',m.employee_name,'present',m.present))
+          FROM daily_roster_members m WHERE m.roster_id=r.id),'[]') as members
+      FROM daily_crew_rosters r ${whereStr}
+      ORDER BY r.work_date DESC, r.created_at DESC
+      LIMIT $${params.length}`, params)
+    res.json(result.rows.map(row => ({
+      id: row.id, crewId: row.crew_id, crewName: row.crew_name,
+      submittedBy: row.submitted_by_name, workDate: row.work_date,
+      date: new Date(row.work_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      notes: row.notes,
+      members: (row.members || []).filter(m => m.id !== null),
+      createdAt: row.created_at,
+    })))
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Server error' }) }
+})
+
+app.get('/api/rosters/today', async (req, res) => {
+  try {
+    const { crewId } = req.query
+    const today = new Date().toISOString().split('T')[0]
+    let where = 'WHERE r.work_date = $1', params = [today]
+    if (crewId) { params.push(crewId); where += ` AND r.crew_id = $${params.length}` }
+    const result = await db.query(`
+      SELECT r.*,
+        COALESCE((SELECT json_agg(json_build_object('id',m.id,'employeeId',m.employee_id,'name',m.employee_name,'present',m.present))
+          FROM daily_roster_members m WHERE m.roster_id=r.id),'[]') as members
+      FROM daily_crew_rosters r ${where}
+      ORDER BY r.created_at DESC LIMIT 1`, params)
+    if (result.rows.length === 0) return res.json(null)
+    const row = result.rows[0]
+    res.json({
+      id: row.id, crewId: row.crew_id, crewName: row.crew_name,
+      submittedBy: row.submitted_by_name, workDate: row.work_date,
+      notes: row.notes,
+      members: (row.members || []).filter(m => m.id !== null),
+    })
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Server error' }) }
+})
+
+app.get('/api/rosters/attendance-today', async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    const crewsR = await db.query(`SELECT c.id, c.name, c.lead_name FROM crews c WHERE c.active = true ORDER BY c.name`)
+    const empsR = await db.query(`SELECT e.id, e.first_name, e.last_name, e.default_crew_id FROM employees e WHERE e.active = true`)
+    const rostersR = await db.query(`
+      SELECT r.crew_id, r.crew_name, r.submitted_by_name,
+        COALESCE((SELECT json_agg(json_build_object('employeeId',m.employee_id,'name',m.employee_name))
+          FROM daily_roster_members m WHERE m.roster_id=r.id),'[]') as members
+      FROM daily_crew_rosters r WHERE r.work_date = $1
+      ORDER BY r.created_at DESC`, [today])
+    // Latest roster per crew
+    const rosterByCrewId = {}
+    for (const r of rostersR.rows) { if (!rosterByCrewId[r.crew_id]) rosterByCrewId[r.crew_id] = r }
+    // Collect all rostered employee IDs
+    const rosteredIds = new Set()
+    const crewAttendance = crewsR.rows.map(crew => {
+      const roster = rosterByCrewId[crew.id]
+      if (!roster) return { crewId: crew.id, crewName: crew.name, submitted: false, memberCount: 0, members: [] }
+      const members = (roster.members || []).filter(m => m.employeeId !== null)
+      members.forEach(m => rosteredIds.add(m.employeeId))
+      return { crewId: crew.id, crewName: crew.name, submitted: true, submittedBy: roster.submitted_by_name,
+        memberCount: members.length, members: members.map(m => m.name) }
+    })
+    // Find employees not on any roster today
+    const unrostered = empsR.rows.filter(e => !rosteredIds.has(e.id)).map(e => ({
+      id: e.id, name: `${e.first_name} ${e.last_name}`,
+      defaultCrew: crewsR.rows.find(c => c.id === e.default_crew_id)?.name || null,
+    }))
+    res.json({ crews: crewAttendance, unrostered, totalWorking: rosteredIds.size, totalEmployees: empsR.rows.length })
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Server error' }) }
+})
+
+app.delete('/api/rosters/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM daily_roster_members WHERE roster_id = $1', [req.params.id])
+    await db.query('DELETE FROM daily_crew_rosters WHERE id = $1', [req.params.id])
+    res.json({ success: true })
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Failed' }) }
+})
+
+app.get('/api/reports/rosters', async (req, res) => {
+  try {
+    const { start, end } = req.query
+    if (!start || !end) return res.status(400).json({ error: 'start and end required' })
+    const result = await db.query(`
+      SELECT r.id, r.crew_name, r.submitted_by_name, r.work_date, r.notes,
+        COALESCE((SELECT json_agg(json_build_object('employeeId',m.employee_id,'name',m.employee_name,'present',m.present))
+          FROM daily_roster_members m WHERE m.roster_id=r.id),'[]') as members
+      FROM daily_crew_rosters r
+      WHERE r.work_date >= $1 AND r.work_date < $2
+      ORDER BY r.work_date DESC, r.crew_name`, [start, end])
+    // Summarize by crew
+    const byCrewDate = {}
+    for (const row of result.rows) {
+      const key = row.crew_name
+      if (!byCrewDate[key]) byCrewDate[key] = { crewName: key, daysWorked: 0, totalMembers: new Set(), totalAbsences: 0, rosters: [] }
+      byCrewDate[key].daysWorked++
+      const members = (row.members || []).filter(m => m.employeeId !== null)
+      const presentMembers = members.filter(m => m.present !== false)
+      const absentMembers = members.filter(m => m.present === false)
+      presentMembers.forEach(m => byCrewDate[key].totalMembers.add(m.name))
+      byCrewDate[key].totalAbsences += absentMembers.length
+      byCrewDate[key].rosters.push({
+        date: new Date(row.work_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        lead: row.submitted_by_name,
+        memberCount: presentMembers.length,
+        absentCount: absentMembers.length,
+        members: presentMembers.map(m => m.name),
+        absent: absentMembers.map(m => m.name),
+      })
+    }
+    const crews = Object.values(byCrewDate).map(c => ({
+      ...c, totalMembers: c.totalMembers.size,
+    }))
+    res.json({ start, end, totalRosters: result.rows.length, crews })
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Failed' }) }
+})
+
 // ── PUR REPORT ──
 app.get('/api/reports/pur', async (req, res) => {
   try {
-    const { month, year } = req.query
-    const start = `${year}-${String(month).padStart(2,'0')}-01`
-    const end = new Date(year, month, 1).toISOString().split('T')[0]
+    const { month, year, start: startParam, end: endParam } = req.query
+    let start, end
+    if (startParam && endParam) {
+      start = startParam; end = endParam
+    } else {
+      start = `${year}-${String(month).padStart(2,'0')}-01`
+      end = new Date(year, month, 1).toISOString().split('T')[0]
+    }
     const result = await db.query(`SELECT slp.chemical_name,slp.epa,slp.amount,sl.created_at,sl.crew_name,sl.property
       FROM spray_log_products slp JOIN spray_logs sl ON sl.id=slp.spray_log_id
       WHERE sl.created_at>=$1 AND sl.created_at<$2 ORDER BY slp.chemical_name`, [start, end])

@@ -5,6 +5,7 @@ import { getSimulatedWeather, getWeatherByCoords } from './lib/weather.js'
 import Sidebar from './components/Sidebar.jsx'
 import SprayTracker from './pages/SprayTracker.jsx'
 import FieldHome from './pages/FieldHome.jsx'
+import CrewPage from './pages/CrewPage.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 
 // ═══════════════════════════════════════════
@@ -58,7 +59,7 @@ function LoginScreen({ onCrewLogin, onAdminLogin }) {
   const items = admins
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT, padding: 24 }}>
+    <div data-login style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT, padding: 24 }}>
       <div style={{ width: '100%', maxWidth: mode === 'crew' ? 440 : 380 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 4, color: C.accent, fontWeight: 800, marginBottom: 4 }}>{APP.name}</div>
@@ -104,9 +105,9 @@ function LoginScreen({ onCrewLogin, onAdminLogin }) {
                               onClick={() => { setSelectedCrew(crew); setError(null) }}
                               onKeyDown={e => { if (e.key === 'Enter') { setSelectedCrew(crew); setError(null) } }}
                               style={{
-                                padding: '16px 18px', borderRadius: 14, cursor: 'pointer', outline: 'none',
+                                padding: '16px 18px', borderRadius: 14, cursor: 'pointer',
                                 background: '#FAFAF7', border: `2px solid ${C.cardBorder}`,
-                                transition: 'border-color 0.15s',
+                                transition: 'border-color 0.15s', outline: 'none',
                               }}
                               onMouseEnter={e => e.currentTarget.style.borderColor = C.blue}
                               onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
@@ -306,13 +307,22 @@ export default function App() {
 
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 2500) }
 
+  // Helper to get the right spray log filter params
+  const getLogParams = () => {
+    if (admin) return {} // admin sees all
+    if (vehicle?.id) return { vehicleId: vehicle.id }
+    if (loggedInCrew?.name) return { crewName: loggedInCrew.name }
+    return {}
+  }
+
   useEffect(() => {
     if (!vehicle && !admin && !loggedInEmployee) return
     ;(async () => {
       try {
+        const logParams = admin ? {} : (vehicle?.id ? { vehicleId: vehicle.id } : (loggedInCrew?.name ? { crewName: loggedInCrew.name } : {}))
         const [chems, equip, crewList, empList, sprayLogs] = await Promise.all([
           getChemicals(), getEquipment(), getCrews(), getEmployees(),
-          vehicle ? getSprayLogs(vehicle.id) : getSprayLogs(),
+          getSprayLogs(logParams),
         ])
         setChemicals(chems); setEquipment(equip); setCrews(crewList); setEmployees(empList); setLogs(sprayLogs)
         setDataLoaded(true)
@@ -344,7 +354,7 @@ export default function App() {
   const handleSubmitLog = async (logData) => {
     try {
       await createSprayLog({ vehicleId: vehicle?.id || null, ...logData })
-      setLogs(await getSprayLogs(vehicle?.id))
+      setLogs(await getSprayLogs(getLogParams()))
       showToast('Spray log submitted & saved ✓'); return true
     } catch { showToast('Failed to save'); return false }
   }
@@ -355,7 +365,7 @@ export default function App() {
     try {
       const [chems, equip, crewList, empList] = await Promise.all([getChemicals(), getEquipment(), getCrews(), getEmployees()])
       setChemicals(chems); setEquipment(equip); setCrews(crewList); setEmployees(empList)
-      if (isAdmin) setLogs(await getSprayLogs())
+      setLogs(await getSprayLogs(getLogParams()))
     } catch (e) { console.error(e) }
   }
 
@@ -365,7 +375,7 @@ export default function App() {
   const displaySub = loggedInCrew?.name || (!isAdmin && effectiveVehicle?.crewName) || ''
 
   const pageTitle = isAdmin
-    ? { 'admin-home': 'Dashboard', 'admin-spraylogs': 'Spray Logs', 'admin-vehicles': 'Vehicles', 'admin-crews': 'Crews', 'admin-chemicals': 'Chemicals', 'admin-equipment': 'Equipment', 'admin-employees': 'Employees' }[page] || 'Dashboard'
+    ? { 'admin-home': 'Dashboard', 'admin-spraylogs': 'Spray Logs', 'admin-rosters': 'Crew Rosters', 'admin-vehicles': 'Vehicles', 'admin-crews': 'Crews', 'admin-chemicals': 'Chemicals', 'admin-equipment': 'Equipment', 'admin-employees': 'Employees' }[page] || 'Dashboard'
     : { 'home': 'Home', 'spray': 'Spray Tracker' }[page] || page.charAt(0).toUpperCase() + page.slice(1)
 
   return (
@@ -404,20 +414,26 @@ export default function App() {
         </div>
 
         {isAdmin && (
-          <div style={{ display: 'flex', overflowX: 'auto', gap: 2, paddingBottom: 8 }}>
-            {[
-              { k: 'admin-home', l: '🏠 Home' }, { k: 'admin-spraylogs', l: '📋 Spray Logs' },
-              { k: 'admin-vehicles', l: '🚛 Vehicles' }, { k: 'admin-crews', l: '👥 Crews' },
-              { k: 'admin-employees', l: '👷 Employees' }, { k: 'admin-chemicals', l: '🧪 Chemicals' },
-              { k: 'admin-equipment', l: '🔧 Equipment' },
-            ].map(t => (
-              <div key={t.k} tabIndex={0} role="button" onClick={() => setPage(t.k)}
-                onKeyDown={e => e.key === 'Enter' && setPage(t.k)}
-                style={{ padding: '8px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', outline: 'none',
-                  background: page === t.k ? C.sidebar : 'transparent', color: page === t.k ? '#fff' : C.textLight, transition: 'all 0.15s' }}>
-                {t.l}
-              </div>
-            ))}
+          <div style={{ paddingBottom: 8 }}>
+            <select value={page} onChange={e => setPage(e.target.value)}
+              style={{
+                width: '100%', padding: '12px 16px', borderRadius: 12, fontSize: 14, fontWeight: 700,
+                background: C.sidebar, color: '#fff', border: `1.5px solid rgba(255,255,255,0.15)`,
+                cursor: 'pointer', outline: 'none', appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center',
+              }}>
+              {[
+                { k: 'admin-home', l: '🏠  Home' },
+                { k: 'admin-spraylogs', l: '📋  Spray Logs' },
+                { k: 'admin-rosters', l: '👷  Crew Rosters' },
+                { k: 'admin-vehicles', l: '🚛  Vehicles' },
+                { k: 'admin-crews', l: '👥  Crews' },
+                { k: 'admin-employees', l: '👤  Employees' },
+                { k: 'admin-chemicals', l: '🧪  Chemicals' },
+                { k: 'admin-equipment', l: '🔧  Equipment' },
+              ].map(t => <option key={t.k} value={t.k}>{t.l}</option>)}
+            </select>
           </div>
         )}
       </div>
@@ -427,13 +443,17 @@ export default function App() {
           <FieldHome vehicle={effectiveVehicle || { name: displayName, crewName: displaySub }} weather={weather} logs={logs} employees={employees} crews={crews} onNav={setPage}
             loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
         )}
+        {!isAdmin && page === 'crew' && (
+          <CrewPage employees={employees} crews={crews} loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew}
+            vehicle={effectiveVehicle} showToast={showToast} />
+        )}
         {!isAdmin && page === 'spray' && (
-          <SprayTracker vehicle={effectiveVehicle || { name: displayName, crewName: displaySub }} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees}
+          <SprayTracker vehicle={effectiveVehicle || { name: displayName, crewName: displaySub }} chemicals={chemicals} equipment={equipment} crews={crews}
             logs={logs} weather={weather} onRefreshWeather={fetchWeather} onSubmitLog={handleSubmitLog}
-            onLogsUpdated={async () => setLogs(await getSprayLogs(effectiveVehicle?.id))}
+            onLogsUpdated={async () => setLogs(await getSprayLogs(getLogParams()))}
             loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
         )}
-        {!isAdmin && page !== 'spray' && page !== 'home' && (
+        {!isAdmin && page !== 'spray' && page !== 'home' && page !== 'crew' && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
             <div><div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div><div style={{ fontSize: 22, fontWeight: 900 }}>Coming Soon</div></div>
           </div>
@@ -455,6 +475,7 @@ export default function App() {
         input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 0px; border-radius: 12px; }
         button:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; }
         [role="button"]:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; }
+        [data-login] [role="button"]:focus-visible { outline: none !important; }
       `}</style>
     </div>
   )
