@@ -1,14 +1,13 @@
 {
   "name": "fieldpulse",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "vite",
     "dev:server": "node --watch server/index.js",
     "build": "vite build",
-    "preview": "vite preview",
     "db:setup": "node server/setupDb.js"
   },
   "dependencies": {
@@ -18,7 +17,8 @@
     "pg": "^8.11.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
