@@ -50,7 +50,7 @@ app.post('/api/auth/crew-login', async (req, res) => {
   try {
     const { employeeId, pin } = req.body
     const r = await db.query(
-      `SELECT e.id, e.first_name, e.last_name, e.license_number, e.pin_hash, e.is_crew_lead, e.default_crew_id,
+      `SELECT e.id, e.first_name, e.last_name, e.license_number, e.cert_number, e.pin_hash, e.is_crew_lead, e.default_crew_id,
               c.name as crew_name, c.lead_name,
               v.id as vehicle_id, v.name as vehicle_name
        FROM employees e
@@ -62,7 +62,7 @@ app.post('/api/auth/crew-login', async (req, res) => {
     if (!emp.pin_hash) return res.status(401).json({ error: 'No PIN set for this employee' })
     if (!(await bcrypt.compare(pin, emp.pin_hash))) return res.status(401).json({ error: 'Invalid PIN' })
     res.json({
-      employee: { id: emp.id, firstName: emp.first_name, lastName: emp.last_name, license: emp.license_number, isCrewLead: emp.is_crew_lead },
+      employee: { id: emp.id, firstName: emp.first_name, lastName: emp.last_name, license: emp.license_number, certNumber: emp.cert_number, isCrewLead: emp.is_crew_lead },
       crew: emp.default_crew_id ? { id: emp.default_crew_id, name: emp.crew_name } : null,
       vehicle: emp.vehicle_id ? { id: emp.vehicle_id, name: emp.vehicle_name } : null,
     })
@@ -158,44 +158,33 @@ app.get('/api/employees', async (req, res) => {
     const r = await db.query(`SELECT e.*, c.name as crew_name,
       CASE WHEN e.pin_hash IS NOT NULL THEN true ELSE false END as has_pin
       FROM employees e LEFT JOIN crews c ON c.id = e.default_crew_id WHERE e.active=true ORDER BY e.last_name, e.first_name`)
-    res.json(r.rows)
+    res.json(r.rows.map(row => ({ ...row, cert_number: row.cert_number || null })))
   } catch (e) { console.error(e); res.status(500).json({ error: 'Server error' }) }
 })
 
 app.post('/api/employees', upload.single('photo'), async (req, res) => {
   try {
-    const { firstName, lastName, phone, licenseNumber, defaultCrewId, pin, isCrewLead } = req.body
+    const { firstName, lastName, phone, licenseNumber, certNumber, defaultCrewId, pin, isCrewLead } = req.body
     const photoFilename = req.file ? req.file.filename : null
     const pinHash = pin ? await bcrypt.hash(pin, 10) : null
     const r = await db.query(
-      'INSERT INTO employees (first_name,last_name,phone,license_number,photo_filename,pin_hash,is_crew_lead,default_crew_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-      [firstName, lastName, phone, licenseNumber, photoFilename, pinHash, isCrewLead === 'true' || isCrewLead === true, defaultCrewId || null])
+      'INSERT INTO employees (first_name,last_name,phone,license_number,cert_number,photo_filename,pin_hash,is_crew_lead,default_crew_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
+      [firstName, lastName, phone, licenseNumber, certNumber || null, photoFilename, pinHash, isCrewLead === 'true' || isCrewLead === true, defaultCrewId || null])
     res.json(r.rows[0])
   } catch (e) { console.error(e); res.status(500).json({ error: 'Failed' }) }
 })
 
 app.put('/api/employees/:id', upload.single('photo'), async (req, res) => {
   try {
-    const { firstName, lastName, phone, licenseNumber, defaultCrewId, pin, isCrewLead } = req.body
+    const { firstName, lastName, phone, licenseNumber, certNumber, defaultCrewId, pin, isCrewLead } = req.body
     const lead = isCrewLead === 'true' || isCrewLead === true
-    if (pin) {
-      const pinHash = await bcrypt.hash(pin, 10)
-      if (req.file) {
-        await db.query('UPDATE employees SET first_name=$1,last_name=$2,phone=$3,license_number=$4,photo_filename=$5,pin_hash=$6,is_crew_lead=$7,default_crew_id=$8 WHERE id=$9',
-          [firstName, lastName, phone, licenseNumber, req.file.filename, pinHash, lead, defaultCrewId || null, req.params.id])
-      } else {
-        await db.query('UPDATE employees SET first_name=$1,last_name=$2,phone=$3,license_number=$4,pin_hash=$5,is_crew_lead=$6,default_crew_id=$7 WHERE id=$8',
-          [firstName, lastName, phone, licenseNumber, pinHash, lead, defaultCrewId || null, req.params.id])
-      }
-    } else {
-      if (req.file) {
-        await db.query('UPDATE employees SET first_name=$1,last_name=$2,phone=$3,license_number=$4,photo_filename=$5,is_crew_lead=$6,default_crew_id=$7 WHERE id=$8',
-          [firstName, lastName, phone, licenseNumber, req.file.filename, lead, defaultCrewId || null, req.params.id])
-      } else {
-        await db.query('UPDATE employees SET first_name=$1,last_name=$2,phone=$3,license_number=$4,is_crew_lead=$5,default_crew_id=$6 WHERE id=$7',
-          [firstName, lastName, phone, licenseNumber, lead, defaultCrewId || null, req.params.id])
-      }
-    }
+    const sets = ['first_name=$1', 'last_name=$2', 'phone=$3', 'license_number=$4', 'cert_number=$5', 'is_crew_lead=$6', 'default_crew_id=$7']
+    const params = [firstName, lastName, phone, licenseNumber, certNumber || null, lead, defaultCrewId || null]
+    let idx = params.length
+    if (pin) { idx++; sets.push(`pin_hash=$${idx}`); params.push(await bcrypt.hash(pin, 10)) }
+    if (req.file) { idx++; sets.push(`photo_filename=$${idx}`); params.push(req.file.filename) }
+    idx++; params.push(req.params.id)
+    await db.query(`UPDATE employees SET ${sets.join(',')} WHERE id=$${idx}`, params)
     res.json({ success: true })
   } catch (e) { console.error(e); res.status(500).json({ error: 'Failed' }) }
 })

@@ -81,6 +81,7 @@ async function setup() {
       await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_rosters_crew ON daily_crew_rosters(crew_id)')
       await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_roster_members_roster ON daily_roster_members(roster_id)')
       await pool.query('ALTER TABLE daily_roster_members ADD COLUMN IF NOT EXISTS present BOOLEAN DEFAULT true')
+      await pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS cert_number VARCHAR(100)')
     } catch { /* tables/columns already exist */ }
 
     // Create uploads directory

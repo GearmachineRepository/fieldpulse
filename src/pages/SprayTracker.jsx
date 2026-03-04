@@ -38,7 +38,7 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, weather, onRefresh, o
   const crewName = useCustomCrew ? customCrewName : crewSelect
 
   const [crewLead, setCrewLead] = useState(loggedInEmployee ? `${loggedInEmployee.firstName} ${loggedInEmployee.lastName}` : '')
-  const [license, setLicense] = useState(loggedInEmployee?.license || '')
+  const [license, setLicense] = useState(loggedInEmployee?.certNumber || loggedInEmployee?.license || '')
   const [property, setProperty] = useState('')
   const [locMode, setLocMode] = useState('none')
   const [gps, setGps] = useState(null)
@@ -225,7 +225,7 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, weather, onRefresh, o
             {errMsg('crewLead')}
           </div>
         </div>
-        <div style={labelStyle}>Business License / Cert #<Req /></div>
+        <div style={labelStyle}>Applicator Cert #<Req /></div>
         <input value={license} onChange={e => { setLicense(e.target.value); setErrors(er => ({ ...er, license: undefined })) }} placeholder="e.g. QAL-48271" style={inputStyle(errBorder('license'))} />
         {errMsg('license')}
       </div>
@@ -427,7 +427,7 @@ function HistoryTab({ logs }) {
           {expanded === log.id && (
             <div style={{ background: '#FAFAF7', border: `1.5px solid ${C.cardBorder}`, borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '16px 18px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-                {[{ l: 'Crew', v: log.crewName }, { l: 'Crew Lead', v: log.crewLead }, { l: 'License', v: log.license }, { l: 'Equipment', v: log.equipment },
+                {[{ l: 'Crew', v: log.crewName }, { l: 'Crew Lead', v: log.crewLead }, { l: 'Cert #', v: log.license }, { l: 'Equipment', v: log.equipment },
                   { l: 'Mix Volume', v: log.totalMixVol }, { l: 'Location', v: log.location }, { l: 'Target Pest', v: log.targetPest }].map(f => (
                   <div key={f.l}><div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{f.l}</div>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{f.v || '—'}</div></div>
@@ -493,8 +493,9 @@ function SdsTab({ chemicals }) {
       { key: 'windSpeed', icon: '💨', label: 'Wind Speed', rule: r.windSpeed }, { key: 'conditions', icon: '☁️', label: 'Sky / Conditions', rule: r.conditions }]
     return (
       <div>
-        <button tabIndex={0} onClick={() => setSel(null)} style={{ fontSize: 15, color: C.accent, cursor: 'pointer', marginBottom: 14, fontWeight: 700, background: 'none', border: 'none', padding: 0 }}>← Back</button>
-        <div style={{ ...cardStyle(), background: sig.bg, borderColor: sig.border, padding: 20 }}>
+        <div tabIndex={0} role="button" onClick={() => setSel(null)} onKeyDown={e => e.key === 'Enter' && setSel(null)}
+          style={{ ...cardStyle({ cursor: 'pointer' }), background: sig.bg, borderColor: sig.border, padding: 20, outline: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, fontSize: 13, fontWeight: 700, color: C.accent }}>← Back to SDS Library</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div><div style={{ fontSize: 22, fontWeight: 900 }}>{sel.name}</div><div style={{ fontSize: 14, color: C.textMed, marginTop: 2 }}>{sel.type}</div></div>
             <span style={{ fontSize: 13, padding: '5px 14px', borderRadius: 8, background: `${sig.badge}20`, color: sig.badge, fontWeight: 900, textTransform: 'uppercase', border: `2px solid ${sig.badge}40` }}>{sel.signal}</span>

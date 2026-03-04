@@ -352,7 +352,7 @@ function AllLogsView({ logs, showToast, onRefresh }) {
           {expanded === log.id && (
             <div style={{ background: '#FAFAF7', border: `1.5px solid ${C.cardBorder}`, borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '16px 18px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-                {[{ l: 'Crew', v: log.crewName }, { l: 'Crew Lead', v: log.crewLead }, { l: 'License', v: log.license }, { l: 'Equipment', v: log.equipment },
+                {[{ l: 'Crew', v: log.crewName }, { l: 'Crew Lead', v: log.crewLead }, { l: 'Cert #', v: log.license }, { l: 'Equipment', v: log.equipment },
                   { l: 'Mix Volume', v: log.totalMixVol }, { l: 'Location', v: log.location }, { l: 'Target Pest', v: log.targetPest }].map(f => (
                   <div key={f.l}><div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{f.l}</div>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{f.v || '—'}</div></div>
@@ -990,6 +990,7 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
   const [licenseNum, setLicenseNum] = useState('')
+  const [certNum, setCertNum] = useState('')
   const [crewId, setCrewId] = useState('')
   const [empPin, setEmpPin] = useState('')
   const [isCrewLead, setIsCrewLead] = useState(false)
@@ -1001,13 +1002,14 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
     if (emp) {
       setEditItem(emp); setFirstName(emp.first_name); setLastName(emp.last_name)
       setPhone(emp.phone || ''); setLicenseNum(emp.license_number || '')
+      setCertNum(emp.cert_number || '')
       setCrewId(emp.default_crew_id ? String(emp.default_crew_id) : '')
       setPhotoPreview(emp.photo_filename ? `/uploads/${emp.photo_filename}` : null)
       setIsCrewLead(emp.is_crew_lead || false)
       setEmpPin('')
     } else {
       setEditItem(null); setFirstName(''); setLastName(''); setPhone('')
-      setLicenseNum(''); setCrewId(''); setPhotoPreview(null)
+      setLicenseNum(''); setCertNum(''); setCrewId(''); setPhotoPreview(null)
       setIsCrewLead(false); setEmpPin('')
     }
     setPhotoFile(null); setShowForm(true)
@@ -1022,7 +1024,7 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
   const save = async () => {
     if (!firstName.trim() || !lastName.trim()) return; setSaving(true)
     try {
-      const data = { firstName, lastName, phone, licenseNumber: licenseNum, defaultCrewId: crewId || null, isCrewLead: isCrewLead }
+      const data = { firstName, lastName, phone, licenseNumber: licenseNum, certNumber: certNum, defaultCrewId: crewId || null, isCrewLead: isCrewLead }
       if (empPin) data.pin = empPin
       if (editItem) await updateEmployee(editItem.id, data, photoFile)
       else await createEmployee(data, photoFile)
@@ -1061,7 +1063,7 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
                 {emp.is_crew_lead && <span style={{ fontSize: 11, color: C.blue, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: C.blueLight }}>Lead</span>}
               </div>
               <div style={{ fontSize: 13, color: C.textLight, marginTop: 2 }}>
-                {emp.crew_name || 'No crew'}{emp.license_number ? ` · ${emp.license_number}` : ''}{emp.phone ? ` · ${emp.phone}` : ''}
+                {emp.crew_name || 'No crew'}{emp.cert_number ? ` · Cert: ${emp.cert_number}` : ''}{emp.phone ? ` · ${emp.phone}` : ''}
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
@@ -1097,24 +1099,29 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
             <Field label="Last Name" value={lastName} onChange={setLastName} placeholder="e.g. Martinez" required />
           </div>
           <Field label="Phone" value={phone} onChange={setPhone} placeholder="e.g. (555) 123-4567" />
-          <Field label="License / Cert #" value={licenseNum} onChange={setLicenseNum} placeholder="e.g. QAL-48271" />
+          <Field label="Driver's License #" value={licenseNum} onChange={setLicenseNum} placeholder="e.g. D1234567" />
+          <Field label="Applicator Cert #" value={certNum} onChange={setCertNum} placeholder="e.g. QAL-48271" />
           <div style={{ marginBottom: 14 }}>
-            <div style={labelStyle}>
-              Login PIN
-              {editItem && (
-                <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6,
-                  background: editItem.has_pin ? C.accentLight : '#FFF5F5',
-                  color: editItem.has_pin ? C.accent : C.red }}>
-                  {editItem.has_pin ? 'Currently set ✓' : 'Not set'}
-                </span>
-              )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={labelStyle}>
+                Login PIN
+                {editItem && (
+                  <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6,
+                    background: editItem.has_pin ? C.accentLight : '#FFF5F5',
+                    color: editItem.has_pin ? C.accent : C.red }}>
+                    {editItem.has_pin ? 'Set ✓' : 'Not set'}
+                  </span>
+                )}
+              </div>
             </div>
             <input value={empPin} onChange={e => setEmpPin(e.target.value.replace(/\D/g, ''))}
-              placeholder={editItem ? 'Enter new PIN to change' : '4-6 digit PIN'}
+              placeholder={editItem?.has_pin ? 'Enter new PIN to reset' : '4-6 digit PIN'}
               maxLength={6} inputMode="numeric" type="password"
               style={inputStyle({ letterSpacing: 4, fontSize: 18, fontWeight: 700 })} />
             <div style={{ fontSize: 12, color: C.textLight, marginTop: 4 }}>
-              {isCrewLead ? 'Required for crew lead login' : 'Only needed if this employee is a crew lead'}
+              {editItem?.has_pin
+                ? 'Leave blank to keep current PIN. Enter a new PIN to reset it.'
+                : isCrewLead ? 'Required for crew lead login' : 'Only needed if this employee is a crew lead'}
             </div>
           </div>
           <div style={{ marginBottom: 14 }}>

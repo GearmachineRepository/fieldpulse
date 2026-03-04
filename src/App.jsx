@@ -59,7 +59,7 @@ function LoginScreen({ onCrewLogin, onAdminLogin }) {
   const items = admins
 
   return (
-    <div data-login style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT, padding: 24 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT, padding: 24 }}>
       <div style={{ width: '100%', maxWidth: mode === 'crew' ? 440 : 380 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 4, color: C.accent, fontWeight: 800, marginBottom: 4 }}>{APP.name}</div>
@@ -475,7 +475,7 @@ export default function App() {
         input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 0px; border-radius: 12px; }
         button:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; }
         [role="button"]:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; }
-        [data-login] [role="button"]:focus-visible { outline: none !important; }
+        [role="button"]:focus:not(:focus-visible) { outline: none !important; }
       `}</style>
     </div>
   )

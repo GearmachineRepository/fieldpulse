@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS employees (
   last_name VARCHAR(100) NOT NULL,
   phone VARCHAR(30),
   license_number VARCHAR(100),
+  cert_number VARCHAR(100),
   photo_filename VARCHAR(255),
   pin_hash VARCHAR(255),
   is_crew_lead BOOLEAN DEFAULT false,
