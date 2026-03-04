@@ -1,61 +1,69 @@
 const BASE = '/api'
-
-async function request(path, options = {}) {
-  try {
-    const res = await fetch(`${BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json' },
-      ...options,
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'Request failed' }))
-      throw new Error(err.error || `HTTP ${res.status}`)
-    }
-    return await res.json()
-  } catch (err) { console.error(`API ${path}:`, err.message); throw err }
+async function request(path, opts = {}) {
+  const res = await fetch(`${BASE}${path}`, { headers: { 'Content-Type': 'application/json' }, ...opts })
+  if (!res.ok) { const e = await res.json().catch(() => ({ error: 'Failed' })); throw new Error(e.error) }
+  return res.json()
 }
 
 // Auth
 export const verifyPin = (vehicleId, pin) => request('/auth/verify-pin', { method: 'POST', body: JSON.stringify({ vehicleId, pin }) })
 export const verifyAdminPin = (adminId, pin) => request('/auth/admin-pin', { method: 'POST', body: JSON.stringify({ adminId, pin }) })
 export const getAdminsList = () => request('/admins/list')
+
+// Vehicles
 export const getVehicles = () => request('/vehicles')
-
-// CRUD helpers
-export const getEquipment = () => request('/equipment')
-export const createEquipment = (data) => request('/equipment', { method: 'POST', body: JSON.stringify(data) })
-export const updateEquipment = (id, data) => request(`/equipment/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-export const deleteEquipment = (id) => request(`/equipment/${id}`, { method: 'DELETE' })
-
-export const getChemicals = () => request('/chemicals')
-export const createChemical = (data) => request('/chemicals', { method: 'POST', body: JSON.stringify(data) })
-export const updateChemical = (id, data) => request(`/chemicals/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-export const deleteChemical = (id) => request(`/chemicals/${id}`, { method: 'DELETE' })
-
-export const getCrews = () => request('/crews')
-export const createCrew = (data) => request('/crews', { method: 'POST', body: JSON.stringify(data) })
-export const updateCrew = (id, data) => request(`/crews/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-export const deleteCrew = (id) => request(`/crews/${id}`, { method: 'DELETE' })
-
-export const createVehicle = (data) => request('/vehicles', { method: 'POST', body: JSON.stringify(data) })
-export const updateVehicle = (id, data) => request(`/vehicles/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const createVehicle = (d) => request('/vehicles', { method: 'POST', body: JSON.stringify(d) })
+export const updateVehicle = (id, d) => request(`/vehicles/${id}`, { method: 'PUT', body: JSON.stringify(d) })
 export const deleteVehicle = (id) => request(`/vehicles/${id}`, { method: 'DELETE' })
 
-// Spray logs
-export const createSprayLog = (data) => request('/spray-logs', { method: 'POST', body: JSON.stringify(data) })
-export const getSprayLogs = (vehicleId) => request(`/spray-logs${vehicleId ? `?vehicleId=${vehicleId}` : ''}`)
-export const getAllSprayLogs = () => request('/spray-logs?limit=500')
+// Crews
+export const getCrews = () => request('/crews')
+export const createCrew = (d) => request('/crews', { method: 'POST', body: JSON.stringify(d) })
+export const updateCrew = (id, d) => request(`/crews/${id}`, { method: 'PUT', body: JSON.stringify(d) })
+export const deleteCrew = (id) => request(`/crews/${id}`, { method: 'DELETE' })
 
-// Photos (multipart — no JSON header)
-export const uploadPhotos = async (logId, files) => {
-  const formData = new FormData()
-  files.forEach(f => formData.append('photos', f))
-  const res = await fetch(`${BASE}/spray-logs/${logId}/photos`, { method: 'POST', body: formData })
-  if (!res.ok) throw new Error('Upload failed')
+// Employees (multipart for photo)
+export const getEmployees = () => request('/employees')
+export const createEmployee = async (data, photoFile) => {
+  const fd = new FormData()
+  Object.entries(data).forEach(([k, v]) => { if (v != null) fd.append(k, v) })
+  if (photoFile) fd.append('photo', photoFile)
+  const res = await fetch(`${BASE}/employees`, { method: 'POST', body: fd })
+  if (!res.ok) throw new Error('Failed')
   return res.json()
 }
+export const updateEmployee = async (id, data, photoFile) => {
+  const fd = new FormData()
+  Object.entries(data).forEach(([k, v]) => { if (v != null) fd.append(k, v) })
+  if (photoFile) fd.append('photo', photoFile)
+  const res = await fetch(`${BASE}/employees/${id}`, { method: 'PUT', body: fd })
+  if (!res.ok) throw new Error('Failed')
+  return res.json()
+}
+export const deleteEmployee = (id) => request(`/employees/${id}`, { method: 'DELETE' })
 
-// PUR Report
-export const getPurReport = (month, year) => request(`/reports/pur?month=${month}&year=${year}`)
+// Equipment
+export const getEquipment = () => request('/equipment')
+export const createEquipment = (d) => request('/equipment', { method: 'POST', body: JSON.stringify(d) })
+export const updateEquipment = (id, d) => request(`/equipment/${id}`, { method: 'PUT', body: JSON.stringify(d) })
+export const deleteEquipment = (id) => request(`/equipment/${id}`, { method: 'DELETE' })
 
-// Health
+// Chemicals
+export const getChemicals = () => request('/chemicals')
+export const createChemical = (d) => request('/chemicals', { method: 'POST', body: JSON.stringify(d) })
+export const updateChemical = (id, d) => request(`/chemicals/${id}`, { method: 'PUT', body: JSON.stringify(d) })
+export const deleteChemical = (id) => request(`/chemicals/${id}`, { method: 'DELETE' })
+
+// Spray logs
+export const createSprayLog = (d) => request('/spray-logs', { method: 'POST', body: JSON.stringify(d) })
+export const getSprayLogs = (vehicleId) => request(`/spray-logs${vehicleId ? `?vehicleId=${vehicleId}` : ''}`)
+export const getAllSprayLogs = () => request('/spray-logs?limit=500')
+export const uploadPhotos = async (logId, files) => {
+  const fd = new FormData(); files.forEach(f => fd.append('photos', f))
+  const res = await fetch(`${BASE}/spray-logs/${logId}/photos`, { method: 'POST', body: fd })
+  if (!res.ok) throw new Error('Upload failed'); return res.json()
+}
+
+// Reports
+export const getPurReport = (m, y) => request(`/reports/pur?month=${m}&year=${y}`)
 export const checkHealth = () => request('/health')
