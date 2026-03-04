@@ -1,14 +1,16 @@
 import { C, cardStyle, labelStyle, btnStyle } from '../config.js'
 import WindCompass from '../components/WindCompass.jsx'
 
-export default function FieldHome({ vehicle, weather, logs, employees, crews, onNav }) {
+export default function FieldHome({ vehicle, weather, logs, employees, crews, onNav, loggedInEmployee, loggedInCrew }) {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
   const windHigh = weather.windSpeed > 10
   const todaysLogs = logs.filter(l => l.date === new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))
 
   // Get crew members for this vehicle's crew
-  const crewObj = crews.find(c => c.name === vehicle.crewName)
+  const crewObj = loggedInCrew ? crews.find(c => c.name === loggedInCrew.name) : crews.find(c => c.name === vehicle.crewName)
   const crewMembers = crewObj ? employees.filter(e => e.default_crew_id === crewObj.id) : []
+
+  const greetingName = loggedInEmployee ? loggedInEmployee.firstName : (vehicle.crewName || vehicle.name)
 
   return (
     <div>
@@ -16,7 +18,7 @@ export default function FieldHome({ vehicle, weather, logs, employees, crews, on
       <div style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 14, color: C.textLight, fontWeight: 600 }}>{today}</div>
         <div style={{ fontSize: 24, fontWeight: 900, color: C.text, marginTop: 2 }}>
-          {getGreeting()}, {vehicle.crewName || vehicle.name}
+          {getGreeting()}, {greetingName}
         </div>
       </div>
 

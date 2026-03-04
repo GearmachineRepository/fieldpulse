@@ -8,7 +8,9 @@ async function request(path, opts = {}) {
 // Auth
 export const verifyPin = (vehicleId, pin) => request('/auth/verify-pin', { method: 'POST', body: JSON.stringify({ vehicleId, pin }) })
 export const verifyAdminPin = (adminId, pin) => request('/auth/admin-pin', { method: 'POST', body: JSON.stringify({ adminId, pin }) })
+export const crewLogin = (employeeId, pin) => request('/auth/crew-login', { method: 'POST', body: JSON.stringify({ employeeId, pin }) })
 export const getAdminsList = () => request('/admins/list')
+export const getCrewLoginTiles = () => request('/crews/login-tiles')
 
 // Vehicles
 export const getVehicles = () => request('/vehicles')

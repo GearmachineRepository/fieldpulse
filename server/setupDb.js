@@ -60,6 +60,18 @@ async function setup() {
     await pool.query('UPDATE admins SET pin_hash = $1 WHERE name = $2', [adminPin, 'Admin'])
     console.log('  ✓ Admin PIN set (Admin → 0000)')
 
+    // Set employee PINs
+    const empPin = await bcrypt.hash('1111', 10)
+    await pool.query('UPDATE employees SET pin_hash = $1 WHERE pin_hash = $2 OR pin_hash IS NULL', [empPin, '$2a$10$placeholder'])
+    const empCount = (await pool.query('SELECT COUNT(*) FROM employees')).rows[0].count
+    if (parseInt(empCount) > 0) console.log(`  ✓ Employee PINs set (all employees → 1111)`)
+
+    // Run migrations for existing databases
+    try {
+      await pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS pin_hash VARCHAR(255)')
+      await pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS is_crew_lead BOOLEAN DEFAULT false')
+    } catch { /* columns already exist */ }
+
     // Create uploads directory
     const uploadsDir = path.join(__dirname, '..', 'uploads')
     if (!fs.existsSync(uploadsDir)) {
@@ -73,16 +85,18 @@ async function setup() {
         (SELECT COUNT(*) FROM crews) as crews,
         (SELECT COUNT(*) FROM vehicles) as vehicles,
         (SELECT COUNT(*) FROM equipment) as equipment,
-        (SELECT COUNT(*) FROM chemicals) as chemicals
+        (SELECT COUNT(*) FROM chemicals) as chemicals,
+        (SELECT COUNT(*) FROM employees) as employees
     `)
     const c = counts.rows[0]
     console.log(`\n  Database ready:`)
-    console.log(`    ${c.admins} admin(s)   │ ${c.crews} crews`)
-    console.log(`    ${c.vehicles} vehicle(s) │ ${c.equipment} equipment`)
-    console.log(`    ${c.chemicals} chemicals`)
+    console.log(`    ${c.admins} admin(s)    │ ${c.crews} crews`)
+    console.log(`    ${c.vehicles} vehicle(s)  │ ${c.equipment} equipment`)
+    console.log(`    ${c.chemicals} chemicals  │ ${c.employees} employees`)
     console.log('\n  Default logins:')
-    console.log('    Vehicle: Truck 1 → PIN 1234')
-    console.log('    Admin:   Admin   → PIN 0000')
+    console.log('    Crew:    Any employee → PIN 1111')
+    console.log('    Vehicle: Truck 1      → PIN 1234')
+    console.log('    Admin:   Admin        → PIN 0000')
     console.log('\n  Run: npm run dev\n')
   } catch (err) {
     console.error('  ✗', err.message)

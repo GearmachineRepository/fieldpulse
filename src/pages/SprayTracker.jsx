@@ -5,7 +5,7 @@ import { uploadPhotos } from '../lib/api.js'
 import WindCompass from '../components/WindCompass.jsx'
 import { openPdf } from '../components/PdfExport.js'
 
-export default function SprayTracker({ vehicle, chemicals, equipment, crews, employees, logs, weather, onRefreshWeather, onSubmitLog, onLogsUpdated }) {
+export default function SprayTracker({ vehicle, chemicals, equipment, crews, employees, logs, weather, onRefreshWeather, onSubmitLog, onLogsUpdated, loggedInEmployee, loggedInCrew }) {
   const [tab, setTab] = useState('log')
   const tabs = [{ key: 'log', label: 'New Log', icon: '📝' }, { key: 'history', label: 'History', icon: '📋' }, { key: 'sds', label: 'SDS', icon: '☣️' }]
   return (
@@ -19,7 +19,7 @@ export default function SprayTracker({ vehicle, chemicals, equipment, crews, emp
           </div>
         ))}
       </div>
-      {tab === 'log' && <NewLogTab vehicle={vehicle} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees} weather={weather} onRefresh={onRefreshWeather} onSubmit={onSubmitLog} onLogsUpdated={onLogsUpdated} />}
+      {tab === 'log' && <NewLogTab vehicle={vehicle} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees} weather={weather} onRefresh={onRefreshWeather} onSubmit={onSubmitLog} onLogsUpdated={onLogsUpdated} loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />}
       {tab === 'history' && <HistoryTab logs={logs} />}
       {tab === 'sds' && <SdsTab chemicals={chemicals} />}
     </div>
@@ -29,16 +29,16 @@ export default function SprayTracker({ vehicle, chemicals, equipment, crews, emp
 // ═══════════════════════════════════════════
 // NEW LOG TAB
 // ═══════════════════════════════════════════
-function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, onRefresh, onSubmit, onLogsUpdated }) {
+function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, onRefresh, onSubmit, onLogsUpdated, loggedInEmployee, loggedInCrew }) {
   // Crew — separate "useCustomCrew" flag so typing doesn't reset
-  const [crewSelect, setCrewSelect] = useState(vehicle.crewName || '')
+  const [crewSelect, setCrewSelect] = useState(loggedInCrew?.name || vehicle.crewName || '')
   const [customCrewName, setCustomCrewName] = useState('')
   const [useCustomCrew, setUseCustomCrew] = useState(false)
 
   const crewName = useCustomCrew ? customCrewName : crewSelect
 
-  const [crewLead, setCrewLead] = useState('')
-  const [license, setLicense] = useState('')
+  const [crewLead, setCrewLead] = useState(loggedInEmployee ? `${loggedInEmployee.firstName} ${loggedInEmployee.lastName}` : '')
+  const [license, setLicense] = useState(loggedInEmployee?.license || '')
   const [property, setProperty] = useState('')
   const [locMode, setLocMode] = useState('none')
   const [gps, setGps] = useState(null)

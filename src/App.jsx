@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { APP, C, FONT, cardStyle, inputStyle, btnStyle, labelStyle } from './config.js'
-import { getVehicles, verifyPin, getAdminsList, verifyAdminPin, getEquipment, getChemicals, getCrews, getEmployees, getSprayLogs, createSprayLog, checkHealth } from './lib/api.js'
+import { verifyAdminPin, getAdminsList, getEquipment, getChemicals, getCrews, getEmployees, getSprayLogs, createSprayLog, checkHealth, getCrewLoginTiles, crewLogin } from './lib/api.js'
 import { getSimulatedWeather, getWeatherByCoords } from './lib/weather.js'
 import Sidebar from './components/Sidebar.jsx'
 import SprayTracker from './pages/SprayTracker.jsx'
@@ -10,10 +10,12 @@ import AdminDashboard from './pages/AdminDashboard.jsx'
 // ═══════════════════════════════════════════
 // LOGIN SCREEN
 // ═══════════════════════════════════════════
-function LoginScreen({ onVehicleLogin, onAdminLogin }) {
-  const [mode, setMode] = useState('vehicle')
-  const [vehicles, setVehicles] = useState([])
+function LoginScreen({ onCrewLogin, onAdminLogin }) {
+  const [mode, setMode] = useState('crew')
   const [admins, setAdmins] = useState([])
+  const [crewTiles, setCrewTiles] = useState(null)
+  const [selectedCrew, setSelectedCrew] = useState(null)
+  const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [selected, setSelected] = useState(null)
   const [pin, setPin] = useState('')
   const [error, setError] = useState(null)
@@ -24,21 +26,27 @@ function LoginScreen({ onVehicleLogin, onAdminLogin }) {
     (async () => {
       try {
         await checkHealth(); setDbOk(true)
-        const [v, a] = await Promise.all([getVehicles(), getAdminsList()])
-        setVehicles(v); setAdmins(a)
+        const [a, tiles] = await Promise.all([getAdminsList(), getCrewLoginTiles()])
+        setAdmins(a); setCrewTiles(tiles)
       } catch { setDbOk(false) }
       finally { setLoading(false) }
     })()
   }, [])
 
   const handleSubmit = async () => {
-    if (!selected || !pin) return
     setError(null)
     try {
-      if (mode === 'vehicle') onVehicleLogin(await verifyPin(selected, pin))
-      else onAdminLogin(await verifyAdminPin(selected, pin))
+      if (mode === 'crew') {
+        if (!selectedEmployee || !pin) return
+        onCrewLogin(await crewLogin(selectedEmployee.id, pin))
+      } else {
+        if (!selected || !pin) return
+        onAdminLogin(await verifyAdminPin(selected, pin))
+      }
     } catch { setError('Invalid PIN — try again'); setPin('') }
   }
+
+  const resetCrewFlow = () => { setSelectedCrew(null); setSelectedEmployee(null); setPin(''); setError(null) }
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT }}>
@@ -46,11 +54,12 @@ function LoginScreen({ onVehicleLogin, onAdminLogin }) {
     </div>
   )
 
-  const items = mode === 'vehicle' ? vehicles : admins
+  // Items for admin mode
+  const items = admins
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT, padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: 380 }}>
+      <div style={{ width: '100%', maxWidth: mode === 'crew' ? 440 : 380 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 4, color: C.accent, fontWeight: 800, marginBottom: 4 }}>{APP.name}</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: C.text }}>{APP.tagline}</div>
@@ -64,56 +73,202 @@ function LoginScreen({ onVehicleLogin, onAdminLogin }) {
           </div>
         ) : (
           <>
+            {/* Mode Tabs */}
             <div style={{ display: 'flex', marginBottom: 16, background: C.card, borderRadius: 14, border: `1.5px solid ${C.cardBorder}`, overflow: 'hidden' }}>
-              {[{ k: 'vehicle', l: '🚛 Vehicle' }, { k: 'admin', l: '🔒 Admin' }].map(m => (
+              {[{ k: 'crew', l: '👷 Crew' }, { k: 'admin', l: '🔒 Admin' }].map(m => (
                 <div key={m.k} tabIndex={0} role="button"
-                  onClick={() => { setMode(m.k); setSelected(null); setPin(''); setError(null) }}
-                  onKeyDown={e => { if (e.key === 'Enter') { setMode(m.k); setSelected(null); setPin(''); setError(null) } }}
+                  onClick={() => { setMode(m.k); setSelected(null); setPin(''); setError(null); resetCrewFlow() }}
+                  onKeyDown={e => { if (e.key === 'Enter') { setMode(m.k); setSelected(null); setPin(''); setError(null); resetCrewFlow() } }}
                   style={{ flex: 1, textAlign: 'center', padding: '14px 0', fontSize: 14, fontWeight: 700, cursor: 'pointer', outline: 'none',
-                    color: mode === m.k ? '#fff' : C.textLight, background: mode === m.k ? (m.k === 'admin' ? C.sidebar : C.accent) : 'transparent', transition: 'all 0.15s' }}>
+                    color: mode === m.k ? '#fff' : C.textLight,
+                    background: mode === m.k ? (m.k === 'admin' ? C.sidebar : C.blue) : 'transparent',
+                    transition: 'all 0.15s' }}>
                   {m.l}
                 </div>
               ))}
             </div>
 
-            <div style={cardStyle({ padding: 24 })}>
-              <div style={labelStyle}>{mode === 'vehicle' ? 'Select Vehicle' : 'Select Admin'}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-                {items.length === 0 ? (
-                  <div style={{ fontSize: 14, color: C.textLight, padding: 16, textAlign: 'center' }}>None found. Run <code>npm run db:setup</code></div>
-                ) : items.map(it => (
-                  <div key={it.id} tabIndex={0} role="button"
-                    onClick={() => { setSelected(it.id); setError(null) }}
-                    onKeyDown={e => { if (e.key === 'Enter') { setSelected(it.id); setError(null) } }}
-                    style={{
-                      padding: '14px 18px', borderRadius: 12, cursor: 'pointer', outline: 'none',
-                      background: selected === it.id ? (mode === 'admin' ? '#2A2A26' : C.accentLight) : '#FAFAF7',
-                      border: `2px solid ${selected === it.id ? (mode === 'admin' ? C.sidebar : C.accent) : C.cardBorder}`,
-                    }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: selected === it.id && mode === 'admin' ? '#fff' : C.text }}>{it.name}</div>
-                    {it.crew_name && <div style={{ fontSize: 13, color: C.textLight, marginTop: 2 }}>{it.crew_name}</div>}
-                    {it.role && <div style={{ fontSize: 12, color: selected === it.id ? '#aaa' : C.textLight, marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>{it.role}</div>}
-                  </div>
-                ))}
+            {/* ── CREW LOGIN FLOW ── */}
+            {mode === 'crew' && (
+              <div style={cardStyle({ padding: 24 })}>
+                {!selectedCrew ? (
+                  <>
+                    <div style={labelStyle}>Select Your Crew</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {crewTiles && crewTiles.crews.length === 0 && crewTiles.unassigned.length === 0 ? (
+                        <div style={{ fontSize: 14, color: C.textLight, padding: 16, textAlign: 'center' }}>No crews or employees found. Set them up in admin.</div>
+                      ) : (
+                        <>
+                          {crewTiles && crewTiles.crews.map(crew => (
+                            <div key={crew.id} tabIndex={0} role="button"
+                              onClick={() => { setSelectedCrew(crew); setError(null) }}
+                              onKeyDown={e => { if (e.key === 'Enter') { setSelectedCrew(crew); setError(null) } }}
+                              style={{
+                                padding: '16px 18px', borderRadius: 14, cursor: 'pointer', outline: 'none',
+                                background: '#FAFAF7', border: `2px solid ${C.cardBorder}`,
+                                transition: 'border-color 0.15s',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.borderColor = C.blue}
+                              onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                  <div style={{ fontSize: 18, fontWeight: 800, color: C.text }}>{crew.name}</div>
+                                  <div style={{ fontSize: 13, color: C.textLight, marginTop: 2 }}>
+                                    {crew.employees.length} member{crew.employees.length !== 1 ? 's' : ''}
+                                    {crew.vehicle ? ` · ${crew.vehicle.name}` : ''}
+                                    {crew.lead_name ? ` · Lead: ${crew.lead_name}` : ''}
+                                  </div>
+                                </div>
+                                <div style={{ fontSize: 24 }}>→</div>
+                              </div>
+                              {crew.employees.length > 0 && (
+                                <div style={{ display: 'flex', gap: -4, marginTop: 10 }}>
+                                  {crew.employees.slice(0, 5).map((emp, i) => (
+                                    <div key={emp.id} style={{
+                                      width: 32, height: 32, borderRadius: 16, border: '2px solid #fff',
+                                      background: emp.photo_filename ? 'transparent' : C.blue,
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      fontSize: 11, color: '#fff', fontWeight: 800, marginLeft: i > 0 ? -8 : 0,
+                                      overflow: 'hidden', position: 'relative', zIndex: 5 - i,
+                                    }}>
+                                      {emp.photo_filename ? (
+                                        <img src={`/uploads/${emp.photo_filename}`} alt="" style={{ width: 32, height: 32, objectFit: 'cover' }} />
+                                      ) : (
+                                        <>{emp.first_name[0]}{emp.last_name[0]}</>
+                                      )}
+                                    </div>
+                                  ))}
+                                  {crew.employees.length > 5 && (
+                                    <div style={{ width: 32, height: 32, borderRadius: 16, border: '2px solid #fff', background: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: C.textMed, marginLeft: -8, zIndex: 0 }}>
+                                      +{crew.employees.length - 5}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </>
+                ) : !selectedEmployee ? (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                      <button tabIndex={0} onClick={resetCrewFlow}
+                        style={{ fontSize: 13, color: C.blue, cursor: 'pointer', fontWeight: 700, background: 'none', border: 'none', padding: 0 }}>
+                        ← Back
+                      </button>
+                      <div style={{ fontSize: 16, fontWeight: 800 }}>{selectedCrew.name}</div>
+                      {selectedCrew.vehicle && <div style={{ fontSize: 12, color: C.textLight, padding: '2px 8px', borderRadius: 6, background: C.bg }}>🚛 {selectedCrew.vehicle.name}</div>}
+                    </div>
+                    <div style={labelStyle}>Who's Signing In?</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {selectedCrew.employees.filter(e => e.has_pin).length === 0 ? (
+                        <div style={{ fontSize: 14, color: C.textLight, padding: 16, textAlign: 'center' }}>
+                          No employees with PINs in this crew. Set PINs in admin → Employees.
+                        </div>
+                      ) : selectedCrew.employees.filter(e => e.has_pin).map(emp => (
+                        <div key={emp.id} tabIndex={0} role="button"
+                          onClick={() => { setSelectedEmployee(emp); setError(null) }}
+                          onKeyDown={e => { if (e.key === 'Enter') { setSelectedEmployee(emp); setError(null) } }}
+                          style={{
+                            padding: '14px 16px', borderRadius: 12, cursor: 'pointer', outline: 'none',
+                            background: '#FAFAF7', border: `2px solid ${C.cardBorder}`,
+                            display: 'flex', alignItems: 'center', gap: 14, transition: 'border-color 0.15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = C.blue}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+                          {emp.photo_filename ? (
+                            <img src={`/uploads/${emp.photo_filename}`} alt="" style={{ width: 48, height: 48, borderRadius: 24, objectFit: 'cover', border: `2px solid ${C.cardBorder}` }} />
+                          ) : (
+                            <div style={{ width: 48, height: 48, borderRadius: 24, background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, color: '#fff', fontWeight: 800 }}>
+                              {emp.first_name[0]}{emp.last_name[0]}
+                            </div>
+                          )}
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{emp.first_name} {emp.last_name}</div>
+                            {emp.is_crew_lead && <div style={{ fontSize: 11, color: C.blue, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>Crew Lead</div>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                      <button tabIndex={0} onClick={() => { setSelectedEmployee(null); setPin(''); setError(null) }}
+                        style={{ fontSize: 13, color: C.blue, cursor: 'pointer', fontWeight: 700, background: 'none', border: 'none', padding: 0 }}>
+                        ← Back
+                      </button>
+                      <div style={{ fontSize: 16, fontWeight: 800 }}>{selectedCrew.name}</div>
+                    </div>
+                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                      {selectedEmployee.photo_filename ? (
+                        <img src={`/uploads/${selectedEmployee.photo_filename}`} alt="" style={{ width: 64, height: 64, borderRadius: 32, objectFit: 'cover', border: `3px solid ${C.blue}` }} />
+                      ) : (
+                        <div style={{ width: 64, height: 64, borderRadius: 32, background: C.blue, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: '#fff', fontWeight: 800 }}>
+                          {selectedEmployee.first_name[0]}{selectedEmployee.last_name[0]}
+                        </div>
+                      )}
+                      <div style={{ fontSize: 18, fontWeight: 800, marginTop: 8 }}>{selectedEmployee.first_name} {selectedEmployee.last_name}</div>
+                    </div>
+                    <div style={labelStyle}>Enter Your PIN</div>
+                    <input type="password" inputMode="numeric" maxLength={6} value={pin} autoFocus
+                      onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError(null) }}
+                      onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                      placeholder="Enter PIN"
+                      style={inputStyle({ fontSize: 28, fontWeight: 800, textAlign: 'center', letterSpacing: 12, padding: '18px 16px',
+                        borderColor: error ? C.red : C.cardBorder, background: error ? C.redLight : '#FAFAF7' })} />
+                    {error && <div style={{ fontSize: 14, color: C.red, fontWeight: 600, marginTop: 8, textAlign: 'center' }}>{error}</div>}
+                    <button onClick={handleSubmit} tabIndex={0}
+                      style={{ ...btnStyle(C.blue), marginTop: 16, opacity: pin.length >= 4 ? 1 : 0.5 }}>
+                      Sign In
+                    </button>
+                  </>
+                )}
               </div>
+            )}
 
-              {selected && (
-                <>
-                  <div style={labelStyle}>{mode === 'admin' ? 'Admin' : 'Vehicle'} PIN</div>
-                  <input type="password" inputMode="numeric" maxLength={6} value={pin} autoFocus
-                    onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError(null) }}
-                    onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                    placeholder="Enter PIN"
-                    style={inputStyle({ fontSize: 28, fontWeight: 800, textAlign: 'center', letterSpacing: 12, padding: '18px 16px',
-                      borderColor: error ? C.red : C.cardBorder, background: error ? C.redLight : '#FAFAF7' })} />
-                  {error && <div style={{ fontSize: 14, color: C.red, fontWeight: 600, marginTop: 8, textAlign: 'center' }}>{error}</div>}
-                  <button onClick={handleSubmit} tabIndex={0}
-                    style={{ ...btnStyle(mode === 'admin' ? C.sidebar : C.accent), marginTop: 16, opacity: pin.length >= 4 ? 1 : 0.5 }}>
-                    {mode === 'admin' ? '🔒 Unlock Admin' : 'Unlock'}
-                  </button>
-                </>
-              )}
-            </div>
+            {/* ── ADMIN LOGIN ── */}
+            {mode === 'admin' && (
+              <div style={cardStyle({ padding: 24 })}>
+                <div style={labelStyle}>Select Admin</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                  {items.length === 0 ? (
+                    <div style={{ fontSize: 14, color: C.textLight, padding: 16, textAlign: 'center' }}>None found. Run <code>npm run db:setup</code></div>
+                  ) : items.map(it => (
+                    <div key={it.id} tabIndex={0} role="button"
+                      onClick={() => { setSelected(it.id); setError(null) }}
+                      onKeyDown={e => { if (e.key === 'Enter') { setSelected(it.id); setError(null) } }}
+                      style={{
+                        padding: '14px 18px', borderRadius: 12, cursor: 'pointer', outline: 'none',
+                        background: selected === it.id ? '#2A2A26' : '#FAFAF7',
+                        border: `2px solid ${selected === it.id ? C.sidebar : C.cardBorder}`,
+                      }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: selected === it.id ? '#fff' : C.text }}>{it.name}</div>
+                      {it.role && <div style={{ fontSize: 12, color: selected === it.id ? '#aaa' : C.textLight, marginTop: 2, textTransform: 'uppercase', letterSpacing: 1 }}>{it.role}</div>}
+                    </div>
+                  ))}
+                </div>
+
+                {selected && (
+                  <>
+                    <div style={labelStyle}>Admin PIN</div>
+                    <input type="password" inputMode="numeric" maxLength={6} value={pin} autoFocus
+                      onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError(null) }}
+                      onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                      placeholder="Enter PIN"
+                      style={inputStyle({ fontSize: 28, fontWeight: 800, textAlign: 'center', letterSpacing: 12, padding: '18px 16px',
+                        borderColor: error ? C.red : C.cardBorder, background: error ? C.redLight : '#FAFAF7' })} />
+                    {error && <div style={{ fontSize: 14, color: C.red, fontWeight: 600, marginTop: 8, textAlign: 'center' }}>{error}</div>}
+                    <button onClick={handleSubmit} tabIndex={0}
+                      style={{ ...btnStyle(C.sidebar), marginTop: 16, opacity: pin.length >= 4 ? 1 : 0.5 }}>
+                      🔒 Unlock Admin
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </>
         )}
         <div style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: C.textLight }}>{APP.name} v{APP.version}</div>
@@ -128,6 +283,8 @@ function LoginScreen({ onVehicleLogin, onAdminLogin }) {
 export default function App() {
   const [vehicle, setVehicle] = useState(null)
   const [admin, setAdmin] = useState(null)
+  const [loggedInEmployee, setLoggedInEmployee] = useState(null)
+  const [loggedInCrew, setLoggedInCrew] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [page, setPage] = useState('spray')
   const [toast, setToast] = useState(null)
@@ -150,7 +307,7 @@ export default function App() {
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 2500) }
 
   useEffect(() => {
-    if (!vehicle && !admin) return
+    if (!vehicle && !admin && !loggedInEmployee) return
     ;(async () => {
       try {
         const [chems, equip, crewList, empList, sprayLogs] = await Promise.all([
@@ -159,12 +316,22 @@ export default function App() {
         ])
         setChemicals(chems); setEquipment(equip); setCrews(crewList); setEmployees(empList); setLogs(sprayLogs)
         setDataLoaded(true)
-        if (vehicle) fetchWeather()
+        if (vehicle || loggedInEmployee) fetchWeather()
       } catch (e) { console.error(e); showToast('Failed to load data') }
     })()
-  }, [vehicle, admin])
+  }, [vehicle, admin, loggedInEmployee])
 
-  if (!vehicle && !admin) return <LoginScreen onVehicleLogin={v => { setVehicle(v); setPage('home') }} onAdminLogin={a => { setAdmin(a); setPage('admin-home') }} />
+  if (!vehicle && !admin && !loggedInEmployee) return (
+    <LoginScreen
+      onCrewLogin={data => {
+        setLoggedInEmployee(data.employee)
+        setLoggedInCrew(data.crew)
+        if (data.vehicle) setVehicle(data.vehicle)
+        setPage('home')
+      }}
+      onAdminLogin={a => { setAdmin(a); setPage('admin-home') }}
+    />
+  )
 
   if (!dataLoaded) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT }}>
@@ -176,13 +343,13 @@ export default function App() {
 
   const handleSubmitLog = async (logData) => {
     try {
-      await createSprayLog({ vehicleId: vehicle.id, ...logData })
-      setLogs(await getSprayLogs(vehicle.id))
+      await createSprayLog({ vehicleId: vehicle?.id || null, ...logData })
+      setLogs(await getSprayLogs(vehicle?.id))
       showToast('Spray log submitted & saved ✓'); return true
     } catch { showToast('Failed to save'); return false }
   }
 
-  const handleLogout = () => { setVehicle(null); setAdmin(null); setDataLoaded(false); setLogs([]); setPage('spray') }
+  const handleLogout = () => { setVehicle(null); setAdmin(null); setLoggedInEmployee(null); setLoggedInCrew(null); setDataLoaded(false); setLogs([]); setPage('spray') }
 
   const refreshData = async () => {
     try {
@@ -191,6 +358,11 @@ export default function App() {
       if (isAdmin) setLogs(await getSprayLogs())
     } catch (e) { console.error(e) }
   }
+
+  // Build effective vehicle object for crew-login compatibility
+  const effectiveVehicle = vehicle ? (vehicle.crewName ? vehicle : { ...vehicle, crewName: loggedInCrew?.name || '' }) : null
+  const displayName = loggedInEmployee ? `${loggedInEmployee.firstName} ${loggedInEmployee.lastName}` : (isAdmin ? admin.name : effectiveVehicle?.name || '')
+  const displaySub = loggedInCrew?.name || (!isAdmin && effectiveVehicle?.crewName) || ''
 
   const pageTitle = isAdmin
     ? { 'admin-home': 'Dashboard', 'admin-spraylogs': 'Spray Logs', 'admin-vehicles': 'Vehicles', 'admin-crews': 'Crews', 'admin-chemicals': 'Chemicals', 'admin-equipment': 'Equipment', 'admin-employees': 'Employees' }[page] || 'Dashboard'
@@ -218,8 +390,8 @@ export default function App() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: C.textMed, textAlign: 'right', lineHeight: 1.3 }}>
-              {isAdmin ? admin.name : vehicle.name}
-              {!isAdmin && vehicle.crewName && <div style={{ fontSize: 11, color: C.textLight }}>{vehicle.crewName}</div>}
+              {displayName}
+              {displaySub && <div style={{ fontSize: 11, color: C.textLight }}>{displaySub}</div>}
             </div>
             <button onClick={handleLogout} tabIndex={0}
               onKeyDown={e => e.key === 'Enter' && handleLogout()}
@@ -252,12 +424,14 @@ export default function App() {
 
       <div style={{ padding: '14px 16px 40px' }}>
         {!isAdmin && page === 'home' && (
-          <FieldHome vehicle={vehicle} weather={weather} logs={logs} employees={employees} crews={crews} onNav={setPage} />
+          <FieldHome vehicle={effectiveVehicle || { name: displayName, crewName: displaySub }} weather={weather} logs={logs} employees={employees} crews={crews} onNav={setPage}
+            loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
         )}
         {!isAdmin && page === 'spray' && (
-          <SprayTracker vehicle={vehicle} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees}
+          <SprayTracker vehicle={effectiveVehicle || { name: displayName, crewName: displaySub }} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees}
             logs={logs} weather={weather} onRefreshWeather={fetchWeather} onSubmitLog={handleSubmitLog}
-            onLogsUpdated={async () => setLogs(await getSprayLogs(vehicle.id))} />
+            onLogsUpdated={async () => setLogs(await getSprayLogs(effectiveVehicle?.id))}
+            loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
         )}
         {!isAdmin && page !== 'spray' && page !== 'home' && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
@@ -277,10 +451,10 @@ export default function App() {
         </div>
       )}
       <style>{`
-        *:focus-visible { outline: 3px solid #2563EB; outline-offset: 2px; border-radius: 8px; }
-        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #2563EB; outline-offset: 0px; border-radius: 12px; }
-        button:focus-visible { outline: 3px solid #2563EB; outline-offset: 2px; }
-        [role="button"]:focus-visible { outline: 3px solid #2563EB; outline-offset: 2px; }
+        *:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; border-radius: 8px; }
+        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 0px; border-radius: 12px; }
+        button:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; }
+        [role="button"]:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; }
       `}</style>
     </div>
   )

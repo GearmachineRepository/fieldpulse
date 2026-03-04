@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS employees (
   phone VARCHAR(30),
   license_number VARCHAR(100),
   photo_filename VARCHAR(255),
+  pin_hash VARCHAR(255),
+  is_crew_lead BOOLEAN DEFAULT false,
   default_crew_id INTEGER REFERENCES crews(id),
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -104,6 +106,18 @@ INSERT INTO equipment (name, type) VALUES
   ('100 Gal Skid Sprayer (Truck)','Truck Mount'),('Z-Spray Ride-On','Ride-On'),
   ('Lesco HPS Spreader/Sprayer','Ride-On'),('Hand Pump Sprayer — 2 Gal','Hand');
 INSERT INTO vehicles (name, pin_hash, crew_name) VALUES ('Truck 1', '$2a$10$placeholder', 'Crew A');
+INSERT INTO employees (first_name, last_name, pin_hash, is_crew_lead, default_crew_id, license_number)
+  SELECT 'Carlos', 'Martinez', '$2a$10$placeholder', true, c.id, 'QAL-48271'
+  FROM crews c WHERE c.name = 'Crew A'
+  ON CONFLICT DO NOTHING;
+INSERT INTO employees (first_name, last_name, pin_hash, is_crew_lead, default_crew_id)
+  SELECT 'Maria', 'Gonzalez', '$2a$10$placeholder', false, c.id
+  FROM crews c WHERE c.name = 'Crew A'
+  ON CONFLICT DO NOTHING;
+INSERT INTO employees (first_name, last_name, pin_hash, is_crew_lead, default_crew_id)
+  SELECT 'Jake', 'Thompson', '$2a$10$placeholder', true, c.id
+  FROM crews c WHERE c.name = 'Crew B'
+  ON CONFLICT DO NOTHING;
 INSERT INTO chemicals (name,type,epa,active_ingredient,signal_word,restricted,sds_url,label_url,wx_temp,wx_humidity,wx_wind,wx_conditions) VALUES
   ('Barricade 4FL','Pre-Emergent Herbicide','100-1139','Prodiamine 40.7%','CAUTION',false,'https://www.greencastonline.com/labels/barricade-4fl','https://www.greencastonline.com/labels/barricade-4fl','{"op":">","value":90,"warn":"Do not apply above 90°F — reduced efficacy"}',NULL,'{"op":">","value":10,"warn":"Do not apply above 10 mph — drift risk"}',NULL),
   ('Trimec Classic','Post-Emergent Herbicide','2217-798','2,4-D + Mecoprop-p + Dicamba','DANGER',false,'https://www.pbigordonturf.com/products/herbicides/selective-herbicides/trimec-professional-lawn-care-broadleaf-weed-killer/','https://www.pbigordonturf.com/products/herbicides/selective-herbicides/trimec-professional-lawn-care-broadleaf-weed-killer/','{"op":">","value":85,"warn":"Risk of turf injury above 85°F"}',NULL,'{"op":">","value":10,"warn":"Do not apply above 10 mph — drift risk"}','{"op":"==","value":"Overcast","warn":"Reduced uptake in overcast / low-light"}'),

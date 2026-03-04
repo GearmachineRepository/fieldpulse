@@ -664,6 +664,8 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
   const [phone, setPhone] = useState('')
   const [licenseNum, setLicenseNum] = useState('')
   const [crewId, setCrewId] = useState('')
+  const [empPin, setEmpPin] = useState('')
+  const [isCrewLead, setIsCrewLead] = useState(false)
   const [photoFile, setPhotoFile] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
   const fileRef = useRef(null)
@@ -674,9 +676,12 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
       setPhone(emp.phone || ''); setLicenseNum(emp.license_number || '')
       setCrewId(emp.default_crew_id ? String(emp.default_crew_id) : '')
       setPhotoPreview(emp.photo_filename ? `/uploads/${emp.photo_filename}` : null)
+      setIsCrewLead(emp.is_crew_lead || false)
+      setEmpPin('')
     } else {
       setEditItem(null); setFirstName(''); setLastName(''); setPhone('')
       setLicenseNum(''); setCrewId(''); setPhotoPreview(null)
+      setIsCrewLead(false); setEmpPin('')
     }
     setPhotoFile(null); setShowForm(true)
   }
@@ -690,7 +695,8 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
   const save = async () => {
     if (!firstName.trim() || !lastName.trim()) return; setSaving(true)
     try {
-      const data = { firstName, lastName, phone, licenseNumber: licenseNum, defaultCrewId: crewId || null }
+      const data = { firstName, lastName, phone, licenseNumber: licenseNum, defaultCrewId: crewId || null, isCrewLead: isCrewLead }
+      if (empPin) data.pin = empPin
       if (editItem) await updateEmployee(editItem.id, data, photoFile)
       else await createEmployee(data, photoFile)
       showToast(editItem ? 'Employee updated ✓' : 'Employee added ✓')
@@ -723,8 +729,14 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
               </div>
             )}
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>{emp.first_name} {emp.last_name}</div>
-              <div style={{ fontSize: 13, color: C.textLight }}>{emp.crew_name || 'No crew'}{emp.license_number ? ` · ${emp.license_number}` : ''}{emp.phone ? ` · ${emp.phone}` : ''}</div>
+              <div style={{ fontSize: 16, fontWeight: 800 }}>
+                {emp.first_name} {emp.last_name}
+                {emp.is_crew_lead && <span style={{ fontSize: 11, color: C.blue, fontWeight: 700, marginLeft: 8, padding: '2px 8px', borderRadius: 6, background: C.blueLight }}>Lead</span>}
+              </div>
+              <div style={{ fontSize: 13, color: C.textLight }}>
+                {emp.crew_name || 'No crew'}{emp.license_number ? ` · ${emp.license_number}` : ''}{emp.phone ? ` · ${emp.phone}` : ''}
+                {emp.has_pin ? '' : ' · ⚠️ No PIN'}
+              </div>
             </div>
             <div style={{ fontSize: 13, color: C.textLight, fontWeight: 600 }}>Edit →</div>
           </div>
@@ -753,12 +765,14 @@ function EmployeesSection({ employees, crews, onRefresh, showToast }) {
           </div>
           <Field label="Phone" value={phone} onChange={setPhone} placeholder="e.g. (555) 123-4567" />
           <Field label="License / Cert #" value={licenseNum} onChange={setLicenseNum} placeholder="e.g. QAL-48271" />
+          <Field label={editItem ? "New PIN (leave blank to keep)" : "Login PIN (4-6 digits)"} value={empPin} onChange={v => setEmpPin(v.replace(/\D/g, ''))} placeholder="e.g. 1234" required={!editItem} />
           <div style={{ marginBottom: 14 }}>
             <div style={labelStyle}>Default Crew</div>
             <select value={crewId} onChange={e => setCrewId(e.target.value)} style={inputStyle()}>
               <option value="">No crew</option>
               {crews.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
           </div>
+          <Field label="Crew Lead" value={isCrewLead} onChange={setIsCrewLead} placeholder="This employee is a crew lead" type="checkbox" />
         </FormModal>
       )}
       {deleteItem && <ConfirmDelete name={`${deleteItem.first_name} ${deleteItem.last_name}`} onConfirm={handleDelete} onCancel={() => setDeleteItem(null)} />}
