@@ -1,0 +1,10 @@
+{
+  "name": "FieldPulse — Field Manager",
+  "short_name": "FieldPulse",
+  "description": "Pesticide application tracking & compliance for landscape crews",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F3EF",
+  "theme_color": "#2D7A3A",
+  "icons": []
+}
