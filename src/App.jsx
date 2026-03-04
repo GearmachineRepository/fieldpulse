@@ -4,6 +4,7 @@ import { getVehicles, verifyPin, getAdminsList, verifyAdminPin, getEquipment, ge
 import { getSimulatedWeather, getWeatherByCoords } from './lib/weather.js'
 import Sidebar from './components/Sidebar.jsx'
 import SprayTracker from './pages/SprayTracker.jsx'
+import FieldHome from './pages/FieldHome.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 
 // ═══════════════════════════════════════════
@@ -163,7 +164,7 @@ export default function App() {
     })()
   }, [vehicle, admin])
 
-  if (!vehicle && !admin) return <LoginScreen onVehicleLogin={v => { setVehicle(v); setPage('spray') }} onAdminLogin={a => { setAdmin(a); setPage('admin-logs') }} />
+  if (!vehicle && !admin) return <LoginScreen onVehicleLogin={v => { setVehicle(v); setPage('home') }} onAdminLogin={a => { setAdmin(a); setPage('admin-home') }} />
 
   if (!dataLoaded) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT }}>
@@ -192,8 +193,8 @@ export default function App() {
   }
 
   const pageTitle = isAdmin
-    ? { 'admin-logs': 'All Spray Logs', 'admin-vehicles': 'Vehicles & Crews', 'admin-chemicals': 'Chemicals', 'admin-equipment': 'Equipment', 'admin-employees': 'Employees', 'admin-pur': 'PUR Report' }[page] || 'Dashboard'
-    : page === 'spray' ? 'Spray Tracker' : page.charAt(0).toUpperCase() + page.slice(1)
+    ? { 'admin-home': 'Dashboard', 'admin-spraylogs': 'Spray Logs', 'admin-vehicles': 'Vehicles', 'admin-crews': 'Crews', 'admin-chemicals': 'Chemicals', 'admin-equipment': 'Equipment', 'admin-employees': 'Employees' }[page] || 'Dashboard'
+    : { 'home': 'Home', 'spray': 'Spray Tracker' }[page] || page.charAt(0).toUpperCase() + page.slice(1)
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: FONT, maxWidth: isAdmin ? 900 : 430, margin: '0 auto', position: 'relative' }}>
@@ -233,9 +234,10 @@ export default function App() {
         {isAdmin && (
           <div style={{ display: 'flex', overflowX: 'auto', gap: 2, paddingBottom: 8 }}>
             {[
-              { k: 'admin-logs', l: '📋 Logs' }, { k: 'admin-vehicles', l: '🚛 Vehicles' },
-              { k: 'admin-chemicals', l: '🧪 Chemicals' }, { k: 'admin-equipment', l: '🔧 Equipment' },
-              { k: 'admin-employees', l: '👷 Employees' }, { k: 'admin-pur', l: '📊 PUR' },
+              { k: 'admin-home', l: '🏠 Home' }, { k: 'admin-spraylogs', l: '📋 Spray Logs' },
+              { k: 'admin-vehicles', l: '🚛 Vehicles' }, { k: 'admin-crews', l: '👥 Crews' },
+              { k: 'admin-employees', l: '👷 Employees' }, { k: 'admin-chemicals', l: '🧪 Chemicals' },
+              { k: 'admin-equipment', l: '🔧 Equipment' },
             ].map(t => (
               <div key={t.k} tabIndex={0} role="button" onClick={() => setPage(t.k)}
                 onKeyDown={e => e.key === 'Enter' && setPage(t.k)}
@@ -249,19 +251,22 @@ export default function App() {
       </div>
 
       <div style={{ padding: '14px 16px 40px' }}>
+        {!isAdmin && page === 'home' && (
+          <FieldHome vehicle={vehicle} weather={weather} logs={logs} employees={employees} crews={crews} onNav={setPage} />
+        )}
         {!isAdmin && page === 'spray' && (
           <SprayTracker vehicle={vehicle} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees}
             logs={logs} weather={weather} onRefreshWeather={fetchWeather} onSubmitLog={handleSubmitLog}
             onLogsUpdated={async () => setLogs(await getSprayLogs(vehicle.id))} />
         )}
-        {!isAdmin && page !== 'spray' && (
+        {!isAdmin && page !== 'spray' && page !== 'home' && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
             <div><div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div><div style={{ fontSize: 22, fontWeight: 900 }}>Coming Soon</div></div>
           </div>
         )}
         {isAdmin && (
           <AdminDashboard page={page} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees}
-            logs={logs} onRefresh={refreshData} showToast={showToast} />
+            logs={logs} onRefresh={refreshData} showToast={showToast} onNav={setPage} />
         )}
       </div>
 
@@ -271,6 +276,12 @@ export default function App() {
           {toast}
         </div>
       )}
+      <style>{`
+        *:focus-visible { outline: 3px solid #2563EB; outline-offset: 2px; border-radius: 8px; }
+        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #2563EB; outline-offset: 0px; border-radius: 12px; }
+        button:focus-visible { outline: 3px solid #2563EB; outline-offset: 2px; }
+        [role="button"]:focus-visible { outline: 3px solid #2563EB; outline-offset: 2px; }
+      `}</style>
     </div>
   )
 }

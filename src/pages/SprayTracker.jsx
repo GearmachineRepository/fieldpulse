@@ -430,7 +430,7 @@ function NewLogTab({ vehicle, chemicals, equipment, crews, employees, weather, o
       {/* Notes + Photos */}
       <div style={cardStyle()}>
         <div style={labelStyle}>Field Notes</div>
-        <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Areas treated, observations, conditions…"
+        <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Areas treated, observations, conditions…" spellCheck={true}
           style={{ ...inputStyle(), minHeight: 90, resize: 'vertical', fontSize: 15, lineHeight: 1.5 }} />
 
         <div style={{ marginTop: 16 }}>

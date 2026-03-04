@@ -1,6 +1,7 @@
 import { APP, C } from '../config.js'
 
 const NAV_ITEMS = [
+  { key: 'home', icon: '🏠', label: 'Home', active: true },
   { key: 'spray', icon: '💧', label: 'Spray Tracker', active: true },
   { key: 'routes', icon: '🗺️', label: 'Routes', active: false },
   { key: 'properties', icon: '🏘️', label: 'Properties', active: false },
@@ -48,7 +49,10 @@ export default function Sidebar({ open, onClose, currentPage, onNav }) {
           {NAV_ITEMS.map(it => (
             <div
               key={it.key}
+              tabIndex={it.active ? 0 : -1}
+              role="button"
               onClick={() => { if (it.active) { onNav(it.key); onClose(); } }}
+              onKeyDown={e => { if (e.key === 'Enter' && it.active) { onNav(it.key); onClose(); } }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
                 padding: '14px 24px',
