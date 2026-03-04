@@ -1,26 +1,39 @@
+// ═══════════════════════════════════════════
+// PDF Export — XSS-safe HTML generation
+// All user data is escaped before injection
+// ═══════════════════════════════════════════
+
 import { APP } from '../config.js'
+
+// Escape HTML entities to prevent XSS
+const ESCAPE_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+function esc(str) {
+  if (str == null) return ''
+  return String(str).replace(/[&<>"']/g, ch => ESCAPE_MAP[ch])
+}
 
 export function openPdf(log) {
   const productsRows = log.products.map(p => `
-    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:600">${p.name}</td>
-    <td style="padding:8px 12px;border:1px solid #ddd">${p.epa}</td>
-    <td style="padding:8px 12px;border:1px solid #ddd;font-weight:700;color:#2D7A3A">${p.ozConcentrate}</td></tr>`).join('')
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:600">${esc(p.name)}</td>
+    <td style="padding:8px 12px;border:1px solid #ddd">${esc(p.epa)}</td>
+    <td style="padding:8px 12px;border:1px solid #ddd;font-weight:700;color:#2D7A3A">${esc(p.ozConcentrate)}</td></tr>`).join('')
 
   const membersHtml = log.members && log.members.length > 0
     ? `<div class="section"><div class="section-title">Crew Members Present</div>
        <div style="display:flex;flex-wrap:wrap;gap:8px">${log.members.map(m =>
-         `<span style="padding:6px 14px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-weight:600;color:#2563EB">${m.name}</span>`
+         `<span style="padding:6px 14px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-weight:600;color:#2563EB">${esc(m.name)}</span>`
        ).join('')}</div></div>` : ''
 
+  // Photos use filenames from the server — sanitize the filename and alt text
   const photosHtml = log.photos && log.photos.length > 0
     ? `<div class="section" style="page-break-before:auto"><div class="section-title">Field Photos (${log.photos.length})</div>
        <div style="display:flex;flex-wrap:wrap;gap:12px">${log.photos.map(ph =>
-         `<div style="text-align:center"><img src="/uploads/${ph.filename}" style="max-width:280px;max-height:220px;border-radius:8px;border:1px solid #ddd;object-fit:cover" />
-          <div style="font-size:10px;color:#999;margin-top:4px">${ph.originalName || 'Photo'}</div></div>`
+         `<div style="text-align:center"><img src="/uploads/${encodeURIComponent(ph.filename)}" style="max-width:280px;max-height:220px;border-radius:8px;border:1px solid #ddd;object-fit:cover" />
+          <div style="font-size:10px;color:#999;margin-top:4px">${esc(ph.originalName || 'Photo')}</div></div>`
        ).join('')}</div></div>` : ''
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-<title>Spray Log — ${log.property} — ${log.date}</title>
+<title>Spray Log — ${esc(log.property)} — ${esc(log.date)}</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:Arial,Helvetica,sans-serif;padding:32px;color:#1a1a18;font-size:13px;line-height:1.5}
@@ -42,36 +55,32 @@ export function openPdf(log) {
   @media print{body{padding:16px}img{max-width:250px!important}}
 </style></head><body>
 <div class="header">
-  <div class="brand">${APP.name} — Pesticide Application Record</div>
-  <h1>${log.property}</h1>
-  <h2>${log.date} at ${log.time} · Use Code 30 — Landscape Maintenance</h2>
+  <div class="brand">${esc(APP.name)} — Pesticide Application Record</div>
+  <h1>${esc(log.property)}</h1>
+  <h2>${esc(log.date)} at ${esc(log.time)} · Use Code 30 — Landscape Maintenance</h2>
 </div>
-<div class="crew-note">Crew: <strong>${log.crewName||'—'}</strong> · Logged by Crew Lead: <strong>${log.crewLead}</strong></div>
+<div class="crew-note">Crew: <strong>${esc(log.crewName || '—')}</strong> · Logged by Crew Lead: <strong>${esc(log.crewLead)}</strong></div>
 ${membersHtml}
 <div class="section"><div class="section-title">Application Details</div>
-  <div class="row"><div class="field"><div class="field-label">Crew Lead</div><div class="field-value">${log.crewLead}</div></div><div class="field"><div class="field-label">License</div><div class="field-value">${log.license}</div></div></div>
-  <div class="row"><div class="field"><div class="field-label">Date</div><div class="field-value">${log.date}</div></div><div class="field"><div class="field-label">Time</div><div class="field-value">${log.time}</div></div></div>
-  <div class="row"><div class="field"><div class="field-label">Location</div><div class="field-value">${log.location||'—'}</div></div><div class="field"><div class="field-label">Target Pest</div><div class="field-value">${log.targetPest||'—'}</div></div></div>
-  <div class="row"><div class="field"><div class="field-label">Equipment</div><div class="field-value">${log.equipment}</div></div><div class="field"><div class="field-label">Mix Volume</div><div class="field-value">${log.totalMixVol}</div></div></div>
+  <div class="row"><div class="field"><div class="field-label">Crew Lead</div><div class="field-value">${esc(log.crewLead)}</div></div><div class="field"><div class="field-label">License</div><div class="field-value">${esc(log.license)}</div></div></div>
+  <div class="row"><div class="field"><div class="field-label">Date</div><div class="field-value">${esc(log.date)}</div></div><div class="field"><div class="field-label">Time</div><div class="field-value">${esc(log.time)}</div></div></div>
+  <div class="row"><div class="field"><div class="field-label">Equipment</div><div class="field-value">${esc(log.equipment)}</div></div><div class="field"><div class="field-label">Total Mix Volume</div><div class="field-value">${esc(log.totalMixVol)}</div></div></div>
+  <div class="row"><div class="field"><div class="field-label">Target Pest</div><div class="field-value">${esc(log.targetPest || '—')}</div></div><div class="field"><div class="field-label">Location</div><div class="field-value">${esc(log.location || '—')}</div></div></div>
 </div>
-<div class="section"><div class="section-title">Mix Sheet — Products Applied (concentrate amounts)</div>
-  <table><thead><tr><th>Product</th><th>EPA Reg #</th><th>Concentrate</th></tr></thead><tbody>${productsRows}</tbody></table>
+<div class="section"><div class="section-title">Products Applied</div>
+  <table><thead><tr><th>Product</th><th>EPA Reg. No.</th><th>Amount</th></tr></thead><tbody>${productsRows}</tbody></table>
 </div>
-<div class="section"><div class="section-title">Weather at Application</div>
-  <div class="row">
-    <div class="field"><div class="field-label">Temp</div><div class="field-value">${log.weather.temp}°F</div></div>
-    <div class="field"><div class="field-label">Humidity</div><div class="field-value">${log.weather.humidity}%</div></div>
-    <div class="field"><div class="field-label">Wind</div><div class="field-value">${log.weather.windSpeed} mph ${log.weather.windDir}</div></div>
-    <div class="field"><div class="field-label">Sky</div><div class="field-value">${log.weather.conditions}</div></div>
-  </div>
-  ${log.weather.windSpeed>10?'<div class="warning">⚠ Wind exceeded 10 mph</div>':''}
+<div class="section"><div class="section-title">Weather Conditions</div>
+  <div class="row"><div class="field"><div class="field-label">Temperature</div><div class="field-value">${esc(log.weather?.temp)}°F</div></div><div class="field"><div class="field-label">Humidity</div><div class="field-value">${esc(log.weather?.humidity)}%</div></div></div>
+  <div class="row"><div class="field"><div class="field-label">Wind</div><div class="field-value">${esc(log.weather?.windSpeed)} mph ${esc(log.weather?.windDir)}</div></div><div class="field"><div class="field-label">Conditions</div><div class="field-value">${esc(log.weather?.conditions)}</div></div></div>
+  ${(log.weather?.windSpeed || 0) > 10 ? '<div class="warning">⚠ Wind speed exceeds 10 mph — potential drift hazard</div>' : ''}
 </div>
-${log.notes?`<div class="section"><div class="section-title">Field Notes</div><p style="font-size:13px;color:#333">${log.notes}</p></div>`:''}
+${log.notes ? `<div class="section"><div class="section-title">Notes</div><div style="font-size:13px;white-space:pre-wrap">${esc(log.notes)}</div></div>` : ''}
 ${photosHtml}
-<div class="cert">Recorded by: <strong>${log.crewLead}</strong> · License: <strong>${log.license}</strong> · Complete and accurate as entered.</div>
-<div class="footer">Generated by ${APP.name} · ${new Date().toLocaleString()} · Retain 2 years per CA DPR. Submit monthly PUR by 10th of following month.</div>
+<div class="cert">✓ I certify that all information in this pesticide application record is accurate and complete.</div>
+<div class="footer">${esc(APP.name)} · Generated ${new Date().toLocaleString('en-US')} · Use Code 30 — Landscape Maintenance</div>
 </body></html>`
 
-  const w = window.open('', '_blank', 'width=800,height=1000')
-  if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 600) }
+  const win = window.open('', '_blank')
+  if (win) { win.document.write(html); win.document.close() }
 }

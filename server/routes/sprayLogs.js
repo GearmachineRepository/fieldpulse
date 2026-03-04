@@ -1,0 +1,146 @@
+// ═══════════════════════════════════════════
+// Spray Log Routes
+// ═══════════════════════════════════════════
+
+import { Router } from 'express'
+import db from '../db.js'
+import { requireAuth } from '../middleware/auth.js'
+import { validateBody, validateIdParam } from '../middleware/validate.js'
+
+export default function sprayLogRoutes(upload) {
+  const router = Router()
+
+  // ── Create spray log ──
+  router.post('/',
+    requireAuth,
+    validateBody({
+      crewLead: { required: true, type: 'string' },
+      license: { required: true, type: 'string' },
+      property: { required: true, type: 'string' },
+      products: { required: true, type: 'array' },
+    }),
+    async (req, res) => {
+      const client = await db.connect()
+      try {
+        await client.query('BEGIN')
+        const b = req.body
+        const logR = await client.query(
+          `INSERT INTO spray_logs
+           (vehicle_id, crew_name, crew_lead, license, property, location,
+            equipment_id, equipment_name, total_mix_vol, target_pest, notes,
+            wx_temp, wx_humidity, wx_wind_speed, wx_wind_dir, wx_conditions)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+           RETURNING id, created_at`,
+          [b.vehicleId, b.crewName, b.crewLead, b.license, b.property, b.location,
+           b.equipmentId, b.equipmentName, b.totalMixVol, b.targetPest, b.notes,
+           b.weather.temp, b.weather.humidity, b.weather.windSpeed, b.weather.windDir, b.weather.conditions]
+        )
+
+        const logId = logR.rows[0].id
+
+        for (const p of b.products) {
+          await client.query(
+            'INSERT INTO spray_log_products (spray_log_id, chemical_id, chemical_name, epa, amount) VALUES ($1,$2,$3,$4,$5)',
+            [logId, p.chemicalId || null, p.name, p.epa, p.amount]
+          )
+        }
+
+        if (b.crewMembers && b.crewMembers.length > 0) {
+          for (const m of b.crewMembers) {
+            await client.query(
+              'INSERT INTO spray_log_members (spray_log_id, employee_id, employee_name) VALUES ($1,$2,$3)',
+              [logId, m.id, m.name]
+            )
+          }
+        }
+
+        await client.query('COMMIT')
+        res.json({ id: logId, createdAt: logR.rows[0].created_at })
+      } catch (e) {
+        await client.query('ROLLBACK')
+        console.error('POST /spray-logs error:', e)
+        res.status(500).json({ error: 'Failed' })
+      } finally {
+        client.release()
+      }
+    }
+  )
+
+  // ── Upload photos to a spray log ──
+  router.post('/:id/photos', requireAuth, validateIdParam, upload.array('photos', 10), async (req, res) => {
+    try {
+      const saved = []
+      for (const f of req.files) {
+        const r = await db.query(
+          `INSERT INTO spray_log_photos (spray_log_id, filename, original_name, mime_type, size_bytes)
+           VALUES ($1,$2,$3,$4,$5) RETURNING id, filename, original_name`,
+          [req.params.id, f.filename, f.originalname, f.mimetype, f.size]
+        )
+        saved.push(r.rows[0])
+      }
+      res.json(saved)
+    } catch (e) {
+      console.error('POST /spray-logs/:id/photos error:', e)
+      res.status(500).json({ error: 'Upload failed' })
+    }
+  })
+
+  // ── List spray logs ──
+  router.get('/', requireAuth, async (req, res) => {
+    try {
+      const { vehicleId, crewName, limit = 50 } = req.query
+      const where = []
+      const params = []
+
+      if (vehicleId) { params.push(vehicleId); where.push(`sl.vehicle_id = $${params.length}`) }
+      if (crewName) { params.push(crewName); where.push(`sl.crew_name = $${params.length}`) }
+
+      const whereStr = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
+      params.push(limit)
+
+      const result = await db.query(`
+        SELECT sl.*,
+          COALESCE((SELECT json_agg(json_build_object('id',slp.id,'chemicalName',slp.chemical_name,'epa',slp.epa,'amount',slp.amount))
+            FROM spray_log_products slp WHERE slp.spray_log_id = sl.id), '[]') AS products,
+          COALESCE((SELECT json_agg(json_build_object('id',ph.id,'filename',ph.filename,'originalName',ph.original_name))
+            FROM spray_log_photos ph WHERE ph.spray_log_id = sl.id), '[]') AS photos,
+          COALESCE((SELECT json_agg(json_build_object('id',sm.id,'employeeId',sm.employee_id,'name',sm.employee_name))
+            FROM spray_log_members sm WHERE sm.spray_log_id = sl.id), '[]') AS members
+        FROM spray_logs sl ${whereStr}
+        ORDER BY sl.created_at DESC
+        LIMIT $${params.length}`, params)
+
+      res.json(result.rows.map(row => ({
+        id: row.id, crewName: row.crew_name, crewLead: row.crew_lead, license: row.license,
+        property: row.property, location: row.location, equipment: row.equipment_name,
+        totalMixVol: row.total_mix_vol, targetPest: row.target_pest, notes: row.notes,
+        date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        time: new Date(row.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+        weather: {
+          temp: row.wx_temp, humidity: row.wx_humidity, windSpeed: row.wx_wind_speed,
+          windDir: row.wx_wind_dir, conditions: row.wx_conditions,
+        },
+        products: (row.products || []).filter(p => p.id !== null).map(p => ({ name: p.chemicalName, epa: p.epa, ozConcentrate: p.amount })),
+        photos: (row.photos || []).filter(p => p.id !== null),
+        members: (row.members || []).filter(m => m.id !== null),
+        status: 'synced',
+      })))
+    } catch (e) {
+      console.error('GET /spray-logs error:', e)
+      res.status(500).json({ error: 'Server error' })
+    }
+  })
+
+  // ── Delete spray log ──
+  router.delete('/:id', requireAuth, validateIdParam, async (req, res) => {
+    try {
+      await db.query('DELETE FROM spray_logs WHERE id = $1', [req.params.id])
+      res.json({ success: true })
+    } catch (e) {
+      console.error('DELETE /spray-logs error:', e)
+      res.status(500).json({ error: 'Failed to delete' })
+    }
+  })
+
+  return router
+}

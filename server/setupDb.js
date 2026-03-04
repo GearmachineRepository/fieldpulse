@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import pg from 'pg'
 import bcrypt from 'bcryptjs'
 import dotenv from 'dotenv'
+import { isSafeDbName } from './middleware/validate.js'
 
 dotenv.config()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -13,6 +14,14 @@ async function setup() {
   console.log('  FieldPulse — Database Setup (Phase 2)')
   console.log('═══════════════════════════════════════\n')
 
+  const dbName = process.env.DB_NAME || 'fieldpulse'
+
+  // Validate DB name to prevent SQL injection in CREATE DATABASE
+  if (!isSafeDbName(dbName)) {
+    console.error(`  ✗ Invalid database name "${dbName}" — only alphanumeric and underscores allowed.`)
+    process.exit(1)
+  }
+
   const adminPool = new pg.Pool({
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432'),
@@ -21,12 +30,11 @@ async function setup() {
     database: 'postgres',
   })
 
-  const dbName = process.env.DB_NAME || 'fieldpulse'
-
   try {
     const dbCheck = await adminPool.query('SELECT 1 FROM pg_database WHERE datname = $1', [dbName])
     if (dbCheck.rows.length === 0) {
       console.log(`  Creating database "${dbName}"...`)
+      // Safe because we validated dbName above
       await adminPool.query(`CREATE DATABASE ${dbName}`)
       console.log(`  ✓ Database created`)
     } else {
@@ -51,32 +59,25 @@ async function setup() {
     await pool.query(schema)
     console.log('  ✓ Tables created and seed data inserted')
 
-    // Set real bcrypt hashes
+    // Set real bcrypt hashes for seed data
     const vehiclePin = await bcrypt.hash('1234', 10)
-    await pool.query('UPDATE vehicles SET pin_hash = $1 WHERE name = $2', [vehiclePin, 'Truck 1'])
-    console.log('  ✓ Vehicle PIN set (Truck 1 → 1234)')
+    await pool.query('UPDATE vehicles SET pin_hash = $1 WHERE pin_hash = $2', [vehiclePin, '$2a$10$placeholder'])
 
     const adminPin = await bcrypt.hash('0000', 10)
-    await pool.query('UPDATE admins SET pin_hash = $1 WHERE name = $2', [adminPin, 'Admin'])
-    console.log('  ✓ Admin PIN set (Admin → 0000)')
+    await pool.query('UPDATE admins SET pin_hash = $1 WHERE pin_hash = $2', [adminPin, '$2a$10$placeholder'])
 
-    // Set employee PINs
     const empPin = await bcrypt.hash('1111', 10)
-    await pool.query('UPDATE employees SET pin_hash = $1 WHERE pin_hash = $2 OR pin_hash IS NULL', [empPin, '$2a$10$placeholder'])
-    const empCount = (await pool.query('SELECT COUNT(*) FROM employees')).rows[0].count
-    if (parseInt(empCount) > 0) console.log(`  ✓ Employee PINs set (all employees → 1111)`)
+    await pool.query('UPDATE employees SET pin_hash = $1 WHERE pin_hash = $2', [empPin, '$2a$10$placeholder'])
 
-    // Run migrations for existing databases
+    // Warn about default PINs
+    console.log('\n  ⚠ WARNING: Default PINs are set (1234, 0000, 1111).')
+    console.log('    Change these before deploying to production!')
+
+    // Ensure indexes exist
     try {
-      await pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS pin_hash VARCHAR(255)')
-      await pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS is_crew_lead BOOLEAN DEFAULT false')
-      await pool.query(`CREATE TABLE IF NOT EXISTS daily_crew_rosters (
-        id SERIAL PRIMARY KEY, crew_id INTEGER REFERENCES crews(id), crew_name VARCHAR(100) NOT NULL,
-        submitted_by_id INTEGER REFERENCES employees(id), submitted_by_name VARCHAR(200) NOT NULL,
-        work_date DATE NOT NULL DEFAULT CURRENT_DATE, notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`)
-      await pool.query(`CREATE TABLE IF NOT EXISTS daily_roster_members (
-        id SERIAL PRIMARY KEY, roster_id INTEGER REFERENCES daily_crew_rosters(id) ON DELETE CASCADE,
-        employee_id INTEGER REFERENCES employees(id), employee_name VARCHAR(200) NOT NULL, present BOOLEAN DEFAULT true, created_at TIMESTAMPTZ DEFAULT NOW())`)
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_spray_logs_created ON spray_logs(created_at DESC)')
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_spray_logs_vehicle ON spray_logs(vehicle_id)')
+      await pool.query('CREATE INDEX IF NOT EXISTS idx_spray_logs_crew ON spray_logs(crew_name)')
       await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_rosters_date ON daily_crew_rosters(work_date DESC)')
       await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_rosters_crew ON daily_crew_rosters(crew_id)')
       await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_roster_members_roster ON daily_roster_members(roster_id)')
@@ -93,12 +94,12 @@ async function setup() {
 
     const counts = await pool.query(`
       SELECT
-        (SELECT COUNT(*) FROM admins) as admins,
-        (SELECT COUNT(*) FROM crews) as crews,
-        (SELECT COUNT(*) FROM vehicles) as vehicles,
-        (SELECT COUNT(*) FROM equipment) as equipment,
-        (SELECT COUNT(*) FROM chemicals) as chemicals,
-        (SELECT COUNT(*) FROM employees) as employees
+        (SELECT COUNT(*) FROM admins) AS admins,
+        (SELECT COUNT(*) FROM crews) AS crews,
+        (SELECT COUNT(*) FROM vehicles) AS vehicles,
+        (SELECT COUNT(*) FROM equipment) AS equipment,
+        (SELECT COUNT(*) FROM chemicals) AS chemicals,
+        (SELECT COUNT(*) FROM employees) AS employees
     `)
     const c = counts.rows[0]
     console.log(`\n  Database ready:`)

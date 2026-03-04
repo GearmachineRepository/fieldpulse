@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { APP, C, FONT, cardStyle, inputStyle, btnStyle, labelStyle } from './config.js'
-import { verifyAdminPin, getAdminsList, getEquipment, getChemicals, getCrews, getEmployees, getSprayLogs, createSprayLog, checkHealth, getCrewLoginTiles, crewLogin } from './lib/api.js'
+import { verifyAdminPin, getAdminsList, getEquipment, getChemicals, getCrews, getEmployees, getSprayLogs, createSprayLog, checkHealth, getCrewLoginTiles, crewLogin, clearAuthToken } from './lib/api.js'
 import { getSimulatedWeather, getWeatherByCoords } from './lib/weather.js'
 import Sidebar from './components/Sidebar.jsx'
 import SprayTracker from './pages/SprayTracker.jsx'
@@ -359,7 +359,7 @@ export default function App() {
     } catch { showToast('Failed to save'); return false }
   }
 
-  const handleLogout = () => { setVehicle(null); setAdmin(null); setLoggedInEmployee(null); setLoggedInCrew(null); setDataLoaded(false); setLogs([]); setPage('spray') }
+  const handleLogout = () => { clearAuthToken(); setVehicle(null); setAdmin(null); setLoggedInEmployee(null); setLoggedInCrew(null); setDataLoaded(false); setLogs([]); setPage('spray') }
 
   const refreshData = async () => {
     try {
