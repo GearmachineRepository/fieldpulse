@@ -8,6 +8,7 @@ import { deleteSprayLog, getPurReport } from '../../lib/api.js'
 import { openPdf } from '../../components/PdfExport.js'
 import WindCompass from '../../components/WindCompass.jsx'
 import { SectionHeader, SubTabs, ConfirmDelete, FilterPills, DateRangePicker, getDateRange } from '../../components/admin/SharedAdmin.jsx'
+import LocationLink from '../../components/LocationLink.jsx'
 
 export default function SprayLogsSection({ logs, showToast, onRefresh }) {
   const [subTab, setSubTab] = useState('logs')
@@ -93,7 +94,9 @@ function AllLogsView({ logs, showToast, onRefresh }) {
                 ].map(f => (
                   <div key={f.l}>
                     <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{f.l}</div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>{f.v || '—'}</div>
+                   <div style={{ fontSize: 14, fontWeight: 600 }}>
+                    {f.l === 'Location' ? <LocationLink location={f.v} compact /> : (f.v || '—')}
+                  </div>
                   </div>
                 ))}
               </div>

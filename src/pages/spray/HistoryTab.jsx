@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { C, MONO, cardStyle, labelStyle, btnStyle } from '../../config.js'
 import WindCompass from '../../components/WindCompass.jsx'
 import { openPdf } from '../../components/PdfExport.js'
+import LocationLink from '../../components/LocationLink.jsx'
 
 export default function HistoryTab({ logs }) {
   const [expanded, setExpanded] = useState(null)
@@ -36,7 +37,9 @@ export default function HistoryTab({ logs }) {
                 {[{ l: 'Crew', v: log.crewName }, { l: 'Crew Lead', v: log.crewLead }, { l: 'Cert #', v: log.license }, { l: 'Equipment', v: log.equipment },
                   { l: 'Mix Volume', v: log.totalMixVol }, { l: 'Location', v: log.location }, { l: 'Target Pest', v: log.targetPest }].map(f => (
                   <div key={f.l}><div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{f.l}</div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>{f.v || '—'}</div></div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}><div style={{ fontSize: 14, fontWeight: 600 }}>
+                    {f.l === 'Location' ? <LocationLink location={f.v} compact /> : (f.v || '—')}</div></div>
+                    </div>
                 ))}
               </div>
 
