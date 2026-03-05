@@ -9,18 +9,22 @@ import CrewRostersSection from './admin/CrewRostersSection.jsx'
 import VehiclesSection from './admin/VehiclesSection.jsx'
 import TeamSection from './admin/TeamSection.jsx'
 import InventorySection from './admin/InventorySection.jsx'
+import AccountsSection from './admin/AccountsSection.jsx'
+import RoutesSection from './admin/RoutesSection.jsx'      // ← Phase 3
 
-export default function AdminDashboard({ page, chemicals, equipment, crews, employees, logs, onRefresh, showToast, onNav }) {
+export default function AdminDashboard({ page, chemicals, equipment, crews, employees, logs, accounts, onRefresh, showToast, onNav }) {
   // ── Operations ──
   if (page === 'admin-home')       return <AdminHome crews={crews} employees={employees} onNav={onNav} />
   if (page === 'admin-spraylogs')  return <SprayLogsSection logs={logs} showToast={showToast} onRefresh={onRefresh} />
   if (page === 'admin-rosters')    return <CrewRostersSection crews={crews} employees={employees} showToast={showToast} />
+  if (page === 'admin-routes')     return <RoutesSection crews={crews} accounts={accounts} onRefresh={onRefresh} showToast={showToast} />  // ← Phase 3
 
   // ── Manage ──
   if (page === 'admin-team')       return <TeamSection employees={employees} crews={crews} onRefresh={onRefresh} showToast={showToast} />
+  if (page === 'admin-accounts')   return <AccountsSection accounts={accounts} onRefresh={onRefresh} showToast={showToast} />
   if (page === 'admin-vehicles')   return <VehiclesSection crews={crews} onRefresh={onRefresh} showToast={showToast} />
   if (page === 'admin-inventory')  return <InventorySection chemicals={chemicals} equipment={equipment} onRefresh={onRefresh} showToast={showToast} />
 
-  // ── Fallback (unknown page) ──
+  // ── Fallback ──
   return <AdminHome crews={crews} employees={employees} onNav={onNav} />
 }

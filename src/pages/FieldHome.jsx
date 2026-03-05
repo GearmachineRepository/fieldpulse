@@ -83,6 +83,7 @@ export default function FieldHome({ vehicle, weather, logs, employees, crews, on
         <div style={labelStyle}>Quick Links</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
           {[
+            { k: 'routes', icon: '🗺️', label: 'My Routes' },
             { k: 'spray', icon: '📝', label: 'New Spray Log' },
             { k: 'crew', icon: '👷', label: 'Crew Roster' },
           ].map(link => (

@@ -2,6 +2,7 @@ import { APP, C } from '../config.js'
 
 const NAV_ITEMS = [
   { key: 'home', icon: '🏠', label: 'Home' },
+  { key: 'routes', icon: '🗺️', label: 'My Routes' },    // ← Phase 3
   { key: 'crew', icon: '👷', label: 'Crew' },
   { key: 'spray', icon: '💧', label: 'Spray Tracker' },
 ]
@@ -9,7 +10,6 @@ const NAV_ITEMS = [
 export default function Sidebar({ open, onClose, currentPage, onNav }) {
   return (
     <>
-      {/* Overlay */}
       {open && (
         <div
           onClick={onClose}
@@ -21,7 +21,6 @@ export default function Sidebar({ open, onClose, currentPage, onNav }) {
         />
       )}
 
-      {/* Drawer */}
       <div style={{
         position: 'fixed', top: 0, left: 0, bottom: 0, width: 280,
         background: C.sidebar, zIndex: 50,
@@ -29,7 +28,6 @@ export default function Sidebar({ open, onClose, currentPage, onNav }) {
         transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         display: 'flex', flexDirection: 'column',
       }}>
-        {/* Brand */}
         <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid #333' }}>
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 4, color: C.accent, fontWeight: 800 }}>
             {APP.name}
@@ -39,7 +37,6 @@ export default function Sidebar({ open, onClose, currentPage, onNav }) {
           </div>
         </div>
 
-        {/* Nav Items */}
         <div style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
           {NAV_ITEMS.map(it => (
             <div
@@ -65,9 +62,8 @@ export default function Sidebar({ open, onClose, currentPage, onNav }) {
           ))}
         </div>
 
-        {/* Footer */}
         <div style={{ padding: '16px 24px', borderTop: '1px solid #333', fontSize: 11, color: '#555' }}>
-          {APP.name} v{APP.version} · Phase 1
+          {APP.name} v{APP.version}
         </div>
       </div>
     </>

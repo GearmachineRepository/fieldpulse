@@ -6,7 +6,6 @@
 import { APP, C } from '../../config.js'
 
 // ── Navigation config — single source of truth ──
-// To add a new page: add an item here and a route in AdminDashboard.jsx
 export const NAV_GROUPS = [
   {
     items: [
@@ -18,35 +17,33 @@ export const NAV_GROUPS = [
     items: [
       { key: 'admin-spraylogs', icon: '📋', label: 'Spray Logs' },
       { key: 'admin-rosters', icon: '👷', label: 'Crew Rosters' },
+      { key: 'admin-routes', icon: '🗺️', label: 'Routes' },      // ← Phase 3
     ],
   },
   {
     label: 'Manage',
     items: [
       { key: 'admin-team', icon: '👥', label: 'Team' },
+      { key: 'admin-accounts', icon: '🏘️', label: 'Accounts' },
       { key: 'admin-inventory', icon: '🧪', label: 'Inventory' },
       { key: 'admin-vehicles', icon: '🚛', label: 'Fleet' },
     ],
   },
 ]
 
-// Flat lookup for page titles (used by App.jsx header)
 export const ADMIN_PAGE_TITLES = {}
 NAV_GROUPS.forEach(g => g.items.forEach(it => { ADMIN_PAGE_TITLES[it.key] = it.label }))
 
 export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
-  // Determine which nav item is "active" — team sub-pages map to team, etc.
   const activeKey = getActiveKey(currentPage)
 
   return (
     <>
-      {/* Overlay */}
       {open && (
         <div onClick={onClose}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 40, transition: 'opacity 0.2s' }} />
       )}
 
-      {/* Drawer */}
       <div style={{
         position: 'fixed', top: 0, left: 0, bottom: 0, width: 280,
         background: C.sidebar, zIndex: 50,
@@ -55,7 +52,6 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
         display: 'flex', flexDirection: 'column',
         boxShadow: open ? '4px 0 24px rgba(0,0,0,0.3)' : 'none',
       }}>
-        {/* Brand */}
         <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid #333' }}>
           <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 4, color: C.amber, fontWeight: 800 }}>
             {APP.name}
@@ -65,7 +61,6 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
           </div>
         </div>
 
-        {/* Nav Groups */}
         <div style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
           {NAV_GROUPS.map((group, gi) => (
             <div key={gi}>
@@ -102,7 +97,6 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
           ))}
         </div>
 
-        {/* Footer */}
         <div style={{ padding: '16px 24px', borderTop: '1px solid #333', fontSize: 11, color: '#555' }}>
           {APP.name} v{APP.version}
         </div>
@@ -111,7 +105,6 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
   )
 }
 
-// Maps sub-pages back to their parent nav item
 function getActiveKey(page) {
   if (page === 'admin-employees' || page === 'admin-crews') return 'admin-team'
   if (page === 'admin-chemicals' || page === 'admin-equipment') return 'admin-inventory'

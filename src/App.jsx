@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { APP, C, FONT, cardStyle, inputStyle, btnStyle, labelStyle } from './config.js'
-import { verifyAdminPin, getAdminsList, getEquipment, getChemicals, getCrews, getEmployees, getSprayLogs, createSprayLog, checkHealth, getCrewLoginTiles, crewLogin } from './lib/api.js'
+import { verifyAdminPin, getAdminsList, getEquipment, getChemicals, getCrews, getEmployees, getSprayLogs, createSprayLog, checkHealth, getCrewLoginTiles, crewLogin, getAccounts } from './lib/api.js'
 import { getSimulatedWeather, getWeatherByCoords } from './lib/weather.js'
 import Sidebar from './components/Sidebar.jsx'
 import AdminSidebar, { ADMIN_PAGE_TITLES } from './components/admin/AdminSidebar.jsx'
@@ -8,6 +8,7 @@ import SprayTracker from './pages/SprayTracker.jsx'
 import FieldHome from './pages/FieldHome.jsx'
 import CrewPage from './pages/CrewPage.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
+import CrewRoutes from './pages/CrewRoutes.jsx'
 
 // ═══════════════════════════════════════════
 // LOGIN SCREEN (unchanged from Phase 2)
@@ -292,6 +293,7 @@ export default function App() {
   const [crews, setCrews] = useState([])
   const [employees, setEmployees] = useState([])
   const [logs, setLogs] = useState([])
+  const [accounts, setAccounts] = useState([])
   const [weather, setWeather] = useState(() => getSimulatedWeather())
   const [dataLoaded, setDataLoaded] = useState(false)
 
@@ -317,11 +319,11 @@ export default function App() {
     ;(async () => {
       try {
         const logParams = admin ? {} : (vehicle?.id ? { vehicleId: vehicle.id } : (loggedInCrew?.name ? { crewName: loggedInCrew.name } : {}))
-        const [chems, equip, crewList, empList, sprayLogs] = await Promise.all([
+        const [chems, equip, crewList, empList, sprayLogs, accts] = await Promise.all([
           getChemicals(), getEquipment(), getCrews(), getEmployees(),
-          getSprayLogs(logParams),
+          getSprayLogs(logParams), getAccounts(),
         ])
-        setChemicals(chems); setEquipment(equip); setCrews(crewList); setEmployees(empList); setLogs(sprayLogs)
+        setChemicals(chems); setEquipment(equip); setCrews(crewList); setEmployees(empList); setLogs(sprayLogs); setAccounts(accts)
         setDataLoaded(true)
         if (vehicle || loggedInEmployee) fetchWeather()
       } catch (e) { console.error(e); showToast('Failed to load data') }
@@ -363,6 +365,7 @@ export default function App() {
       const [chems, equip, crewList, empList] = await Promise.all([getChemicals(), getEquipment(), getCrews(), getEmployees()])
       setChemicals(chems); setEquipment(equip); setCrews(crewList); setEmployees(empList)
       setLogs(await getSprayLogs(getLogParams()))
+      setAccounts(await getAccounts())
     } catch (e) { console.error(e) }
   }
 
@@ -373,7 +376,8 @@ export default function App() {
   // Page title — admin uses data-driven lookup from AdminSidebar
   const pageTitle = isAdmin
     ? (ADMIN_PAGE_TITLES[page] || 'Dashboard')
-    : { 'home': 'Home', 'spray': 'Spray Tracker', 'crew': 'Crew' }[page] || page.charAt(0).toUpperCase() + page.slice(1)
+    : { 'home': 'Home', 'spray': 'Spray Tracker', 'crew': 'Crew', 'routes': 'My Routes' }[page] || page.charAt(0).toUpperCase() + page.slice(1)
+
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: FONT, maxWidth: isAdmin ? 900 : 430, margin: '0 auto', position: 'relative' }}>
@@ -423,20 +427,23 @@ export default function App() {
           <CrewPage employees={employees} crews={crews} loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew}
             vehicle={effectiveVehicle} showToast={showToast} />
         )}
+        {!isAdmin && page === 'routes' && (
+          <CrewRoutes loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
+        )}
         {!isAdmin && page === 'spray' && (
           <SprayTracker vehicle={effectiveVehicle || { name: displayName, crewName: displaySub }} chemicals={chemicals} equipment={equipment} crews={crews}
             logs={logs} weather={weather} onRefreshWeather={fetchWeather} onSubmitLog={handleSubmitLog}
             onLogsUpdated={async () => setLogs(await getSprayLogs(getLogParams()))}
             loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
         )}
-        {!isAdmin && page !== 'spray' && page !== 'home' && page !== 'crew' && (
+        {!isAdmin && page !== 'spray' && page !== 'home' && page !== 'crew' && page !== 'routes' && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
             <div><div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div><div style={{ fontSize: 22, fontWeight: 900 }}>Coming Soon</div></div>
           </div>
         )}
         {isAdmin && (
           <AdminDashboard page={page} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees}
-            logs={logs} onRefresh={refreshData} showToast={showToast} onNav={setPage} />
+            logs={logs} accounts={accounts} onRefresh={refreshData} showToast={showToast} onNav={setPage} />
         )}
       </div>
 

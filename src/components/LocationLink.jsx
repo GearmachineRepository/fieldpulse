@@ -10,11 +10,6 @@ import { C, MONO } from '../config.js'
 // Match patterns like "34.0522, -118.2437" or "34.0522,-118.2437"
 const GPS_PATTERN = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/
 
-/**
- * Builds the correct Maps URL for a location string.
- * - GPS coordinates → pin directly on the map
- * - Address string  → search query in Maps
- */
 function getMapsUrl(location) {
   const match = location.trim().match(GPS_PATTERN)
   if (match) {
@@ -24,21 +19,10 @@ function getMapsUrl(location) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location.trim())}`
 }
 
-/**
- * Checks if a location string looks like GPS coordinates.
- */
 function isGpsCoords(location) {
   return GPS_PATTERN.test(location.trim())
 }
 
-/**
- * LocationLink
- *
- * Props:
- *   location  — string, either GPS coords or an address
- *   style     — optional override styles
- *   compact   — if true, uses smaller text (for inline use)
- */
 export default function LocationLink({ location, style = {}, compact = false }) {
   if (!location || location === '—') {
     return <span style={{ fontSize: compact ? 13 : 14, fontWeight: 600, color: C.textLight }}>—</span>

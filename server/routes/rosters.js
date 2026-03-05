@@ -22,7 +22,7 @@ router.post('/',
     try {
       await client.query('BEGIN')
       const { crewId, crewName, submittedById, submittedByName, workDate, members, notes } = req.body
-      const date = workDate || new Date().toISOString().split('T')[0]
+      const date = workDate || new Date().toLocaleDateString('en-CA')
 
       // Upsert: remove existing roster for this crew + date
       if (crewId) {
@@ -101,7 +101,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.get('/today', requireAuth, async (req, res) => {
   try {
     const { crewId } = req.query
-    const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toLocaleDateString('en-CA')
     let where = 'WHERE r.work_date = $1'
     const params = [today]
     if (crewId) { params.push(crewId); where += ` AND r.crew_id = $${params.length}` }
@@ -131,7 +131,7 @@ router.get('/today', requireAuth, async (req, res) => {
 // ── Attendance overview for today ──
 router.get('/attendance-today', requireAuth, async (req, res) => {
   try {
-    const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toLocaleDateString('en-CA')
     const crewsR = await db.query('SELECT c.id, c.name, c.lead_name FROM crews c WHERE c.active = true ORDER BY c.name')
     const empsR = await db.query('SELECT e.id, e.first_name, e.last_name, e.default_crew_id FROM employees e WHERE e.active = true')
     const rostersR = await db.query(`

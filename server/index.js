@@ -22,6 +22,8 @@ import chemicalRoutes from './routes/chemicals.js'
 import sprayLogRoutes from './routes/sprayLogs.js'
 import rosterRoutes from './routes/rosters.js'
 import reportRoutes from './routes/reports.js'
+import accountRoutes from './routes/accounts.js'
+import routeRoutes from './routes/routes.js'             // ← Phase 3
 import { requireAuth } from './middleware/auth.js'
 
 dotenv.config()
@@ -51,12 +53,8 @@ app.use('/uploads', express.static(uploadsDir))
 // Public routes (no auth — needed for login screens)
 app.use('/api/auth', authRoutes)
 app.use('/api/admins', adminsRoutes)
-app.use('/api/crews', crewRoutes)       // /login-tiles is public, rest require auth
-app.use('/api/vehicles', requireAuth, async (req, res, next) => {
-  // GET /api/vehicles is also needed for login screen
-  // Already handled inside vehicleRoutes with requireAuth per-route
-  next()
-})
+app.use('/api/crews', crewRoutes)
+app.use('/api/vehicles', requireAuth, async (req, res, next) => { next() })
 
 // Protected routes
 app.use('/api/vehicles', vehicleRoutes)
@@ -66,6 +64,8 @@ app.use('/api/chemicals', chemicalRoutes)
 app.use('/api/spray-logs', sprayLogRoutes(upload))
 app.use('/api/rosters', rosterRoutes)
 app.use('/api/reports', reportRoutes)
+app.use('/api/accounts', accountRoutes)
+app.use('/api/routes', routeRoutes(upload))               // ← Phase 3
 
 // ── Health check ──
 app.get('/api/health', async (req, res) => {

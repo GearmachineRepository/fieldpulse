@@ -47,28 +47,43 @@ export function SubTabs({ tabs, active, onChange }) {
 }
 
 // ── Modal with focus trap ──
+// FIX: Use refs for callbacks so the effect only runs once on mount.
+// Previously, the inline onCancel arrow function caused the effect to
+// re-run on every render, stealing focus from whatever input was active.
 export function FormModal({ title, children, onSave, onCancel, onDelete, saving }) {
   const modalRef = useRef(null)
+  const onCancelRef = useRef(onCancel)
+  onCancelRef.current = onCancel
 
   useEffect(() => {
     const modal = modalRef.current
     if (!modal) return
+
+    // Focus first focusable element on mount only
     const focusable = modal.querySelectorAll('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
     if (focusable.length) focusable[0].focus()
+
     const trap = (e) => {
-      if (e.key === 'Escape') { onCancel(); return }
+      if (e.key === 'Escape') { onCancelRef.current(); return }
       if (e.key !== 'Tab') return
-      const first = focusable[0], last = focusable[focusable.length - 1]
-      if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus() } }
-      else { if (document.activeElement === last) { e.preventDefault(); first.focus() } }
+      // Re-query focusable elements on each Tab press (form content may change)
+      const currentFocusable = modal.querySelectorAll('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      if (currentFocusable.length === 0) return
+      const first = currentFocusable[0]
+      const last = currentFocusable[currentFocusable.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
     }
     modal.addEventListener('keydown', trap)
     return () => modal.removeEventListener('keydown', trap)
-  }, [onCancel])
+  }, []) // ← empty deps: runs once on mount, not on every render
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-      onClick={e => { if (e.target === e.currentTarget) onCancel() }}>
+      onClick={e => { if (e.target === e.currentTarget) onCancelRef.current() }}>
       <div ref={modalRef} style={{ background: C.card, borderRadius: 20, padding: 24, width: '100%', maxWidth: 480, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
         <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 20 }}>{title}</div>
         {children}
@@ -86,24 +101,34 @@ export function FormModal({ title, children, onSave, onCancel, onDelete, saving 
 }
 
 // ── Confirm delete dialog ──
+// Same ref-based fix as FormModal above.
 export function ConfirmDelete({ name, onConfirm, onCancel }) {
   const modalRef = useRef(null)
+  const onCancelRef = useRef(onCancel)
+  onCancelRef.current = onCancel
 
   useEffect(() => {
     const modal = modalRef.current
     if (!modal) return
     const focusable = modal.querySelectorAll('button, [tabindex]:not([tabindex="-1"])')
     if (focusable.length) focusable[0].focus()
+
     const trap = (e) => {
-      if (e.key === 'Escape') { onCancel(); return }
+      if (e.key === 'Escape') { onCancelRef.current(); return }
       if (e.key !== 'Tab') return
-      const first = focusable[0], last = focusable[focusable.length - 1]
-      if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus() } }
-      else { if (document.activeElement === last) { e.preventDefault(); first.focus() } }
+      const currentFocusable = modal.querySelectorAll('button, [tabindex]:not([tabindex="-1"])')
+      if (currentFocusable.length === 0) return
+      const first = currentFocusable[0]
+      const last = currentFocusable[currentFocusable.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
     }
     modal.addEventListener('keydown', trap)
     return () => modal.removeEventListener('keydown', trap)
-  }, [onCancel])
+  }, []) // ← empty deps
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
@@ -120,17 +145,32 @@ export function ConfirmDelete({ name, onConfirm, onCancel }) {
   )
 }
 
-// ── Generic form field ──
+// ── Generic form field (supports text, checkbox, textarea) ──
 export const Field = ({ label, value, onChange, placeholder, type, required }) => (
   <div style={{ marginBottom: 14 }}>
     <div style={labelStyle}>{label}{required && <span style={{ color: C.red }}> *</span>}</div>
     {type === 'checkbox' ? (
-      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-        <input type="checkbox" checked={value} onChange={e => onChange(e.target.checked)} style={{ width: 20, height: 20 }} />
-        <span style={{ fontSize: 15 }}>{placeholder}</span>
-      </label>
+      <div tabIndex={0} role="button"
+        onClick={() => onChange(!value)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(!value) } }}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 0' }}>
+        <div style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${value ? C.accent : C.cardBorder}`,
+          background: value ? C.accent : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+          {value && <span style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>✓</span>}
+        </div>
+        <span style={{ fontSize: 14, fontWeight: 600, color: C.textMed }}>{placeholder}</span>
+      </div>
+    ) : type === 'textarea' ? (
+      <textarea
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={3}
+        style={inputStyle({ resize: 'vertical', minHeight: 80 })}
+      />
     ) : (
-      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={inputStyle()} />
+      <input value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        type={type || 'text'} style={inputStyle()} />
     )}
   </div>
 )
@@ -223,7 +263,7 @@ export function getDateRange(rangeType, month, year, startDate, endDate) {
     return { start: `${year}-${String(month).padStart(2, '0')}-01`, end: new Date(year, month, 1).toISOString().split('T')[0], label: `${monthNames[month]} ${year}` }
   } else if (rangeType === 'biweekly') {
     const s = new Date(); s.setDate(s.getDate() - 14)
-    return { start: s.toISOString().split('T')[0], end: new Date().toISOString().split('T')[0], label: 'Last 14 Days' }
+    return { start: s.toISOString().split('T')[0], end: new Date().toLocaleDateString('en-CA'), label: 'Last 14 Days' }
   } else {
     return { start: startDate, end: endDate, label: `${startDate} to ${endDate}` }
   }
