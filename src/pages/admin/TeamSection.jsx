@@ -201,7 +201,7 @@ function EmployeesView({ employees, crews, onRefresh, showToast }) {
       {showForm && (
         <FormModal
           title={editItem ? `${editItem.first_name} ${editItem.last_name}` : 'New Employee'}
-          onClose={() => setShowForm(false)}
+          onCancel={() => setShowForm(false)}
           onSave={save}
           saving={saving}
           onDelete={editItem ? handleFormDelete : null}
@@ -377,7 +377,7 @@ function CrewsView({ crews, employees, onRefresh, showToast }) {
       {showForm && (
         <FormModal
           title={editItem ? editItem.name : 'New Crew'}
-          onClose={() => setShowForm(false)}
+          onCancel={() => setShowForm(false)}
           onSave={save}
           saving={saving}
           onDelete={editItem ? handleFormDelete : null}
