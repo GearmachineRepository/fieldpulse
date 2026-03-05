@@ -7,8 +7,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { APP, C, MONO, cardStyle, labelStyle, inputStyle, btnStyle } from '../../config.js'
 import { getRoutes, getRoute, createRoute, updateRoute, deleteRoute, getAccounts,
   addRouteStop, removeRouteStop, updateRouteStop, reorderRouteStops,
-  getWeekSchedule, getCompletionLog } from '../../lib/api.js'
-import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field } from '../../components/admin/SharedAdmin.jsx'
+  getWeekSchedule, getCompletionLog, undoCompletion } from '../../lib/api.js'
+import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field, DateRangePicker, getDateRange } from '../../components/admin/SharedAdmin.jsx'
 import AccountMap from '../../components/AccountMap.jsx'
 import LocationLink from '../../components/LocationLink.jsx'
 
@@ -45,52 +45,77 @@ export default function RoutesSection({ crews, accounts, onRefresh, showToast })
 }
 
 // ═══════════════════════════════════════════
-// WORK LOG VIEW
+// WORK LOG VIEW — Generate-on-demand pattern
+// Matches spray logs UX: DateRangePicker → Generate Report → results
+// Entries can be individually deleted (with confirmation)
 // ═══════════════════════════════════════════
 function WorkLogView({ crews, showToast }) {
-  const today = new Date().toLocaleDateString('en-CA')
-  const weekAgo = (() => { const d = new Date(); d.setDate(d.getDate() - 7); return d.toLocaleDateString('en-CA') })()
-
-  const [entries, setEntries] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [startDate, setStartDate] = useState(weekAgo)
-  const [endDate, setEndDate] = useState(today)
+  const now = new Date()
+  const [rangeType, setRangeType]   = useState('monthly')
+  const [month, setMonth]           = useState(now.getMonth() + 1)
+  const [year, setYear]             = useState(now.getFullYear())
+  const [startDate, setStartDate]   = useState('')
+  const [endDate, setEndDate]       = useState('')
   const [filterCrew, setFilterCrew] = useState('')
-  const [expanded, setExpanded] = useState(null)
 
-  const load = useCallback(async () => {
+  const [entries, setEntries]   = useState(null)   // null = not yet generated
+  const [loading, setLoading]   = useState(false)
+  const [expanded, setExpanded] = useState(null)
+  const [deleteId, setDeleteId] = useState(null)
+  const [generatedRange, setGeneratedRange] = useState(null)
+
+  // ── Generate ──
+  const generate = async () => {
+    const range = getDateRange(rangeType, month, year, startDate, endDate)
+    if (!range.start || !range.end) return
     setLoading(true)
+    setExpanded(null)
     try {
-      const params = { start: startDate, end: endDate }
+      const params = { start: range.start, end: range.end }
       if (filterCrew) params.crewId = filterCrew
       setEntries(await getCompletionLog(params))
-    } catch (e) { console.error(e) }
+      setGeneratedRange(range)
+    } catch (e) { console.error(e); showToast('Failed to load work log') }
     setLoading(false)
-  }, [startDate, endDate, filterCrew])
-
-  useEffect(() => { load() }, [load])
-
-  // Group by date for display
-  const byDate = {}
-  for (const entry of entries) {
-    const d = new Date(entry.workDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-    if (!byDate[d]) byDate[d] = { label: d, entries: [] }
-    byDate[d].entries.push(entry)
   }
-  const dateGroups = Object.values(byDate)
 
-  // Stats
-  const totalTime = entries.reduce((s, e) => s + (e.timeSpentMinutes || 0), 0)
-  const totalPhotos = entries.reduce((s, e) => s + (e.fieldNotes?.length || 0), 0)
-  const completedCount = entries.filter(e => e.status === 'complete').length
-  const issueCount = entries.filter(e => e.status === 'issue').length
+  // ── Delete entry ──
+  const handleDelete = async () => {
+    try {
+      await undoCompletion(deleteId)
+      setEntries(prev => prev.filter(e => e.id !== deleteId))
+      if (expanded === deleteId) setExpanded(null)
+      setDeleteId(null)
+      showToast('Entry deleted ✓')
+    } catch { showToast('Failed to delete') }
+  }
 
+  // ── Derived stats (only when entries exist) ──
+  const totalTime     = entries ? entries.reduce((s, e) => s + (e.timeSpentMinutes || 0), 0) : 0
+  const totalPhotos   = entries ? entries.reduce((s, e) => s + (e.fieldNotes?.length || 0), 0) : 0
+  const issueCount    = entries ? entries.filter(e => e.status === 'issue').length : 0
+
+  // ── Group by date ──
+  const dateGroups = entries
+    ? Object.values(
+        entries.reduce((acc, entry) => {
+          const d = new Date(entry.workDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+          if (!acc[d]) acc[d] = { label: d, entries: [] }
+          acc[d].entries.push(entry)
+          return acc
+        }, {})
+      )
+    : []
+
+  // ── Export / Print ──
   const exportReport = () => {
+    if (!entries || entries.length === 0) return
+    const range = generatedRange
     const rows = entries.map(e => {
       const st = STATUS_LABELS[e.status] || { label: e.status }
       const time = e.timeSpentMinutes ? formatTime(e.timeSpentMinutes) : '—'
       return `<tr>
-        <td style="padding:6px 10px;border:1px solid #ddd">${new Date(e.workDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd">${new Date(e.workDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
         <td style="padding:6px 10px;border:1px solid #ddd;font-weight:600">${e.accountName}</td>
         <td style="padding:6px 10px;border:1px solid #ddd">${e.accountAddress || ''}${e.accountCity ? ', ' + e.accountCity : ''}</td>
         <td style="padding:6px 10px;border:1px solid #ddd">${e.crewName || '—'}</td>
@@ -104,15 +129,27 @@ function WorkLogView({ crews, showToast }) {
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Work Log Report</title>
 <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:32px;color:#1a1a18;font-size:12px}
-.header{border-bottom:3px solid #2D7A3A;padding-bottom:12px;margin-bottom:20px}.brand{font-size:11px;text-transform:uppercase;letter-spacing:3px;color:#2D7A3A;font-weight:800}
-h1{font-size:22px;margin:4px 0}table{width:100%;border-collapse:collapse;margin-top:12px}
+.header{border-bottom:3px solid #2D7A3A;padding-bottom:12px;margin-bottom:20px}
+.brand{font-size:11px;text-transform:uppercase;letter-spacing:3px;color:#2D7A3A;font-weight:800}
+h1{font-size:22px;margin:4px 0}
+table{width:100%;border-collapse:collapse;margin-top:12px}
 th{background:#f4f4f0;padding:6px 10px;border:1px solid #ddd;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#666}
-.footer{margin-top:24px;border-top:2px solid #eee;padding-top:12px;font-size:9px;color:#999}@media print{body{padding:16px}}</style></head><body>
+td{padding:6px 10px;border:1px solid #ddd;vertical-align:top}
+.footer{margin-top:24px;border-top:2px solid #eee;padding-top:12px;font-size:9px;color:#999}
+@media print{body{padding:16px}}</style></head><body>
 <div class="header"><div class="brand">${APP.name} — Work Log Report</div>
-<h1>${startDate} to ${endDate}</h1></div>
-<div style="margin-bottom:16px;font-size:13px"><strong>${entries.length}</strong> entries · <strong>${formatTime(totalTime)}</strong> total time · <strong>${totalPhotos}</strong> photos</div>
-<table><thead><tr><th>Date</th><th>Account</th><th>Address</th><th>Crew</th><th>By</th><th>Status</th><th>Time</th><th>Notes</th><th>Photos</th></tr></thead><tbody>${rows}</tbody></table>
-<div class="footer">Generated by ${APP.name} · ${new Date().toLocaleString()}</div></body></html>`
+<h1>${range.label}</h1></div>
+<div style="margin-bottom:16px;font-size:13px">
+  <strong>${entries.length}</strong> entries ·
+  <strong>${formatTime(totalTime) || '0m'}</strong> total time ·
+  <strong>${totalPhotos}</strong> photo${totalPhotos !== 1 ? 's' : ''}
+</div>
+<table><thead><tr>
+  <th>Date</th><th>Account</th><th>Address</th><th>Crew</th>
+  <th>By</th><th>Status</th><th>Time</th><th>Notes</th><th>Photos</th>
+</tr></thead><tbody>${rows}</tbody></table>
+<div class="footer">Generated by ${APP.name} · ${new Date().toLocaleString()}</div>
+</body></html>`
 
     const w = window.open('', '_blank', 'width=1000,height=900')
     if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
@@ -120,168 +157,204 @@ th{background:#f4f4f0;padding:6px 10px;border:1px solid #ddd;text-align:left;fon
 
   return (
     <div>
-      <SectionHeader title="Work Log" count={entries.length} />
+      <SectionHeader title="Work Log" />
 
-      {/* Filters */}
-      <div style={cardStyle()}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-          <div>
-            <div style={labelStyle}>Start Date</div>
-            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle()} />
-          </div>
-          <div>
-            <div style={labelStyle}>End Date</div>
-            <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle()} />
+      {/* ── Filter + Generate card ── */}
+      <div style={{ ...cardStyle(), padding: 20 }}>
+        <div style={{ fontSize: 14, color: C.textMed, marginBottom: 16, lineHeight: 1.6 }}>
+          Generate a work log report to see completed route stops for a date range.
+        </div>
+
+        <DateRangePicker
+          rangeType={rangeType} setRangeType={setRangeType}
+          month={month} setMonth={setMonth}
+          year={year} setYear={setYear}
+          startDate={startDate} setStartDate={setStartDate}
+          endDate={endDate} setEndDate={setEndDate}
+          accentColor={C.accent}
+        />
+
+        {/* Crew filter pills */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={labelStyle}>Filter by Crew</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+            <button onClick={() => setFilterCrew('')}
+              style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: 'none',
+                background: !filterCrew ? C.accent : '#eee', color: !filterCrew ? '#fff' : C.textMed }}>
+              All Crews
+            </button>
+            {crews.map(c => (
+              <button key={c.id} onClick={() => setFilterCrew(filterCrew === String(c.id) ? '' : String(c.id))}
+                style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: 'none',
+                  background: filterCrew === String(c.id) ? C.accent : '#eee',
+                  color: filterCrew === String(c.id) ? '#fff' : C.textMed }}>
+                {c.name}
+              </button>
+            ))}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <div tabIndex={0} role="button" onClick={() => setFilterCrew('')}
-            style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              background: !filterCrew ? C.accent : '#eee', color: !filterCrew ? '#fff' : C.textMed }}>All Crews</div>
-          {crews.map(c => (
-            <div key={c.id} tabIndex={0} role="button" onClick={() => setFilterCrew(filterCrew === String(c.id) ? '' : String(c.id))}
-              style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                background: filterCrew === String(c.id) ? C.accent : '#eee',
-                color: filterCrew === String(c.id) ? '#fff' : C.textMed }}>{c.name}</div>
-          ))}
-        </div>
+
+        <button tabIndex={0} onClick={generate} disabled={loading}
+          style={btnStyle(C.accent, '#fff', { opacity: loading ? 0.6 : 1 })}>
+          {loading ? 'Generating...' : 'Generate Report'}
+        </button>
       </div>
 
-      {/* Summary stats */}
-      {entries.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginTop: 12 }}>
-          {[
-            { label: 'Entries', value: entries.length, color: C.accent },
-            { label: 'Total Time', value: formatTime(totalTime) || '0m', color: C.blue },
-            { label: 'Photos', value: totalPhotos, color: C.amber },
-            { label: 'Issues', value: issueCount, color: issueCount > 0 ? C.red : C.textLight },
-          ].map(s => (
-            <div key={s.label} style={{ ...cardStyle({ textAlign: 'center', padding: '12px 8px' }) }}>
-              <div style={{ fontSize: 20, fontWeight: 900, color: s.color }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 2 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Export button */}
-      {entries.length > 0 && (
-        <button tabIndex={0} onClick={exportReport} style={{ ...btnStyle(C.blue, '#fff', { marginTop: 12 }) }}>
-          📄 Export / Print Report
-        </button>
-      )}
-
-      {/* Entries by date */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 40, color: C.textLight }}>Loading...</div>
-      ) : entries.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 40, color: C.textLight, marginTop: 12 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
-          <div style={{ fontSize: 16, fontWeight: 700 }}>No work logged in this period</div>
-        </div>
-      ) : dateGroups.map(group => (
-        <div key={group.label} style={{ marginTop: 14 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 8, color: C.textMed }}>
-            {group.label} — {group.entries.length} entr{group.entries.length !== 1 ? 'ies' : 'y'}
-          </div>
-          {group.entries.map(entry => {
-            const st = STATUS_LABELS[entry.status] || { label: entry.status, color: C.textLight }
-            const isExpanded = expanded === entry.id
-            return (
-              <div key={entry.id} style={{ marginBottom: 8 }}>
-                <div tabIndex={0} role="button"
-                  onClick={() => setExpanded(isExpanded ? null : entry.id)}
-                  onKeyDown={e => e.key === 'Enter' && setExpanded(isExpanded ? null : entry.id)}
-                  style={{ ...cardStyle({ marginBottom: 0, cursor: 'pointer' }),
-                    borderRadius: isExpanded ? '16px 16px 0 0' : 16,
-                    borderLeft: `4px solid ${entry.routeColor || C.accent}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 800 }}>{entry.accountName}</div>
-                      <div style={{ fontSize: 13, color: C.textMed, marginTop: 2 }}>
-                        {entry.crewName || '—'} · {entry.completedByName}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, fontWeight: 700,
-                        background: `${st.color}15`, color: st.color }}>{st.label}</span>
-                      {entry.timeSpentMinutes > 0 && (
-                        <div style={{ fontSize: 12, color: C.textLight, marginTop: 4, fontWeight: 600 }}>
-                          {formatTime(entry.timeSpentMinutes)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {/* Quick preview of notes */}
-                  {entry.notes && !isExpanded && (
-                    <div style={{ fontSize: 13, color: C.textLight, marginTop: 6, fontStyle: 'italic',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.notes}</div>
-                  )}
-                  <div style={{ display: 'flex', gap: 10, marginTop: 6, fontSize: 12, color: C.textLight, fontWeight: 600 }}>
-                    <span>{new Date(entry.completedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
-                    {entry.fieldNotes?.length > 0 && <span>📷 {entry.fieldNotes.length}</span>}
-                    {entry.latitude && <span>📍 GPS</span>}
-                  </div>
+      {/* ── Results ── */}
+      {entries !== null && (
+        <>
+          {/* Summary header */}
+          <div style={{ ...cardStyle({ background: C.accentLight, borderColor: C.accentBorder }), marginTop: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: C.accent }}>{generatedRange?.label}</div>
+                <div style={{ fontSize: 14, color: C.textMed, marginTop: 4 }}>
+                  {entries.length} entr{entries.length !== 1 ? 'ies' : 'y'}
+                  {totalTime > 0 && ` · ${formatTime(totalTime)} total`}
+                  {totalPhotos > 0 && ` · ${totalPhotos} photo${totalPhotos !== 1 ? 's' : ''}`}
+                  {issueCount > 0 && <span style={{ color: C.red }}> · {issueCount} issue{issueCount !== 1 ? 's' : ''}</span>}
                 </div>
+              </div>
+              {entries.length > 0 && (
+                <button tabIndex={0} onClick={exportReport}
+                  style={{ ...btnStyle(C.blue, '#fff', { width: 'auto', padding: '10px 16px', fontSize: 13 }) }}>
+                  🖨️ Print / Export
+                </button>
+              )}
+            </div>
+          </div>
 
-                {/* Expanded detail */}
-                {isExpanded && (
-                  <div style={{ background: '#FAFAF7', border: `1.5px solid ${C.cardBorder}`, borderTop: 'none',
-                    borderRadius: '0 0 16px 16px', padding: '14px 18px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                      {[
-                        { l: 'Account', v: entry.accountName },
-                        { l: 'Address', v: `${entry.accountAddress || ''}${entry.accountCity ? ', ' + entry.accountCity : ''}` },
-                        { l: 'Route', v: entry.routeName },
-                        { l: 'Crew', v: entry.crewName || '—' },
-                        { l: 'Completed By', v: entry.completedByName },
-                        { l: 'Time Spent', v: entry.timeSpentMinutes ? formatTime(entry.timeSpentMinutes) : '—' },
-                        { l: 'Status', v: st.label },
-                        { l: 'Date/Time', v: new Date(entry.completedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) },
-                      ].map(f => (
-                        <div key={f.l}>
-                          <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{f.l}</div>
-                          <div style={{ fontSize: 14, fontWeight: 600, marginTop: 2 }}>{f.v || '—'}</div>
+          {entries.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 40, color: C.textLight }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>No work logged in this period</div>
+              <div style={{ fontSize: 13, color: C.textLight, marginTop: 4 }}>Try a different date range or crew filter</div>
+            </div>
+          ) : dateGroups.map(group => (
+            <div key={group.label} style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: C.textMed, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                {group.label} — {group.entries.length} entr{group.entries.length !== 1 ? 'ies' : 'y'}
+              </div>
+
+              {group.entries.map(entry => {
+                const st = STATUS_LABELS[entry.status] || { label: entry.status, color: C.textLight }
+                const isExpanded = expanded === entry.id
+                return (
+                  <div key={entry.id} style={{ marginBottom: 8 }}>
+                    {/* ── Collapsed row ── */}
+                    <div tabIndex={0} role="button"
+                      onClick={() => setExpanded(isExpanded ? null : entry.id)}
+                      onKeyDown={e => e.key === 'Enter' && setExpanded(isExpanded ? null : entry.id)}
+                      style={{ ...cardStyle({ marginBottom: 0, cursor: 'pointer' }),
+                        borderRadius: isExpanded ? '12px 12px 0 0' : 12,
+                        transition: 'border-color 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = C.accent}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 15, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {entry.accountName}
+                          </div>
+                          <div style={{ fontSize: 13, color: C.textLight, marginTop: 2 }}>
+                            {entry.crewName || '—'} · {entry.completedByName}
+                            {entry.timeSpentMinutes > 0 && ` · ${formatTime(entry.timeSpentMinutes)}`}
+                          </div>
                         </div>
-                      ))}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 10, flexShrink: 0 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: st.color,
+                            padding: '3px 8px', borderRadius: 6, background: `${st.color}15` }}>
+                            {st.label}
+                          </span>
+                          {entry.fieldNotes?.length > 0 && (
+                            <span style={{ fontSize: 12, color: C.amber, fontWeight: 700 }}>
+                              📷 {entry.fieldNotes.length}
+                            </span>
+                          )}
+                          <span style={{ fontSize: 16, color: C.textLight }}>{isExpanded ? '▲' : '▼'}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {entry.notes && (
-                      <>
-                        <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>Notes</div>
-                        <div style={{ fontSize: 14, color: C.textMed, lineHeight: 1.6, marginBottom: 12 }}>{entry.notes}</div>
-                      </>
-                    )}
+                    {/* ── Expanded detail ── */}
+                    {isExpanded && (
+                      <div style={{ ...cardStyle({ marginBottom: 0 }), borderTop: 'none',
+                        borderRadius: '0 0 12px 12px', background: '#FAFAF8' }}>
 
-                    {entry.latitude && entry.longitude && (
-                      <div style={{ marginBottom: 12 }}>
-                        <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>GPS Location</div>
-                        <LocationLink location={`${entry.latitude}, ${entry.longitude}`} compact />
-                      </div>
-                    )}
-
-                    {entry.fieldNotes?.length > 0 && (
-                      <>
-                        <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>
-                          Photos ({entry.fieldNotes.length})
+                        {/* Location */}
+                        <div style={{ fontSize: 13, color: C.textMed, marginBottom: 12 }}>
+                          {[entry.accountAddress, entry.accountCity, entry.accountState].filter(Boolean).join(', ')}
                         </div>
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                          {entry.fieldNotes.map(fn => (
-                            <a key={fn.id} href={`/uploads/${fn.filename}`} target="_blank" rel="noopener noreferrer">
-                              <img src={`/uploads/${fn.filename}`} alt={fn.originalName || 'Field note'}
-                                style={{ width: 80, height: 80, borderRadius: 10, objectFit: 'cover', border: `1px solid ${C.cardBorder}` }} />
-                            </a>
+
+                        {/* Meta row */}
+                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
+                          {[
+                            { l: 'Crew', v: entry.crewName || '—' },
+                            { l: 'Logged By', v: entry.completedByName },
+                            { l: 'Time Spent', v: entry.timeSpentMinutes ? formatTime(entry.timeSpentMinutes) : '—' },
+                            { l: 'Photos', v: entry.fieldNotes?.length || 0 },
+                          ].map(({ l, v }) => (
+                            <div key={l}>
+                              <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{l}</div>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{v}</div>
+                            </div>
                           ))}
                         </div>
-                      </>
+
+                        {/* Notes */}
+                        {entry.notes && (
+                          <div style={{ marginBottom: 12 }}>
+                            <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 }}>Notes</div>
+                            <div style={{ fontSize: 14, color: C.textMed, lineHeight: 1.5 }}>{entry.notes}</div>
+                          </div>
+                        )}
+
+                        {/* Photo thumbnails */}
+                        {entry.fieldNotes?.length > 0 && (
+                          <div style={{ marginBottom: 12 }}>
+                            <div style={{ fontSize: 11, color: C.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 6 }}>
+                              Photos ({entry.fieldNotes.length})
+                            </div>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                              {entry.fieldNotes.map((fn, i) => (
+                                <a key={i} href={`/uploads/${fn.filename}`} target="_blank" rel="noreferrer">
+                                  <img src={`/uploads/${fn.filename}`} alt={fn.originalName || 'photo'}
+                                    style={{ width: 72, height: 72, borderRadius: 10, objectFit: 'cover',
+                                      border: `1.5px solid ${C.cardBorder}` }} />
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Actions: Export row + Delete */}
+                        <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                          <button tabIndex={0} onClick={exportReport}
+                            style={{ ...btnStyle(C.blue, '#fff', { flex: 1, fontSize: 13, padding: '10px' }) }}>
+                            🖨️ Export Report
+                          </button>
+                          <button tabIndex={0} onClick={() => setDeleteId(entry.id)}
+                            style={{ ...btnStyle('#fff', C.red, { width: 'auto', padding: '10px 16px', fontSize: 13,
+                              border: `2px solid ${C.red}`, boxShadow: 'none' }) }}>
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      ))}
+                )
+              })}
+            </div>
+          ))}
+        </>
+      )}
+
+      {deleteId && (
+        <ConfirmDelete
+          name="this work log entry"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
     </div>
   )
 }

@@ -510,7 +510,7 @@ function CompletionModal({ stop, routeId, routeColor, employeeName, employeeId, 
         {/* Photos */}
         <div style={{ marginBottom: 20 }}>
           <div style={labelStyle}>Photos</div>
-          <input ref={fileRef} type="file" accept="image/*" capture="environment" multiple
+          <input ref={fileRef} type="file" accept="image/*" multiple
             onChange={handlePhotoAdd} style={{ display: 'none' }} />
           <button tabIndex={0} onClick={() => fileRef.current?.click()}
             style={{ fontSize: 14, padding: '12px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 700,
