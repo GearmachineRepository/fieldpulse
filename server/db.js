@@ -1,3 +1,7 @@
+// ═══════════════════════════════════════════
+// Database — PostgreSQL connection pool
+// ═══════════════════════════════════════════
+
 import pg from 'pg'
 import dotenv from 'dotenv'
 
@@ -9,6 +13,16 @@ const pool = new pg.Pool({
   database: process.env.DB_NAME || 'fieldpulse',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '',
+
+  // Pool tuning — sensible defaults for a single-server app
+  max: 10,                        // max concurrent connections
+  idleTimeoutMillis: 30_000,      // close idle connections after 30s
+  connectionTimeoutMillis: 5_000, // fail fast if DB is unreachable
+})
+
+// Surface connection errors at startup rather than silently on first query
+pool.on('error', (err) => {
+  console.error('  ✗ Unexpected PostgreSQL pool error:', err.message)
 })
 
 // Test connection on startup
