@@ -122,7 +122,7 @@ export default function CrewPage({ employees, crews, loggedInEmployee, loggedInC
       {showForm && (
         <div style={{ ...cardStyle(), borderColor: C.blueBorder }}>
           <div style={{ fontSize: 12, fontWeight: 800, color: C.blue, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 2 }}>
-            {todayRoster ? 'Update Clock-In' : 'Who\'s Clocking In Today?'}
+            {todayRoster ? 'Update Clock-In' : "Who's Clocking In Today?"}
           </div>
           <div style={{ fontSize: 13, color: C.textLight, marginBottom: 16 }}>
             Uncheck anyone not with you. Add fill-ins from other crews below.
@@ -137,7 +137,8 @@ export default function CrewPage({ employees, crews, loggedInEmployee, loggedInC
                   onClick={() => toggleMember(emp)}
                   onKeyDown={e => e.key === 'Enter' && toggleMember(emp)}
                   style={{
-                    padding: '12px 14px', borderRadius: 14, cursor: 'pointer', outline: 'none',
+                    padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
+                    // outline: 'none' removed — :focus-visible ring handled in global.css
                     background: isSelected ? C.blueLight : C.card,
                     border: `1.5px solid ${isSelected ? C.blueBorder : C.cardBorder}`,
                     display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
@@ -174,7 +175,8 @@ export default function CrewPage({ employees, crews, loggedInEmployee, loggedInC
                     onClick={() => toggleMember(emp, true)}
                     onKeyDown={e => e.key === 'Enter' && toggleMember(emp, true)}
                     style={{
-                      padding: '10px 14px', borderRadius: 12, cursor: 'pointer', outline: 'none', marginBottom: 6,
+                      padding: '10px 14px', borderRadius: 12, cursor: 'pointer', marginBottom: 6,
+                      // outline: 'none' removed — :focus-visible ring handled in global.css
                       background: isSelected ? C.blueLight : C.card,
                       border: `1.5px solid ${isSelected ? C.blueBorder : C.cardBorder}`,
                       display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
@@ -203,10 +205,11 @@ export default function CrewPage({ employees, crews, loggedInEmployee, loggedInC
               </button>
             </div>
           ) : (
+            // outline: 'none' removed — :focus-visible ring handled in global.css
             <div tabIndex={0} role="button"
               onClick={() => setShowOtherCrews(true)}
               onKeyDown={e => e.key === 'Enter' && setShowOtherCrews(true)}
-              style={{ padding: 14, borderRadius: 14, border: `2px dashed ${C.blueBorder}`, textAlign: 'center', cursor: 'pointer', fontSize: 14, color: C.blue, fontWeight: 700, background: C.blueLight, outline: 'none', marginBottom: 14 }}>
+              style={{ padding: 14, borderRadius: 14, border: `2px dashed ${C.blueBorder}`, textAlign: 'center', cursor: 'pointer', fontSize: 14, color: C.blue, fontWeight: 700, background: C.blueLight, marginBottom: 14 }}>
               + Add Fill-In From Another Crew
             </div>
           )}

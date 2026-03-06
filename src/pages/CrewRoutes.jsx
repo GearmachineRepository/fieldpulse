@@ -9,9 +9,9 @@ import { getCrewRoutes, getRouteDay, completeRouteStop, undoCompletion, uploadFi
 import LocationLink from '../components/LocationLink.jsx'
 
 const STATUS_OPTIONS = [
-  { value: 'complete', label: '✅ Complete', color: C.accent },
+  { value: 'complete',    label: '✅ Complete',    color: C.accent },
   { value: 'in_progress', label: '🔄 In Progress', color: C.amber },
-  { value: 'issue', label: '⚠️ Issue', color: C.red },
+  { value: 'issue',       label: '⚠️ Issue',        color: C.red },
 ]
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -39,18 +39,20 @@ function formatDateDisplay(dateStr) {
 }
 
 export default function CrewRoutes({ loggedInEmployee, loggedInCrew }) {
-  const [allRoutes, setAllRoutes] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [allRoutes, setAllRoutes]   = useState([])
+  const [loading, setLoading]       = useState(true)
   const [selectedDow, setSelectedDow] = useState(getLocalDow())
 
   // Ongoing routes — loaded flat with stops
-  const [ongoingStops, setOngoingStops] = useState([])
+  const [ongoingStops, setOngoingStops]     = useState([])
   const [ongoingLoading, setOngoingLoading] = useState(false)
 
-  const crewId = loggedInCrew?.id
-  const employeeName = loggedInEmployee ? `${loggedInEmployee.firstName} ${loggedInEmployee.lastName}` : 'Crew'
+  const crewId       = loggedInCrew?.id
+  const employeeName = loggedInEmployee
+    ? `${loggedInEmployee.firstName} ${loggedInEmployee.lastName}`
+    : 'Crew'
   const selectedDate = getDateForDow(selectedDow)
-  const isToday = selectedDow === getLocalDow()
+  const isToday      = selectedDow === getLocalDow()
 
   const load = useCallback(async () => {
     if (!crewId) { setLoading(false); return }
@@ -101,8 +103,8 @@ export default function CrewRoutes({ loggedInEmployee, loggedInCrew }) {
   }, [allRoutes])
 
   const scheduledRoutes = allRoutes.filter(r => r.dayOfWeek === selectedDow && r.stopCount > 0)
-  const hasOngoing = allRoutes.some(r => r.dayOfWeek === null && r.stopCount > 0)
-  const daysWithRoutes = new Set(allRoutes.filter(r => r.dayOfWeek !== null && r.stopCount > 0).map(r => r.dayOfWeek))
+  const hasOngoing      = allRoutes.some(r => r.dayOfWeek === null && r.stopCount > 0)
+  const daysWithRoutes  = new Set(allRoutes.filter(r => r.dayOfWeek !== null && r.stopCount > 0).map(r => r.dayOfWeek))
 
   if (loading) return (
     <div style={{ textAlign: 'center', padding: 40 }}>
@@ -121,13 +123,15 @@ export default function CrewRoutes({ loggedInEmployee, loggedInCrew }) {
 
   return (
     <div>
-      {/* Week day tabs */}
+      {/* Week day tabs
+          overflow: hidden removed — was clipping :focus-visible ring on first/last tab.
+          Inner tabs have borderRadius: 10 so corners still look correct. */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 14, background: C.card, borderRadius: 14,
-        border: `1.5px solid ${C.cardBorder}`, padding: 4, overflow: 'hidden' }}>
+        border: `1.5px solid ${C.cardBorder}`, padding: 4 }}>
         {DAY_LABELS.map((label, dow) => {
-          const isSelected = dow === selectedDow
-          const hasRoutes = daysWithRoutes.has(dow)
-          const isTodayDow = dow === getLocalDow()
+          const isSelected  = dow === selectedDow
+          const hasRoutes   = daysWithRoutes.has(dow)
+          const isTodayDow  = dow === getLocalDow()
           return (
             <div key={dow} tabIndex={0} role="button"
               onClick={() => setSelectedDow(dow)}
@@ -159,7 +163,9 @@ export default function CrewRoutes({ loggedInEmployee, loggedInCrew }) {
           {isToday ? 'Today' : DAY_LABELS[selectedDow]} — {formatDateDisplay(selectedDate)}
         </div>
         <div style={{ fontSize: 15, fontWeight: 800, marginTop: 2 }}>
-          {scheduledRoutes.length > 0 ? `${scheduledRoutes.length} route${scheduledRoutes.length !== 1 ? 's' : ''}` : 'No scheduled route'}
+          {scheduledRoutes.length > 0
+            ? `${scheduledRoutes.length} route${scheduledRoutes.length !== 1 ? 's' : ''}`
+            : 'No scheduled route'}
           {hasOngoing && ` · ${ongoingStops.length} ongoing`}
         </div>
       </div>
@@ -209,8 +215,8 @@ export default function CrewRoutes({ loggedInEmployee, loggedInCrew }) {
 // Route Card (for scheduled/ordered routes — expandable)
 // ═══════════════════════════════════════════
 function RouteCard({ route, employeeName, employeeId, workDate }) {
-  const [expanded, setExpanded] = useState(false)
-  const [routeData, setRouteData] = useState(null)
+  const [expanded, setExpanded]       = useState(false)
+  const [routeData, setRouteData]     = useState(null)
   const [loadingStops, setLoadingStops] = useState(false)
 
   const loadStops = useCallback(async () => {
@@ -227,8 +233,8 @@ function RouteCard({ route, employeeName, employeeId, workDate }) {
   }
 
   const completedCount = routeData?.progress?.completed || 0
-  const totalCount = routeData?.progress?.total || route.stopCount
-  const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+  const totalCount     = routeData?.progress?.total || route.stopCount
+  const pct            = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
   return (
     <div style={{ marginBottom: 12 }}>
@@ -282,8 +288,8 @@ function RouteCard({ route, employeeName, employeeId, workDate }) {
 // ═══════════════════════════════════════════
 function StopCard({ stop, index, isOrdered, routeColor, routeId, employeeName, employeeId, workDate, onUpdate }) {
   const [showModal, setShowModal] = useState(false)
-  const isDone = !!stop.completion
-  const statusInfo = STATUS_OPTIONS.find(s => s.value === (stop.completion?.status || 'complete'))
+  const isDone      = !stop.completion
+  const statusInfo  = STATUS_OPTIONS.find(s => s.value === (stop.completion?.status || 'complete'))
 
   const handleUndo = async () => {
     if (!stop.completion?.id) return
@@ -291,7 +297,7 @@ function StopCard({ stop, index, isOrdered, routeColor, routeId, employeeName, e
     catch (e) { console.error('Undo failed:', e) }
   }
 
-  const addr = stop.account
+  const addr        = stop.account
   const fullAddress = [addr.address, addr.city, addr.state].filter(Boolean).join(', ')
 
   return (
@@ -325,34 +331,29 @@ function StopCard({ stop, index, isOrdered, routeColor, routeId, employeeName, e
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 800,
               textDecoration: isDone && stop.completion.status === 'complete' ? 'line-through' : 'none',
-              color: isDone && stop.completion.status === 'complete' ? C.textLight : C.text }}>{addr.name}</div>
+              color: isDone && stop.completion.status === 'complete' ? C.textLight : C.text }}>
+              {addr.name}
+            </div>
             <div style={{ marginTop: 4 }}><LocationLink location={fullAddress} compact /></div>
             {addr.contactName && (
               <div style={{ fontSize: 12, color: C.textLight, marginTop: 4 }}>
                 📞 {addr.contactName}{addr.contactPhone ? ` · ${addr.contactPhone}` : ''}
               </div>
             )}
-            {stop.notes && <div style={{ fontSize: 12, color: C.amber, marginTop: 4, fontWeight: 600 }}>📝 {stop.notes}</div>}
-
-            {isDone && (
-              <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.7)',
-                border: `1px solid ${C.accentBorder}`, fontSize: 12, color: C.textMed }}>
-                <span style={{ fontWeight: 700 }}>{statusInfo?.label}</span>
-                {stop.completion.timeSpentMinutes > 0 && <span> · {formatTime(stop.completion.timeSpentMinutes)}</span>}
-                {stop.completion.notes && <div style={{ marginTop: 4, fontStyle: 'italic' }}>{stop.completion.notes}</div>}
-                {stop.completion.fieldNotes?.length > 0 && (
-                  <div style={{ marginTop: 4 }}>📷 {stop.completion.fieldNotes.length} photo{stop.completion.fieldNotes.length !== 1 ? 's' : ''}</div>
-                )}
-                <div style={{ marginTop: 4, color: C.textLight }}>
-                  by {stop.completion.completedByName} · {new Date(stop.completion.completedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                </div>
+            {stop.completion?.notes && (
+              <div style={{ fontSize: 13, color: C.textMed, marginTop: 6, fontStyle: 'italic' }}>
+                "{stop.completion.notes}"
+              </div>
+            )}
+            {stop.completion?.timeSpentMinutes > 0 && (
+              <div style={{ fontSize: 12, color: C.textLight, marginTop: 4 }}>
+                ⏱ {formatTime(stop.completion.timeSpentMinutes)}
               </div>
             )}
           </div>
         </div>
 
-        {/* Action buttons */}
-        <div style={{ display: 'flex', gap: 8, marginTop: 10, marginLeft: 42 }}>
+        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
           {!isDone ? (
             <button tabIndex={0} onClick={() => setShowModal(true)}
               style={{ ...btnStyle(routeColor, '#fff', { flex: 1, fontSize: 14, padding: '12px' }) }}>
@@ -385,13 +386,13 @@ function StopCard({ stop, index, isOrdered, routeColor, routeId, employeeName, e
 // Completion Modal
 // ═══════════════════════════════════════════
 function CompletionModal({ stop, routeId, routeColor, employeeName, employeeId, workDate, isOrdered, onClose, onComplete }) {
-  const [status, setStatus] = useState('complete')
-  const [notes, setNotes] = useState('')
-  const [hours, setHours] = useState('')
-  const [minutes, setMinutes] = useState('')
-  const [photos, setPhotos] = useState([])
+  const [status, setStatus]       = useState('complete')
+  const [notes, setNotes]         = useState('')
+  const [hours, setHours]         = useState('')
+  const [minutes, setMinutes]     = useState('')
+  const [photos, setPhotos]       = useState([])
   const [submitting, setSubmitting] = useState(false)
-  const fileRef = useRef(null)
+  const fileRef  = useRef(null)
   const modalRef = useRef(null)
 
   // Focus trap + escape to close
@@ -476,8 +477,10 @@ function CompletionModal({ stop, routeId, routeColor, employeeName, employeeId, 
             {STATUS_OPTIONS.map(opt => (
               <button key={opt.value} tabIndex={0} onClick={() => setStatus(opt.value)}
                 style={{ flex: 1, padding: '12px 8px', borderRadius: 10, fontSize: 13, fontWeight: 700,
-                  cursor: 'pointer', border: status === opt.value ? `2px solid ${opt.color}` : `2px solid ${C.cardBorder}`,
-                  background: status === opt.value ? `${opt.color}15` : '#fff', color: status === opt.value ? opt.color : C.textMed }}>
+                  cursor: 'pointer',
+                  border: status === opt.value ? `2px solid ${opt.color}` : `2px solid ${C.cardBorder}`,
+                  background: status === opt.value ? `${opt.color}15` : '#fff',
+                  color: status === opt.value ? opt.color : C.textMed }}>
                 {opt.label}
               </button>
             ))}
@@ -515,7 +518,9 @@ function CompletionModal({ stop, routeId, routeColor, employeeName, employeeId, 
           <button tabIndex={0} onClick={() => fileRef.current?.click()}
             style={{ fontSize: 14, padding: '12px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 700,
               background: C.blueLight, color: C.blue, border: `1px solid ${C.blueBorder}`, width: '100%', marginTop: 6 }}>
-            📷 {photos.length > 0 ? `${photos.length} photo${photos.length !== 1 ? 's' : ''} added — tap to add more` : 'Take or Add Photos'}
+            📷 {photos.length > 0
+              ? `${photos.length} photo${photos.length !== 1 ? 's' : ''} added — tap to add more`
+              : 'Take or Add Photos'}
           </button>
           {photos.length > 0 && (
             <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>

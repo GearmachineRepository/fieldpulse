@@ -28,15 +28,14 @@ export const labelStyle = {
 }
 
 export const inputStyle = (overrides = {}) => ({
-  width:      '100%',
-  padding:    '14px 16px',
+  width:        '100%',
+  padding:      '14px 16px',
   borderRadius: 12,
-  background: '#FAFAF7',
-  border:     `1.5px solid ${C.cardBorder}`,
-  color:      C.text,
-  fontSize:   16,
-  outline:    'none',
-  boxSizing:  'border-box',
+  background:   '#FAFAF7',
+  border:       `1.5px solid ${C.cardBorder}`,
+  color:        C.text,
+  fontSize:     16,
+  boxSizing:    'border-box',
   ...overrides,
 })
 

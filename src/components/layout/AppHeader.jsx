@@ -32,7 +32,14 @@ export default function AppHeader({ pageTitle, isAdmin, displayName, displaySub,
           role="button"
           onClick={onMenuOpen}
           onKeyDown={e => e.key === 'Enter' && onMenuOpen()}
-          style={{ cursor: 'pointer', padding: '6px 2px', display: 'flex', flexDirection: 'column', gap: 4, outline: 'none' }}
+          style={{
+            cursor: 'pointer',
+            padding: '6px 2px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            // outline: 'none' removed — focus ring handled globally in global.css
+          }}
           aria-label="Open menu"
         >
           <div style={{ width: 22, height: 2.5, background: '#fff', borderRadius: 2 }} />
@@ -74,7 +81,7 @@ export default function AppHeader({ pageTitle, isAdmin, displayName, displaySub,
               borderRadius: 10,
               fontSize: 13,
               cursor: 'pointer',
-              outline: 'none',
+              // outline: 'none' removed — focus ring handled globally in global.css
               background: C.red,
               border: 'none',
               color: '#fff',

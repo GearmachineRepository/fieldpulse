@@ -25,9 +25,11 @@ export function SectionHeader({ title, count, onAdd, addLabel }) {
 }
 
 // ── Sub-tab navigation ──
+// overflow: hidden removed — was clipping :focus-visible ring on first/last tab.
+// Inner tabs have their own borderRadius: 9, so corners are still rounded correctly.
 export function SubTabs({ tabs, active, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: 4, marginBottom: 18, background: C.card, borderRadius: 12, border: `1.5px solid ${C.cardBorder}`, padding: 4, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', gap: 4, marginBottom: 18, background: C.card, borderRadius: 12, border: `1.5px solid ${C.cardBorder}`, padding: 4 }}>
       {tabs.map(t => (
         <div key={t.key} tabIndex={0} role="button"
           onClick={() => onChange(t.key)}

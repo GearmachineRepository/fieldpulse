@@ -19,8 +19,8 @@ const ACCOUNT_TYPES = [
 
 const TYPE_BADGES = {
   residential: { bg: '#E8F5EA', color: '#2D7A3A', label: 'Residential' },
-  commercial: { bg: '#EFF6FF', color: '#2563EB', label: 'Commercial' },
-  hoa: { bg: '#FFFBEB', color: '#D97706', label: 'HOA' },
+  commercial:  { bg: '#EFF6FF', color: '#2563EB', label: 'Commercial' },
+  hoa:         { bg: '#FFFBEB', color: '#D97706', label: 'HOA' },
 }
 
 export default function AccountsSection({ accounts, onRefresh, showToast }) {
@@ -29,7 +29,7 @@ export default function AccountsSection({ accounts, onRefresh, showToast }) {
     <div>
       <SubTabs tabs={[{ key: 'list', label: '📋 List' }, { key: 'map', label: '🗺️ Map' }]} active={subTab} onChange={setSubTab} />
       {subTab === 'list' && <ListView accounts={accounts} onRefresh={onRefresh} showToast={showToast} />}
-      {subTab === 'map' && <MapView accounts={accounts} />}
+      {subTab === 'map'  && <MapView accounts={accounts} />}
     </div>
   )
 }
@@ -38,27 +38,27 @@ export default function AccountsSection({ accounts, onRefresh, showToast }) {
 // LIST VIEW
 // ═══════════════════════════════════════════
 function ListView({ accounts, onRefresh, showToast }) {
-  const [showForm, setShowForm] = useState(false)
-  const [editItem, setEditItem] = useState(null)
-  const [deleteItem, setDeleteItem] = useState(null)
-  const [saving, setSaving] = useState(false)
-  const [searchQ, setSearchQ] = useState('')
-  const [filterType, setFilterType] = useState('')
+  const [showForm, setShowForm]           = useState(false)
+  const [editItem, setEditItem]           = useState(null)
+  const [deleteItem, setDeleteItem]       = useState(null)
+  const [saving, setSaving]               = useState(false)
+  const [searchQ, setSearchQ]             = useState('')
+  const [filterType, setFilterType]       = useState('')
 
-  const [aName, setAName] = useState('')
-  const [address, setAddress] = useState('')
-  const [city, setCity] = useState('')
-  const [state, setState] = useState('CA')
-  const [zip, setZip] = useState('')
-  const [latitude, setLatitude] = useState('')
-  const [longitude, setLongitude] = useState('')
-  const [contactName, setContactName] = useState('')
-  const [contactPhone, setContactPhone] = useState('')
-  const [contactEmail, setContactEmail] = useState('')
-  const [accountType, setAccountType] = useState('residential')
-  const [notes, setNotes] = useState('')
+  const [aName, setAName]                 = useState('')
+  const [address, setAddress]             = useState('')
+  const [city, setCity]                   = useState('')
+  const [state, setState]                 = useState('CA')
+  const [zip, setZip]                     = useState('')
+  const [latitude, setLatitude]           = useState('')
+  const [longitude, setLongitude]         = useState('')
+  const [contactName, setContactName]     = useState('')
+  const [contactPhone, setContactPhone]   = useState('')
+  const [contactEmail, setContactEmail]   = useState('')
+  const [accountType, setAccountType]     = useState('residential')
+  const [notes, setNotes]                 = useState('')
   const [showManualCoords, setShowManualCoords] = useState(false)
-  const [geocoding, setGeocoding] = useState(false)
+  const [geocoding, setGeocoding]         = useState(false)
 
   const openForm = (acct) => {
     if (acct) {
@@ -100,7 +100,7 @@ function ListView({ accounts, onRefresh, showToast }) {
       const data = {
         name: aName, address, city: city || null, state: state || 'CA', zip: zip || null,
         // Only send lat/lng if the user manually set them — otherwise the server auto-geocodes
-        latitude: latitude ? parseFloat(latitude) : null,
+        latitude:  latitude  ? parseFloat(latitude)  : null,
         longitude: longitude ? parseFloat(longitude) : null,
         contactName: contactName || null, contactPhone: contactPhone || null,
         contactEmail: contactEmail || null, accountType, notes: notes || null,
@@ -134,15 +134,23 @@ function ListView({ accounts, onRefresh, showToast }) {
       <SectionHeader title="Accounts" count={accounts.length} onAdd={() => openForm(null)} addLabel="Add Account" />
       <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search accounts..." style={inputStyle({ marginBottom: 10 })} />
 
-      {/* Type filter pills */}
+      {/* Type filter pills — onKeyDown added */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
-        <div tabIndex={0} role="button" onClick={() => setFilterType('')}
+        <div tabIndex={0} role="button"
+          onClick={() => setFilterType('')}
+          onKeyDown={e => e.key === 'Enter' && setFilterType('')}
           style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-            background: !filterType ? C.accent : '#eee', color: !filterType ? '#fff' : C.textMed }}>All</div>
+            background: !filterType ? C.accent : '#eee', color: !filterType ? '#fff' : C.textMed }}>
+          All
+        </div>
         {ACCOUNT_TYPES.map(t => (
-          <div key={t.key} tabIndex={0} role="button" onClick={() => setFilterType(filterType === t.key ? '' : t.key)}
+          <div key={t.key} tabIndex={0} role="button"
+            onClick={() => setFilterType(filterType === t.key ? '' : t.key)}
+            onKeyDown={e => e.key === 'Enter' && setFilterType(filterType === t.key ? '' : t.key)}
             style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              background: filterType === t.key ? C.accent : '#eee', color: filterType === t.key ? '#fff' : C.textMed }}>{t.label}</div>
+              background: filterType === t.key ? C.accent : '#eee', color: filterType === t.key ? '#fff' : C.textMed }}>
+            {t.label}
+          </div>
         ))}
       </div>
 
@@ -157,7 +165,8 @@ function ListView({ accounts, onRefresh, showToast }) {
         return (
           <div key={acct.id} tabIndex={0} role="button" onClick={() => openForm(acct)} onKeyDown={e => e.key === 'Enter' && openForm(acct)}
             style={{ ...cardStyle({ cursor: 'pointer' }), transition: 'border-color 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = C.accent} onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+            onMouseEnter={e => e.currentTarget.style.borderColor = C.accent}
+            onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 16, fontWeight: 800 }}>{acct.name}</div>
@@ -182,60 +191,38 @@ function ListView({ accounts, onRefresh, showToast }) {
       {showForm && (
         <FormModal title={editItem ? 'Edit Account' : 'New Account'} onSave={save} onCancel={() => setShowForm(false)} onDelete={editItem ? handleFormDelete : undefined} saving={saving}>
           <Field label="Account Name" value={aName} onChange={setAName} placeholder="e.g. Smith Residence" required />
-          <Field label="Address" value={address} onChange={setAddress} placeholder="123 Main St" required />
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 10 }}>
-            <Field label="City" value={city} onChange={setCity} placeholder="Riverside" />
+          <Field label="Street Address" value={address} onChange={setAddress} placeholder="123 Main St" required />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px', gap: 10, marginBottom: 14 }}>
+            <Field label="City" value={city} onChange={setCity} placeholder="Fresno" />
             <Field label="State" value={state} onChange={setState} placeholder="CA" />
-            <Field label="ZIP" value={zip} onChange={setZip} placeholder="92501" />
+            <Field label="ZIP" value={zip} onChange={setZip} placeholder="93720" />
           </div>
 
-          {/* GPS — auto-geocoded on save, with manual override */}
-          <div style={{ padding: '12px 16px', borderRadius: 12, marginBottom: 14,
-            background: (latitude && longitude) ? C.accentLight : '#FAFAF7',
-            border: `1.5px solid ${(latitude && longitude) ? C.accentBorder : C.cardBorder}` }}>
-
-            {(latitude && longitude) ? (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: C.accent }}>📍 Location Set</div>
-                    <div style={{ fontSize: 12, color: C.textLight, marginTop: 2 }}>{parseFloat(latitude).toFixed(6)}, {parseFloat(longitude).toFixed(6)}</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button tabIndex={0} onClick={handleGeocode} disabled={geocoding || !address.trim()}
-                      style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-                        cursor: (geocoding || !address.trim()) ? 'not-allowed' : 'pointer',
-                        background: '#fff', color: C.accent, border: `1px solid ${C.accentBorder}`,
-                        opacity: (geocoding || !address.trim()) ? 0.5 : 1 }}>
-                      {geocoding ? 'Finding...' : 'Re-Geocode'}
-                    </button>
-                    <button tabIndex={0} onClick={() => { setLatitude(''); setLongitude('') }}
-                      style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-                        cursor: 'pointer', background: '#fff', color: C.textLight, border: `1px solid ${C.cardBorder}` }}>
-                      Clear
-                    </button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.textMed, marginBottom: 4 }}>📍 Map Location</div>
-                <div style={{ fontSize: 12, color: C.textLight }}>
-                  Automatically pinned from address when you save.
-                  {!showManualCoords && (
-                    <button tabIndex={0} onClick={() => setShowManualCoords(true)}
-                      style={{ fontSize: 12, color: C.blue, cursor: 'pointer', background: 'none', border: 'none', padding: 0, marginLeft: 6, fontWeight: 600 }}>
-                      Enter manually
-                    </button>
-                  )}
-                </div>
-                {showManualCoords && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
-                    <input value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="Latitude" type="number" step="any" style={inputStyle({ padding: '8px 12px', fontSize: 13 })} />
-                    <input value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="Longitude" type="number" step="any" style={inputStyle({ padding: '8px 12px', fontSize: 13 })} />
-                  </div>
+          {/* Geocode status + manual override */}
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <div style={labelStyle}>Location</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {latitude && longitude && (
+                  <span style={{ fontSize: 11, color: C.accent, fontWeight: 600 }}>📍 Coordinates set</span>
                 )}
-              </>
+                <button tabIndex={0} onClick={handleGeocode} disabled={geocoding}
+                  style={{ fontSize: 12, color: C.blue, cursor: 'pointer', background: 'none', border: 'none', padding: 0, fontWeight: 600, opacity: geocoding ? 0.6 : 1 }}>
+                  {geocoding ? 'Geocoding...' : latitude ? 'Re-Geocode' : 'Geocode'}
+                </button>
+                {!showManualCoords && (
+                  <button tabIndex={0} onClick={() => setShowManualCoords(true)}
+                    style={{ fontSize: 12, color: C.blue, cursor: 'pointer', background: 'none', border: 'none', padding: 0, marginLeft: 6, fontWeight: 600 }}>
+                    Enter manually
+                  </button>
+                )}
+              </div>
+            </div>
+            {showManualCoords && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+                <input value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="Latitude" type="number" step="any" style={inputStyle({ padding: '8px 12px', fontSize: 13 })} />
+                <input value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="Longitude" type="number" step="any" style={inputStyle({ padding: '8px 12px', fontSize: 13 })} />
+              </div>
             )}
           </div>
 
@@ -264,10 +251,10 @@ function ListView({ accounts, onRefresh, showToast }) {
 // MAP VIEW
 // ═══════════════════════════════════════════
 function MapView({ accounts }) {
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected]     = useState(null)
   const [filterType, setFilterType] = useState('')
-  const filtered = filterType ? accounts.filter(a => a.accountType === filterType) : accounts
-  const mappedCount = filtered.filter(a => a.latitude && a.longitude).length
+  const filtered     = filterType ? accounts.filter(a => a.accountType === filterType) : accounts
+  const mappedCount  = filtered.filter(a => a.latitude && a.longitude).length
 
   return (
     <div>
@@ -278,14 +265,23 @@ function MapView({ accounts }) {
         </div>
       </div>
 
+      {/* Type filter pills — onKeyDown added */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-        <div tabIndex={0} role="button" onClick={() => setFilterType('')}
+        <div tabIndex={0} role="button"
+          onClick={() => setFilterType('')}
+          onKeyDown={e => e.key === 'Enter' && setFilterType('')}
           style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-            background: !filterType ? C.accent : '#eee', color: !filterType ? '#fff' : C.textMed }}>All</div>
+            background: !filterType ? C.accent : '#eee', color: !filterType ? '#fff' : C.textMed }}>
+          All
+        </div>
         {ACCOUNT_TYPES.map(t => (
-          <div key={t.key} tabIndex={0} role="button" onClick={() => setFilterType(filterType === t.key ? '' : t.key)}
+          <div key={t.key} tabIndex={0} role="button"
+            onClick={() => setFilterType(filterType === t.key ? '' : t.key)}
+            onKeyDown={e => e.key === 'Enter' && setFilterType(filterType === t.key ? '' : t.key)}
             style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              background: filterType === t.key ? C.accent : '#eee', color: filterType === t.key ? '#fff' : C.textMed }}>{t.label}</div>
+              background: filterType === t.key ? C.accent : '#eee', color: filterType === t.key ? '#fff' : C.textMed }}>
+            {t.label}
+          </div>
         ))}
       </div>
 

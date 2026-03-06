@@ -22,24 +22,24 @@ export default function InventorySection({ chemicals, equipment, onRefresh, show
 // CHEMICALS VIEW
 // ═══════════════════════════════════════════
 function ChemicalsView({ chemicals, onRefresh, showToast }) {
-  const [showForm, setShowForm] = useState(false)
-  const [editItem, setEditItem] = useState(null)
+  const [showForm, setShowForm]   = useState(false)
+  const [editItem, setEditItem]   = useState(null)
   const [deleteItem, setDeleteItem] = useState(null)
-  const [saving, setSaving] = useState(false)
-  const [searchQ, setSearchQ] = useState('')
+  const [saving, setSaving]       = useState(false)
+  const [searchQ, setSearchQ]     = useState('')
 
   // Form fields
-  const [cName, setCName] = useState('')
-  const [cType, setCType] = useState('')
-  const [epa, setEpa] = useState('')
-  const [ai, setAi] = useState('')
-  const [signal, setSignal] = useState('CAUTION')
+  const [cName, setCName]         = useState('')
+  const [cType, setCType]         = useState('')
+  const [epa, setEpa]             = useState('')
+  const [ai, setAi]               = useState('')
+  const [signal, setSignal]       = useState('CAUTION')
   const [restricted, setRestricted] = useState(false)
-  const [sdsUrl, setSdsUrl] = useState('')
-  const [labelUrl, setLabelUrl] = useState('')
-  const [wxTemp, setWxTemp] = useState({ on: false, op: '>', value: '', warn: '' })
+  const [sdsUrl, setSdsUrl]       = useState('')
+  const [labelUrl, setLabelUrl]   = useState('')
+  const [wxTemp, setWxTemp]       = useState({ on: false, op: '>', value: '', warn: '' })
   const [wxHumidity, setWxHumidity] = useState({ on: false, op: '<', value: '', warn: '' })
-  const [wxWind, setWxWind] = useState({ on: false, op: '>', value: '', warn: '' })
+  const [wxWind, setWxWind]       = useState({ on: false, op: '>', value: '', warn: '' })
   const [wxConditions, setWxConditions] = useState({ on: false, op: '==', value: '', warn: '' })
 
   const openForm = (chem) => {
@@ -48,9 +48,9 @@ function ChemicalsView({ chemicals, onRefresh, showToast }) {
       setAi(chem.ai); setSignal(chem.signal || 'CAUTION'); setRestricted(chem.restricted || false)
       setSdsUrl(chem.sdsUrl || ''); setLabelUrl(chem.labelUrl || '')
       const r = chem.wxRestrictions || {}
-      setWxTemp(r.temp ? { on: true, ...r.temp } : { on: false, op: '>', value: '', warn: '' })
+      setWxTemp(r.temp       ? { on: true, ...r.temp }       : { on: false, op: '>', value: '', warn: '' })
       setWxHumidity(r.humidity ? { on: true, ...r.humidity } : { on: false, op: '<', value: '', warn: '' })
-      setWxWind(r.windSpeed ? { on: true, ...r.windSpeed } : { on: false, op: '>', value: '', warn: '' })
+      setWxWind(r.windSpeed  ? { on: true, ...r.windSpeed }  : { on: false, op: '>', value: '', warn: '' })
       setWxConditions(r.conditions ? { on: true, ...r.conditions } : { on: false, op: '==', value: '', warn: '' })
     } else {
       setEditItem(null); setCName(''); setCType(''); setEpa(''); setAi(''); setSignal('CAUTION')
@@ -67,9 +67,9 @@ function ChemicalsView({ chemicals, onRefresh, showToast }) {
     if (!cName.trim()) return; setSaving(true)
     try {
       const wxRestrictions = {}
-      if (wxTemp.on && wxTemp.value) wxRestrictions.temp = { op: wxTemp.op, value: Number(wxTemp.value), warn: wxTemp.warn }
-      if (wxHumidity.on && wxHumidity.value) wxRestrictions.humidity = { op: wxHumidity.op, value: Number(wxHumidity.value), warn: wxHumidity.warn }
-      if (wxWind.on && wxWind.value) wxRestrictions.windSpeed = { op: wxWind.op, value: Number(wxWind.value), warn: wxWind.warn }
+      if (wxTemp.on && wxTemp.value)           wxRestrictions.temp       = { op: wxTemp.op, value: Number(wxTemp.value), warn: wxTemp.warn }
+      if (wxHumidity.on && wxHumidity.value)   wxRestrictions.humidity   = { op: wxHumidity.op, value: Number(wxHumidity.value), warn: wxHumidity.warn }
+      if (wxWind.on && wxWind.value)           wxRestrictions.windSpeed  = { op: wxWind.op, value: Number(wxWind.value), warn: wxWind.warn }
       if (wxConditions.on && wxConditions.value) wxRestrictions.conditions = { op: wxConditions.op, value: wxConditions.value, warn: wxConditions.warn }
       const data = { name: cName, type: cType, epa, activeIngredient: ai, signalWord: signal, restrictedUse: restricted, sdsUrl, labelUrl, wxRestrictions }
       if (editItem) await updateChemical(editItem.id, data)
@@ -91,11 +91,17 @@ function ChemicalsView({ chemicals, onRefresh, showToast }) {
     c.ai.toLowerCase().includes(searchQ.toLowerCase()) ||
     c.type.toLowerCase().includes(searchQ.toLowerCase()))
 
+  // ── Weather restriction toggle row ──
+  // onKeyDown added — Space toggles the switch (standard for toggle controls)
   const WxRow = ({ label, icon, state, setState, ops }) => (
     <div style={{ padding: '10px 14px', borderRadius: 10, background: state.on ? C.amberLight : '#FAFAF7', border: `1px solid ${state.on ? C.amberBorder : C.cardBorder}`, marginBottom: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: state.on ? 10 : 0 }}>
         <div style={{ fontSize: 14, fontWeight: 700 }}>{icon} {label}</div>
-        <div tabIndex={0} role="button" onClick={() => setState({ ...state, on: !state.on })}
+        <div tabIndex={0} role="button"
+          onClick={() => setState({ ...state, on: !state.on })}
+          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setState({ ...state, on: !state.on })}
+          aria-checked={state.on}
+          aria-label={`${label} restriction`}
           style={{ width: 44, height: 24, borderRadius: 12, background: state.on ? C.accent : '#ccc', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
           <div style={{ width: 20, height: 20, borderRadius: 10, background: '#fff', position: 'absolute', top: 2, left: state.on ? 22 : 2, transition: 'left 0.2s' }} />
         </div>
@@ -164,10 +170,10 @@ function ChemicalsView({ chemicals, onRefresh, showToast }) {
             <Field label="Label URL" value={labelUrl} onChange={setLabelUrl} placeholder="https://..." />
           </div>
           <div style={{ ...labelStyle, marginTop: 8, marginBottom: 8, fontSize: 13 }}>Weather Restrictions</div>
-          <WxRow label="Temperature" icon="🌡" state={wxTemp} setState={setWxTemp} ops={['>', '<', '>=', '<=']} />
-          <WxRow label="Humidity" icon="💧" state={wxHumidity} setState={setWxHumidity} ops={['<', '>', '<=', '>=']} />
-          <WxRow label="Wind Speed" icon="💨" state={wxWind} setState={setWxWind} ops={['>', '>=', '<', '<=']} />
-          <WxRow label="Conditions" icon="☁️" state={wxConditions} setState={setWxConditions} ops={['==', '!=']} />
+          <WxRow label="Temperature" icon="🌡" state={wxTemp}       setState={setWxTemp}       ops={['>', '<', '>=', '<=']} />
+          <WxRow label="Humidity"    icon="💧" state={wxHumidity}   setState={setWxHumidity}   ops={['<', '>', '<=', '>=']} />
+          <WxRow label="Wind Speed"  icon="💨" state={wxWind}       setState={setWxWind}       ops={['>', '>=', '<', '<=']} />
+          <WxRow label="Conditions"  icon="☁️" state={wxConditions} setState={setWxConditions} ops={['==', '!=']} />
         </FormModal>
       )}
       {deleteItem && <ConfirmDelete name={deleteItem.name} onConfirm={handleDelete} onCancel={() => setDeleteItem(null)} />}
@@ -179,12 +185,12 @@ function ChemicalsView({ chemicals, onRefresh, showToast }) {
 // EQUIPMENT VIEW
 // ═══════════════════════════════════════════
 function EquipmentView({ equipment, onRefresh, showToast }) {
-  const [showForm, setShowForm] = useState(false)
-  const [editItem, setEditItem] = useState(null)
+  const [showForm, setShowForm]     = useState(false)
+  const [editItem, setEditItem]     = useState(null)
   const [deleteItem, setDeleteItem] = useState(null)
-  const [saving, setSaving] = useState(false)
-  const [eName, setEName] = useState('')
-  const [eType, setEType] = useState('Backpack')
+  const [saving, setSaving]         = useState(false)
+  const [eName, setEName]           = useState('')
+  const [eType, setEType]           = useState('Backpack')
 
   const TYPES = ['Backpack', 'Truck Mount', 'Ride-On', 'Hand', 'Other']
 
@@ -227,7 +233,8 @@ function EquipmentView({ equipment, onRefresh, showToast }) {
           {g.items.map(eq => (
             <div key={eq.id} tabIndex={0} role="button" onClick={() => openForm(eq)} onKeyDown={e => e.key === 'Enter' && openForm(eq)}
               style={{ ...cardStyle({ cursor: 'pointer' }), transition: 'border-color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = C.accent} onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
+              onMouseEnter={e => e.currentTarget.style.borderColor = C.accent}
+              onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{eq.name}</div>
                 <div style={{ fontSize: 13, color: C.textLight, fontWeight: 600 }}>Edit →</div>

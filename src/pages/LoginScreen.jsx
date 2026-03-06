@@ -72,7 +72,7 @@ export default function LoginScreen({ onCrewLogin, onAdminLogin }) {
 
   return (
     <div className={styles.wrapper} style={{ fontFamily: FONT }}>
-      <div style={{ width: '100%', maxWidth: mode === 'crew' ? 440 : 380 }}>
+      <div style={{ width: '100%', maxWidth: 440 }}>
 
         {/* ── Brand ── */}
         <div className={styles.brand}>

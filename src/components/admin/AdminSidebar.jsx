@@ -3,6 +3,7 @@
 // Data-driven: add a section by adding to NAV_GROUPS
 // ═══════════════════════════════════════════
 
+import { useRef, useEffect } from 'react'
 import { APP, C } from '../../config.js'
 
 // ── Navigation config — single source of truth ──
@@ -16,7 +17,7 @@ export const NAV_GROUPS = [
     label: 'Operations',
     items: [
       { key: 'admin-spraylogs', icon: '📋', label: 'Spray Logs' },
-      { key: 'admin-rosters',   icon: '🕐', label: 'Daily Clock-In' },  // ← renamed from "Crew Rosters"
+      { key: 'admin-rosters',   icon: '🕐', label: 'Daily Clock-In' },
       { key: 'admin-routes',    icon: '🗺️', label: 'Routes' },
     ],
   },
@@ -35,7 +36,48 @@ export const ADMIN_PAGE_TITLES = {}
 NAV_GROUPS.forEach(g => g.items.forEach(it => { ADMIN_PAGE_TITLES[it.key] = it.label }))
 
 export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
-  const activeKey = getActiveKey(currentPage)
+  const activeKey   = getActiveKey(currentPage)
+  const sidebarRef  = useRef(null)
+  const onCloseRef  = useRef(onClose)
+  onCloseRef.current = onClose
+
+  useEffect(() => {
+    const sidebar = sidebarRef.current
+    if (!sidebar) return
+
+    if (open) {
+      // Remove inert so the sidebar is interactive
+      sidebar.removeAttribute('inert')
+
+      // Focus the first nav item after the CSS transition starts
+      requestAnimationFrame(() => {
+        const first = sidebar.querySelector('[tabindex]:not([tabindex="-1"]), button')
+        first?.focus()
+      })
+
+      // ── Focus trap ──
+      const trap = (e) => {
+        if (e.key === 'Escape') { onCloseRef.current(); return }
+        if (e.key !== 'Tab') return
+        const focusable = sidebar.querySelectorAll(
+          'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last  = focusable[focusable.length - 1]
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus() }
+        } else {
+          if (document.activeElement === last)  { e.preventDefault(); first.focus() }
+        }
+      }
+      sidebar.addEventListener('keydown', trap)
+      return () => sidebar.removeEventListener('keydown', trap)
+    } else {
+      // Sidebar is closed — make it fully inert so Tab cannot reach hidden nav items
+      sidebar.setAttribute('inert', '')
+    }
+  }, [open])
 
   return (
     <>
@@ -44,14 +86,19 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 40, transition: 'opacity 0.2s' }} />
       )}
 
-      <div style={{
-        position: 'fixed', top: 0, left: 0, bottom: 0, width: 280,
-        background: C.sidebar, zIndex: 50,
-        transform: open ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-        display: 'flex', flexDirection: 'column',
-        boxShadow: open ? '4px 0 32px rgba(0,0,0,0.18)' : 'none',
-      }}>
+      <div
+        ref={sidebarRef}
+        // inert is set/removed by the effect above; start closed
+        inert=""
+        style={{
+          position: 'fixed', top: 0, left: 0, bottom: 0, width: 280,
+          background: C.sidebar, zIndex: 50,
+          transform: open ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: open ? '4px 0 32px rgba(0,0,0,0.18)' : 'none',
+        }}
+      >
         {/* Header */}
         <div style={{ padding: '20px 20px 12px', borderBottom: '1px solid #2E2E2A' }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: 3, marginBottom: 2 }}>{APP.name}</div>
@@ -71,6 +118,7 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
                 const isActive = activeKey === item.key
                 return (
                   <div key={item.key} tabIndex={0} role="button"
+                    aria-current={isActive ? 'page' : undefined}
                     onClick={() => { onNav(item.key); onClose() }}
                     onKeyDown={e => e.key === 'Enter' && (onNav(item.key), onClose())}
                     style={{

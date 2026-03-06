@@ -46,3 +46,24 @@ body {
 * {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ── Keyboard focus ring ──────────────────────────────────────
+   :focus-visible fires only on keyboard navigation, not mouse
+   clicks — so buttons won't flash a ring on every click.
+   Covers all elements: native buttons, custom div[role=button],
+   sidebar nav items, tab bars, checkboxes, etc.
+   ──────────────────────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2.5px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Inputs/selects use box-shadow instead so the ring
+   renders outside the element's own border-radius cleanly */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2.5px var(--accent);
+}
