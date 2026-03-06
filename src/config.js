@@ -5,7 +5,7 @@
 export const APP = {
   name: import.meta.env.VITE_APP_NAME || 'FieldPulse',
   tagline: import.meta.env.VITE_APP_TAGLINE || 'Field Manager',
-  version: '1.0.0',
+  version: '6.0.0',
 }
 
 // Color palette — used across all components

@@ -1,40 +1,34 @@
 // ═══════════════════════════════════════════
-// Auth Middleware — JWT token verification
+// Auth Middleware — JWT verification
 // ═══════════════════════════════════════════
 
 import jwt from 'jsonwebtoken'
 
-// Warn loudly at startup if running with the default secret
 const SECRET = process.env.JWT_SECRET
 if (!SECRET || SECRET === 'fieldpulse-change-me-in-production') {
-  console.warn('\n  ⚠  WARNING: JWT_SECRET is not set (or is using the default).')
-  console.warn('     Set a strong secret in your .env file before going to production.\n')
+  console.warn('\n  ⚠  WARNING: JWT_SECRET is not set or is using the insecure default.')
+  console.warn('     Generate one with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"')
+  console.warn('     Then set JWT_SECRET in your .env file.\n')
 }
-
 const EFFECTIVE_SECRET = SECRET || 'fieldpulse-change-me-in-production'
 const TOKEN_EXPIRY = '12h'
 
-/**
- * Generate a signed JWT for an authenticated user/vehicle/employee.
- * @param {object} payload
- */
+/** Signs a JWT with the given payload. */
 export function signToken(payload) {
   return jwt.sign(payload, EFFECTIVE_SECRET, { expiresIn: TOKEN_EXPIRY })
 }
 
 /**
- * Express middleware — rejects requests without a valid Bearer token.
- * Attaches the decoded payload to req.user on success.
+ * Rejects requests without a valid Bearer token.
+ * Attaches the decoded payload to req.user.
  */
 export function requireAuth(req, res, next) {
   const header = req.headers.authorization
-  if (!header || !header.startsWith('Bearer ')) {
+  if (!header?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Authentication required' })
   }
-
   try {
-    const token = header.slice(7)
-    req.user = jwt.verify(token, EFFECTIVE_SECRET)
+    req.user = jwt.verify(header.slice(7), EFFECTIVE_SECRET)
     next()
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
@@ -45,7 +39,7 @@ export function requireAuth(req, res, next) {
 }
 
 /**
- * Express middleware — only allows admin or owner roles.
+ * Allows only admin or owner roles.
  * Must be used after requireAuth.
  */
 export function requireAdmin(req, res, next) {

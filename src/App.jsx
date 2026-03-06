@@ -1,465 +1,192 @@
-import { useState, useEffect } from 'react'
-import { APP, C, FONT, cardStyle, inputStyle, btnStyle, labelStyle } from './config.js'
-import { verifyAdminPin, getAdminsList, getEquipment, getChemicals, getCrews, getEmployees, getSprayLogs, createSprayLog, checkHealth, getCrewLoginTiles, crewLogin, getAccounts } from './lib/api.js'
-import { getSimulatedWeather, getWeatherByCoords } from './lib/weather.js'
-import Sidebar from './components/Sidebar.jsx'
+// ═══════════════════════════════════════════
+// App — Root router
+// Handles: Login → Crew shell → Admin shell
+// All state lives in AppContext (see context/AppContext.jsx)
+// ═══════════════════════════════════════════
+
+import { useEffect } from 'react'
+import { C, FONT } from './config/index.js'
+import { createSprayLog } from './lib/api/sprayLogs.js'
+
+import { useAppState, useAppActions, useAppDispatch } from './context/AppContext.jsx'
+
+import LoginScreen  from './pages/LoginScreen.jsx'
+import Sidebar      from './components/Sidebar.jsx'
+import AppHeader    from './components/layout/AppHeader.jsx'
+import Toast        from './components/common/Toast.jsx'
 import AdminSidebar, { ADMIN_PAGE_TITLES } from './components/admin/AdminSidebar.jsx'
-import SprayTracker from './pages/SprayTracker.jsx'
-import FieldHome from './pages/FieldHome.jsx'
-import CrewPage from './pages/CrewPage.jsx'
+
+import FieldHome      from './pages/FieldHome.jsx'
+import CrewPage       from './pages/CrewPage.jsx'
+import CrewRoutes     from './pages/CrewRoutes.jsx'
+import SprayTracker   from './pages/SprayTracker.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
-import CrewRoutes from './pages/CrewRoutes.jsx'
 
-// ═══════════════════════════════════════════
-// LOGIN SCREEN (unchanged from Phase 2)
-// ═══════════════════════════════════════════
-function LoginScreen({ onCrewLogin, onAdminLogin }) {
-  const [mode, setMode] = useState('crew')
-  const [admins, setAdmins] = useState([])
-  const [crewTiles, setCrewTiles] = useState(null)
-  const [selectedCrew, setSelectedCrew] = useState(null)
-  const [selectedEmployee, setSelectedEmployee] = useState(null)
-  const [selected, setSelected] = useState(null)
-  const [pin, setPin] = useState('')
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [dbOk, setDbOk] = useState(true)
-
-  useEffect(() => {
-    (async () => {
-      try {
-        await checkHealth(); setDbOk(true)
-        const [a, tiles] = await Promise.all([getAdminsList(), getCrewLoginTiles()])
-        setAdmins(a); setCrewTiles(tiles)
-      } catch { setDbOk(false) }
-      finally { setLoading(false) }
-    })()
-  }, [])
-
-  const handleSubmit = async () => {
-    setError(null)
-    try {
-      if (mode === 'crew') {
-        if (!selectedEmployee || !pin) return
-        onCrewLogin(await crewLogin(selectedEmployee.id, pin))
-      } else {
-        if (!selected || !pin) return
-        onAdminLogin(await verifyAdminPin(selected, pin))
-      }
-    } catch { setError('Invalid PIN — try again'); setPin('') }
-  }
-
-  const resetCrewFlow = () => { setSelectedCrew(null); setSelectedEmployee(null); setPin(''); setError(null) }
-
-  if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT }}>
-      <div style={{ textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 12 }}>💧</div><div style={{ fontSize: 18, fontWeight: 800 }}>Loading {APP.name}...</div></div>
-    </div>
-  )
-
-  const items = admins
-
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT, padding: 24 }}>
-      <div style={{ width: '100%', maxWidth: mode === 'crew' ? 440 : 380 }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 4, color: C.accent, fontWeight: 800, marginBottom: 4 }}>{APP.name}</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: C.text }}>{APP.tagline}</div>
-        </div>
-
-        {!dbOk ? (
-          <div style={cardStyle({ padding: 24, textAlign: 'center' })}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: C.red, marginBottom: 8 }}>Cannot Connect to Database</div>
-            <div style={{ fontSize: 14, color: C.textMed }}>Make sure PostgreSQL is running and run <code>npm run db:setup</code></div>
-          </div>
-        ) : (
-          <>
-            {/* Mode Tabs */}
-            <div style={{ display: 'flex', marginBottom: 16, background: C.card, borderRadius: 14, border: `1.5px solid ${C.cardBorder}`, overflow: 'hidden' }}>
-              {[{ k: 'crew', l: '👷 Crew' }, { k: 'admin', l: '🔒 Admin' }].map(m => (
-                <div key={m.k} tabIndex={0} role="button"
-                  onClick={() => { setMode(m.k); setSelected(null); setPin(''); setError(null); resetCrewFlow() }}
-                  onKeyDown={e => { if (e.key === 'Enter') { setMode(m.k); setSelected(null); setPin(''); setError(null); resetCrewFlow() } }}
-                  style={{ flex: 1, textAlign: 'center', padding: '14px 0', fontSize: 14, fontWeight: 700, cursor: 'pointer', outline: 'none',
-                    color: mode === m.k ? '#fff' : C.textLight,
-                    background: mode === m.k ? (m.k === 'admin' ? C.sidebar : C.blue) : 'transparent',
-                    transition: 'all 0.15s' }}>
-                  {m.l}
-                </div>
-              ))}
-            </div>
-
-            {/* ── CREW LOGIN FLOW ── */}
-            {mode === 'crew' && (
-              <div style={cardStyle({ padding: 24 })}>
-                {!selectedCrew ? (
-                  <>
-                    <div style={labelStyle}>Select Your Crew</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {crewTiles && crewTiles.crews.length === 0 && crewTiles.unassigned.length === 0 ? (
-                        <div style={{ fontSize: 14, color: C.textLight, padding: 16, textAlign: 'center' }}>No crews or employees found. Set them up in admin.</div>
-                      ) : (
-                        <>
-                          {crewTiles && crewTiles.crews.map(crew => (
-                            <div key={crew.id} tabIndex={0} role="button"
-                              onClick={() => { setSelectedCrew(crew); setError(null) }}
-                              onKeyDown={e => { if (e.key === 'Enter') { setSelectedCrew(crew); setError(null) } }}
-                              style={{
-                                padding: '16px 18px', borderRadius: 14, cursor: 'pointer',
-                                background: '#FAFAF7', border: `2px solid ${C.cardBorder}`,
-                                transition: 'border-color 0.15s', outline: 'none',
-                              }}
-                              onMouseEnter={e => e.currentTarget.style.borderColor = C.blue}
-                              onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div>
-                                  <div style={{ fontSize: 18, fontWeight: 800, color: C.text }}>{crew.name}</div>
-                                  <div style={{ fontSize: 13, color: C.textLight, marginTop: 2 }}>
-                                    {crew.employees.length} member{crew.employees.length !== 1 ? 's' : ''}
-                                    {crew.vehicle ? ` · ${crew.vehicle.name}` : ''}
-                                    {crew.lead_name ? ` · Lead: ${crew.lead_name}` : ''}
-                                  </div>
-                                </div>
-                                <div style={{ fontSize: 24 }}>→</div>
-                              </div>
-                              {crew.employees.length > 0 && (
-                                <div style={{ display: 'flex', gap: -4, marginTop: 10 }}>
-                                  {crew.employees.slice(0, 5).map((emp, i) => (
-                                    <div key={emp.id} style={{
-                                      width: 32, height: 32, borderRadius: 16, border: '2px solid #fff',
-                                      background: emp.photo_filename ? 'transparent' : C.blue,
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                      fontSize: 11, color: '#fff', fontWeight: 800, marginLeft: i > 0 ? -8 : 0,
-                                      overflow: 'hidden', position: 'relative', zIndex: 5 - i,
-                                    }}>
-                                      {emp.photo_filename ? (
-                                        <img src={`/uploads/${emp.photo_filename}`} alt="" style={{ width: 32, height: 32, objectFit: 'cover' }} />
-                                      ) : (
-                                        <>{emp.first_name[0]}{emp.last_name[0]}</>
-                                      )}
-                                    </div>
-                                  ))}
-                                  {crew.employees.length > 5 && (
-                                    <div style={{ width: 32, height: 32, borderRadius: 16, border: '2px solid #fff', background: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: C.textMed, marginLeft: -8, zIndex: 0 }}>
-                                      +{crew.employees.length - 5}
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </>
-                      )}
-                    </div>
-                  </>
-                ) : !selectedEmployee ? (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                      <button tabIndex={0} onClick={resetCrewFlow}
-                        style={{ fontSize: 13, color: C.blue, cursor: 'pointer', fontWeight: 700, background: 'none', border: 'none', padding: 0 }}>
-                        ← Back
-                      </button>
-                      <div style={{ fontSize: 16, fontWeight: 800 }}>{selectedCrew.name}</div>
-                      {selectedCrew.vehicle && <div style={{ fontSize: 12, color: C.textLight, padding: '2px 8px', borderRadius: 6, background: C.bg }}>🚛 {selectedCrew.vehicle.name}</div>}
-                    </div>
-                    <div style={labelStyle}>Who's Signing In?</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {selectedCrew.employees.filter(e => e.has_pin).length === 0 ? (
-                        <div style={{ fontSize: 14, color: C.textLight, padding: 16, textAlign: 'center' }}>
-                          No employees with PINs in this crew. Set PINs in admin → Employees.
-                        </div>
-                      ) : selectedCrew.employees.filter(e => e.has_pin).map(emp => (
-                        <div key={emp.id} tabIndex={0} role="button"
-                          onClick={() => { setSelectedEmployee(emp); setError(null) }}
-                          onKeyDown={e => { if (e.key === 'Enter') { setSelectedEmployee(emp); setError(null) } }}
-                          style={{
-                            padding: '14px 16px', borderRadius: 12, cursor: 'pointer', outline: 'none',
-                            background: '#FAFAF7', border: `2px solid ${C.cardBorder}`,
-                            display: 'flex', alignItems: 'center', gap: 14, transition: 'border-color 0.15s',
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = C.blue}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = C.cardBorder}>
-                          {emp.photo_filename ? (
-                            <img src={`/uploads/${emp.photo_filename}`} alt="" style={{ width: 44, height: 44, borderRadius: 22, objectFit: 'cover', border: `2px solid ${C.blue}` }} />
-                          ) : (
-                            <div style={{ width: 44, height: 44, borderRadius: 22, background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#fff', fontWeight: 800 }}>
-                              {emp.first_name[0]}{emp.last_name[0]}
-                            </div>
-                          )}
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 16, fontWeight: 700 }}>{emp.first_name} {emp.last_name}</div>
-                            {emp.is_crew_lead && <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, marginTop: 2 }}>⭐ Crew Lead</div>}
-                          </div>
-                          <div style={{ fontSize: 18, color: C.textLight }}>→</div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <button tabIndex={0} onClick={() => { setSelectedEmployee(null); setPin(''); setError(null) }}
-                      style={{ fontSize: 13, color: C.blue, cursor: 'pointer', fontWeight: 700, background: 'none', border: 'none', padding: 0, marginBottom: 16 }}>
-                      ← Back
-                    </button>
-                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                      {selectedEmployee.photo_filename ? (
-                        <img src={`/uploads/${selectedEmployee.photo_filename}`} alt="" style={{ width: 64, height: 64, borderRadius: 32, objectFit: 'cover', border: `3px solid ${C.blue}` }} />
-                      ) : (
-                        <div style={{ width: 64, height: 64, borderRadius: 32, background: C.blue, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: '#fff', fontWeight: 800 }}>
-                          {selectedEmployee.first_name[0]}{selectedEmployee.last_name[0]}
-                        </div>
-                      )}
-                      <div style={{ fontSize: 18, fontWeight: 800, marginTop: 8 }}>{selectedEmployee.first_name} {selectedEmployee.last_name}</div>
-                    </div>
-                    <div style={labelStyle}>Enter Your PIN</div>
-                    <input type="password" inputMode="numeric" maxLength={6} value={pin} autoFocus
-                      onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError(null) }}
-                      onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                      placeholder="Enter PIN"
-                      style={inputStyle({ fontSize: 28, fontWeight: 800, textAlign: 'center', letterSpacing: 12, padding: '18px 16px',
-                        borderColor: error ? C.red : C.cardBorder, background: error ? C.redLight : '#FAFAF7' })} />
-                    {error && <div style={{ fontSize: 14, color: C.red, fontWeight: 600, marginTop: 8, textAlign: 'center' }}>{error}</div>}
-                    <button onClick={handleSubmit} tabIndex={0}
-                      style={{ ...btnStyle(C.blue), marginTop: 16, opacity: pin.length >= 4 ? 1 : 0.5 }}>
-                      Sign In
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* ── ADMIN LOGIN ── */}
-            {mode === 'admin' && (
-              <div style={cardStyle({ padding: 24 })}>
-                <div style={labelStyle}>Select Admin</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-                  {items.length === 0 ? (
-                    <div style={{ fontSize: 14, color: C.textLight, padding: 16, textAlign: 'center' }}>None found. Run <code>npm run db:setup</code></div>
-                  ) : items.map(it => (
-                    <div key={it.id} tabIndex={0} role="button"
-                      onClick={() => { setSelected(it.id); setError(null) }}
-                      onKeyDown={e => { if (e.key === 'Enter') { setSelected(it.id); setError(null) } }}
-                      style={{
-                        padding: '14px 18px', borderRadius: 12, cursor: 'pointer', outline: 'none',
-                        background: selected === it.id ? '#2A2A26' : '#FAFAF7',
-                        border: `2px solid ${selected === it.id ? C.accent : C.cardBorder}`,
-                        color: selected === it.id ? '#fff' : C.text,
-                        transition: 'all 0.15s',
-                      }}>
-                      <div style={{ fontSize: 15, fontWeight: 700 }}>{it.name}</div>
-                    </div>
-                  ))}
-                </div>
-                {selected && (
-                  <>
-                    <div style={labelStyle}>Admin PIN</div>
-                    <input type="password" inputMode="numeric" maxLength={6} value={pin} autoFocus
-                      onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setError(null) }}
-                      onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                      placeholder="Enter PIN"
-                      style={inputStyle({ fontSize: 28, fontWeight: 800, textAlign: 'center', letterSpacing: 12, padding: '18px 16px',
-                        borderColor: error ? C.red : C.cardBorder, background: error ? C.redLight : '#FAFAF7' })} />
-                    {error && <div style={{ fontSize: 14, color: C.red, fontWeight: 600, marginTop: 8, textAlign: 'center' }}>{error}</div>}
-                    <button onClick={handleSubmit} tabIndex={0}
-                      style={{ ...btnStyle(C.sidebar), marginTop: 16, opacity: pin.length >= 4 ? 1 : 0.5 }}>
-                      🔒 Unlock Admin
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-          </>
-        )}
-        <div style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: C.textLight }}>{APP.name} v{APP.version}</div>
-      </div>
-    </div>
-  )
-}
-
-// ═══════════════════════════════════════════
-// MAIN APP — Phase 3: AdminSidebar replaces dropdown
-// ═══════════════════════════════════════════
 export default function App() {
-  const [vehicle, setVehicle] = useState(null)
-  const [admin, setAdmin] = useState(null)
-  const [loggedInEmployee, setLoggedInEmployee] = useState(null)
-  const [loggedInCrew, setLoggedInCrew] = useState(null)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [page, setPage] = useState('spray')
-  const [toast, setToast] = useState(null)
-  const [chemicals, setChemicals] = useState([])
-  const [equipment, setEquipment] = useState([])
-  const [crews, setCrews] = useState([])
-  const [employees, setEmployees] = useState([])
-  const [logs, setLogs] = useState([])
-  const [accounts, setAccounts] = useState([])
-  const [weather, setWeather] = useState(() => getSimulatedWeather())
-  const [dataLoaded, setDataLoaded] = useState(false)
+  const state    = useAppState()
+  const dispatch = useAppDispatch()
+  const {
+    showToast, logout, setPage, setSidebar,
+    fetchAllData, refreshLogs, fetchWeather,
+  } = useAppActions()
 
-  const fetchWeather = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => { try { setWeather(await getWeatherByCoords(pos.coords.latitude, pos.coords.longitude)) } catch { setWeather(getSimulatedWeather()) } },
-        () => setWeather(getSimulatedWeather()), { timeout: 8000 })
-    } else setWeather(getSimulatedWeather())
-  }
+  const {
+    vehicle, admin, loggedInEmployee, loggedInCrew,
+    page, sidebarOpen, toast,
+    chemicals, equipment, crews, employees, logs, accounts,
+    weather, dataLoaded,
+  } = state
 
-  const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 2500) }
-
-  const getLogParams = () => {
-    if (admin) return {}
-    if (vehicle?.id) return { vehicleId: vehicle.id }
-    if (loggedInCrew?.name) return { crewName: loggedInCrew.name }
-    return {}
-  }
-
+  // ── Fetch data after any login ──
   useEffect(() => {
     if (!vehicle && !admin && !loggedInEmployee) return
-    ;(async () => {
-      try {
-        const logParams = admin ? {} : (vehicle?.id ? { vehicleId: vehicle.id } : (loggedInCrew?.name ? { crewName: loggedInCrew.name } : {}))
-        const [chems, equip, crewList, empList, sprayLogs, accts] = await Promise.all([
-          getChemicals(), getEquipment(), getCrews(), getEmployees(),
-          getSprayLogs(logParams), getAccounts(),
-        ])
-        setChemicals(chems); setEquipment(equip); setCrews(crewList); setEmployees(empList); setLogs(sprayLogs); setAccounts(accts)
-        setDataLoaded(true)
-        if (vehicle || loggedInEmployee) fetchWeather()
-      } catch (e) { console.error(e); showToast('Failed to load data') }
-    })()
-  }, [vehicle, admin, loggedInEmployee])
+    fetchAllData().catch(console.error)
+    fetchWeather()
+  }, [vehicle?.id, admin?.id, loggedInEmployee?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!vehicle && !admin && !loggedInEmployee) return (
-    <LoginScreen
-      onCrewLogin={data => {
-        setLoggedInEmployee(data.employee)
-        setLoggedInCrew(data.crew)
-        if (data.vehicle) setVehicle(data.vehicle)
-        setPage('home')
-      }}
-      onAdminLogin={a => { setAdmin(a); setPage('admin-home') }}
-    />
-  )
+  // ── Handle login callbacks ──
+  const handleCrewLogin = (result) => {
+    dispatch({
+      type: 'LOGIN_CREW',
+      employee: result.employee,
+      crew:     result.crew,
+      vehicle:  result.vehicle,
+    })
+  }
 
-  if (!dataLoaded) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.bg, fontFamily: FONT }}>
-      <div style={{ textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 12 }}>💧</div><div style={{ fontSize: 18, fontWeight: 800 }}>Loading...</div></div>
-    </div>
-  )
-
-  const isAdmin = !!admin
+  const handleAdminLogin = (result) => {
+    dispatch({ type: 'LOGIN_ADMIN', admin: result })
+  }
 
   const handleSubmitLog = async (logData) => {
-    try {
-      await createSprayLog({ vehicleId: vehicle?.id || null, ...logData })
-      setLogs(await getSprayLogs(getLogParams()))
-      showToast('Spray log submitted & saved ✓'); return true
-    } catch { showToast('Failed to save'); return false }
+    const result = await createSprayLog(logData)
+    await refreshLogs()
+    return result
   }
 
-  const handleLogout = () => { setVehicle(null); setAdmin(null); setLoggedInEmployee(null); setLoggedInCrew(null); setDataLoaded(false); setLogs([]); setPage('spray') }
-
-  const refreshData = async () => {
-    try {
-      const [chems, equip, crewList, empList] = await Promise.all([getChemicals(), getEquipment(), getCrews(), getEmployees()])
-      setChemicals(chems); setEquipment(equip); setCrews(crewList); setEmployees(empList)
-      setLogs(await getSprayLogs(getLogParams()))
-      setAccounts(await getAccounts())
-    } catch (e) { console.error(e) }
+  // ── Not logged in → Login screen ──
+  if (!vehicle && !admin && !loggedInEmployee) {
+    return <LoginScreen onCrewLogin={handleCrewLogin} onAdminLogin={handleAdminLogin} />
   }
 
-  const effectiveVehicle = vehicle ? (vehicle.crewName ? vehicle : { ...vehicle, crewName: loggedInCrew?.name || '' }) : null
-  const displayName = loggedInEmployee ? `${loggedInEmployee.firstName} ${loggedInEmployee.lastName}` : (isAdmin ? admin.name : effectiveVehicle?.name || '')
-  const displaySub = loggedInCrew?.name || (!isAdmin && effectiveVehicle?.crewName) || ''
-
-  // Page title — admin uses data-driven lookup from AdminSidebar
-  const pageTitle = isAdmin
-    ? (ADMIN_PAGE_TITLES[page] || 'Dashboard')
-    : { 'home': 'Home', 'spray': 'Spray Tracker', 'crew': 'Crew', 'routes': 'My Routes' }[page] || page.charAt(0).toUpperCase() + page.slice(1)
-
+  // ── Derive display info ──
+  const isAdmin      = Boolean(admin)
+  const effectiveVehicle = vehicle || (loggedInCrew ? { name: loggedInCrew.name, crewName: loggedInCrew.name } : null)
+  const displayName  = admin?.name || loggedInEmployee
+    ? `${loggedInEmployee?.firstName || ''} ${loggedInEmployee?.lastName || ''}`.trim()
+    : (vehicle?.name || '')
+  const displaySub   = admin?.role ? `Role: ${admin.role}` : (loggedInCrew?.name || vehicle?.crewName || '')
+  const pageTitle    = isAdmin
+    ? (ADMIN_PAGE_TITLES[page] || 'Admin')
+    : ({ home: 'Home', spray: 'Spray Log', crew: 'Crew', routes: 'My Routes' }[page] || 'FieldPulse')
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: FONT, maxWidth: isAdmin ? 900 : 430, margin: '0 auto', position: 'relative' }}>
-      {/* Sidebar — admin gets AdminSidebar, crew gets original Sidebar */}
-      {!isAdmin && <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} currentPage={page} onNav={setPage} />}
-      {isAdmin && <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} currentPage={page} onNav={(p) => { setPage(p); setSidebarOpen(false) }} />}
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT }}>
 
-      {/* ── Header ── */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(244,243,239,0.97)', backdropFilter: 'blur(14px)', borderBottom: `1.5px solid ${C.cardBorder}`, padding: '0 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0 10px' }}>
-          {/* Hamburger — now for both admin and crew */}
-          <div onClick={() => setSidebarOpen(true)} tabIndex={0} role="button" onKeyDown={e => e.key === 'Enter' && setSidebarOpen(true)}
-            style={{ cursor: 'pointer', padding: '6px 2px', display: 'flex', flexDirection: 'column', gap: 4, outline: 'none' }}>
-            <div style={{ width: 22, height: 2.5, background: C.text, borderRadius: 2 }} />
-            <div style={{ width: 22, height: 2.5, background: C.text, borderRadius: 2 }} />
-            <div style={{ width: 16, height: 2.5, background: C.text, borderRadius: 2 }} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 3, color: isAdmin ? C.amber : C.accent, fontWeight: 800, lineHeight: 1 }}>
-              {APP.name} {isAdmin ? '· ADMIN' : ''}
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.3 }}>{pageTitle}</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMed, textAlign: 'right', lineHeight: 1.3 }}>
-              {displayName}
-              {displaySub && <div style={{ fontSize: 11, color: C.textLight }}>{displaySub}</div>}
-            </div>
-            <button onClick={handleLogout} tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && handleLogout()}
-              style={{ padding: '8px 14px', borderRadius: 10, fontSize: 13, cursor: 'pointer', outline: 'none',
-                background: C.red, border: 'none', color: '#fff', fontWeight: 700,
-                boxShadow: '0 2px 8px rgba(220,38,38,0.2)' }}>
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* ── Header — always full width ── */}
+      <AppHeader
+        pageTitle={pageTitle}
+        isAdmin={isAdmin}
+        displayName={displayName}
+        displaySub={displaySub}
+        onMenuOpen={() => setSidebar(true)}
+        onLogout={logout}
+      />
 
-      {/* ── Content ── */}
-      <div style={{ padding: '14px 16px 40px' }}>
+      {/* ── Navigation drawers ── */}
+      {isAdmin ? (
+        <AdminSidebar
+          open={sidebarOpen}
+          onClose={() => setSidebar(false)}
+          currentPage={page}
+          onNav={(p) => { setPage(p); setSidebar(false) }}
+        />
+      ) : (
+        <Sidebar
+          open={sidebarOpen}
+          onClose={() => setSidebar(false)}
+          currentPage={page}
+          onNav={(p) => { setPage(p); setSidebar(false) }}
+          loggedInEmployee={loggedInEmployee}
+        />
+      )}
+
+      {/* ── Page content — constrained per mode ── */}
+      <div style={{ maxWidth: isAdmin ? 900 : 430, margin: '0 auto', padding: '14px 16px 40px' }}>
+        {/* ── Crew pages ── */}
         {!isAdmin && page === 'home' && (
-          <FieldHome vehicle={effectiveVehicle || { name: displayName, crewName: displaySub }} weather={weather} logs={logs} employees={employees} crews={crews} onNav={setPage}
-            loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
+          <FieldHome
+            vehicle={effectiveVehicle}
+            weather={weather}
+            logs={logs}
+            employees={employees}
+            crews={crews}
+            onNav={setPage}
+            loggedInEmployee={loggedInEmployee}
+            loggedInCrew={loggedInCrew}
+          />
         )}
         {!isAdmin && page === 'crew' && (
-          <CrewPage employees={employees} crews={crews} loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew}
-            vehicle={effectiveVehicle} showToast={showToast} />
+          <CrewPage
+            employees={employees}
+            crews={crews}
+            loggedInEmployee={loggedInEmployee}
+            loggedInCrew={loggedInCrew}
+            vehicle={effectiveVehicle}
+            showToast={showToast}
+          />
         )}
         {!isAdmin && page === 'routes' && (
-          <CrewRoutes loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
+          <CrewRoutes
+            loggedInEmployee={loggedInEmployee}
+            loggedInCrew={loggedInCrew}
+          />
         )}
         {!isAdmin && page === 'spray' && (
-          <SprayTracker vehicle={effectiveVehicle || { name: displayName, crewName: displaySub }} chemicals={chemicals} equipment={equipment} crews={crews}
-            logs={logs} weather={weather} onRefreshWeather={fetchWeather} onSubmitLog={handleSubmitLog}
-            onLogsUpdated={async () => setLogs(await getSprayLogs(getLogParams()))}
-            loggedInEmployee={loggedInEmployee} loggedInCrew={loggedInCrew} />
+          <SprayTracker
+            vehicle={effectiveVehicle}
+            chemicals={chemicals}
+            equipment={equipment}
+            crews={crews}
+            logs={logs}
+            weather={weather}
+            onRefreshWeather={fetchWeather}
+            onSubmitLog={handleSubmitLog}
+            onLogsUpdated={refreshLogs}
+            loggedInEmployee={loggedInEmployee}
+            loggedInCrew={loggedInCrew}
+          />
         )}
-        {!isAdmin && page !== 'spray' && page !== 'home' && page !== 'crew' && page !== 'routes' && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
-            <div><div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div><div style={{ fontSize: 22, fontWeight: 900 }}>Coming Soon</div></div>
-          </div>
-        )}
+
+        {/* ── Admin pages ── */}
         {isAdmin && (
-          <AdminDashboard page={page} chemicals={chemicals} equipment={equipment} crews={crews} employees={employees}
-            logs={logs} accounts={accounts} onRefresh={refreshData} showToast={showToast} onNav={setPage} />
+          <AdminDashboard
+            page={page}
+            chemicals={chemicals}
+            equipment={equipment}
+            crews={crews}
+            employees={employees}
+            logs={logs}
+            accounts={accounts}
+            onRefresh={fetchAllData}
+            showToast={showToast}
+            onNav={setPage}
+          />
+        )}
+
+        {/* ── Unknown crew page fallback ── */}
+        {!isAdmin && !['home','crew','routes','spray'].includes(page) && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
+            <div>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>Coming Soon</div>
+            </div>
+          </div>
         )}
       </div>
 
-      {toast && (
-        <div style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', background: C.accent, color: '#fff',
-          padding: '14px 28px', borderRadius: 14, fontSize: 15, fontWeight: 800, zIndex: 30, boxShadow: '0 4px 20px rgba(45,122,58,0.3)' }}>
-          {toast}
-        </div>
-      )}
-      <style>{`
-        *:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; border-radius: 8px; }
-        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 0px; border-radius: 12px; }
-        button:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; }
-        [role="button"]:focus-visible { outline: 3px solid #2563EB !important; outline-offset: 2px; }
-        [role="button"]:focus:not(:focus-visible) { outline: none !important; }
-      `}</style>
+      {/* ── Toast notification ── */}
+      <Toast message={toast} />
     </div>
   )
 }
