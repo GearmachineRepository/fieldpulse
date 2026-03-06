@@ -1,4 +1,4 @@
-# FieldPulse — Spray Tracker
+# FieldPulse — Field Manager
 
 Pesticide application tracking & DPR compliance for landscape crews.
 Built with React + Express + PostgreSQL.
