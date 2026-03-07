@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════
 
 import { useRef, useEffect } from 'react'
-import { APP, C } from '../../config.js'
+import { APP, C } from '@/config/index.js'
 
 // ── Navigation config — single source of truth ──
 export const NAV_GROUPS = [

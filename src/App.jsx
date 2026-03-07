@@ -1,192 +1,51 @@
 // ═══════════════════════════════════════════
 // App — Root router
-// Handles: Login → Crew shell → Admin shell
-// All state lives in AppContext (see context/AppContext.jsx)
+// This file should stay nearly empty forever.
+// All logic lives inside the three shells.
 // ═══════════════════════════════════════════
 
-import { useEffect } from 'react'
-import { C, FONT } from './config/index.js'
-import { createSprayLog } from './lib/api/sprayLogs.js'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { C, FONT } from '@/config/index.js'
 
-import { useAppState, useAppActions, useAppDispatch } from './context/AppContext.jsx'
+// Lazy-load each shell so their JS bundles are only downloaded when needed.
+// A crew member on a tablet never downloads admin code. An admin on a desktop
+// never downloads field-app code. This is the main performance win of splitting.
+const MarketingShell = lazy(() => import('@/marketing/MarketingShell.jsx'))
+const FieldShell     = lazy(() => import('@/field/FieldShell.jsx'))
+const AdminShell     = lazy(() => import('@/admin/AdminShell.jsx'))
 
-import LoginScreen  from './pages/LoginScreen.jsx'
-import Sidebar      from './components/Sidebar.jsx'
-import AppHeader    from './components/layout/AppHeader.jsx'
-import Toast        from './components/common/Toast.jsx'
-import AdminSidebar, { ADMIN_PAGE_TITLES } from './components/admin/AdminSidebar.jsx'
-
-import FieldHome      from './pages/FieldHome.jsx'
-import CrewPage       from './pages/CrewPage.jsx'
-import CrewRoutes     from './pages/CrewRoutes.jsx'
-import SprayTracker   from './pages/SprayTracker.jsx'
-import AdminDashboard from './pages/AdminDashboard.jsx'
+// Minimal loading state shown during the brief shell bundle download.
+function ShellLoader() {
+  return (
+    <main style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', background: C.bg, fontFamily: FONT,
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>💧</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: C.text }}>Loading…</div>
+      </div>
+    </main>
+  )
+}
 
 export default function App() {
-  const state    = useAppState()
-  const dispatch = useAppDispatch()
-  const {
-    showToast, logout, setPage, setSidebar,
-    fetchAllData, refreshLogs, fetchWeather,
-  } = useAppActions()
-
-  const {
-    vehicle, admin, loggedInEmployee, loggedInCrew,
-    page, sidebarOpen, toast,
-    chemicals, equipment, crews, employees, logs, accounts,
-    weather, dataLoaded,
-  } = state
-
-  // ── Fetch data after any login ──
-  useEffect(() => {
-    if (!vehicle && !admin && !loggedInEmployee) return
-    fetchAllData().catch(console.error)
-    fetchWeather()
-  }, [vehicle?.id, admin?.id, loggedInEmployee?.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Handle login callbacks ──
-  const handleCrewLogin = (result) => {
-    dispatch({
-      type: 'LOGIN_CREW',
-      employee: result.employee,
-      crew:     result.crew,
-      vehicle:  result.vehicle,
-    })
-  }
-
-  const handleAdminLogin = (result) => {
-    dispatch({ type: 'LOGIN_ADMIN', admin: result })
-  }
-
-  const handleSubmitLog = async (logData) => {
-    const result = await createSprayLog(logData)
-    await refreshLogs()
-    return result
-  }
-
-  // ── Not logged in → Login screen ──
-  if (!vehicle && !admin && !loggedInEmployee) {
-    return <LoginScreen onCrewLogin={handleCrewLogin} onAdminLogin={handleAdminLogin} />
-  }
-
-  // ── Derive display info ──
-  const isAdmin      = Boolean(admin)
-  const effectiveVehicle = vehicle || (loggedInCrew ? { name: loggedInCrew.name, crewName: loggedInCrew.name } : null)
-  const displayName  = admin?.name || loggedInEmployee
-    ? `${loggedInEmployee?.firstName || ''} ${loggedInEmployee?.lastName || ''}`.trim()
-    : (vehicle?.name || '')
-  const displaySub   = admin?.role ? `Role: ${admin.role}` : (loggedInCrew?.name || vehicle?.crewName || '')
-  const pageTitle    = isAdmin
-    ? (ADMIN_PAGE_TITLES[page] || 'Admin')
-    : ({ home: 'Home', spray: 'Spray Log', crew: 'Crew', routes: 'My Routes' }[page] || 'FieldPulse')
-
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT }}>
+    <Suspense fallback={<ShellLoader />}>
+      <Routes>
+        {/* ── Public marketing site ── */}
+        <Route path="/" element={<MarketingShell />} />
 
-      {/* ── Header — always full width ── */}
-      <AppHeader
-        pageTitle={pageTitle}
-        isAdmin={isAdmin}
-        displayName={displayName}
-        displaySub={displaySub}
-        onMenuOpen={() => setSidebar(true)}
-        onLogout={logout}
-      />
+        {/* ── Field app — crew PIN login + daily tools ── */}
+        <Route path="/app/*" element={<FieldShell />} />
 
-      {/* ── Navigation drawers ── */}
-      {isAdmin ? (
-        <AdminSidebar
-          open={sidebarOpen}
-          onClose={() => setSidebar(false)}
-          currentPage={page}
-          onNav={(p) => { setPage(p); setSidebar(false) }}
-        />
-      ) : (
-        <Sidebar
-          open={sidebarOpen}
-          onClose={() => setSidebar(false)}
-          currentPage={page}
-          onNav={(p) => { setPage(p); setSidebar(false) }}
-          loggedInEmployee={loggedInEmployee}
-        />
-      )}
+        {/* ── Admin dashboard — company management ── */}
+        <Route path="/admin/*" element={<AdminShell />} />
 
-      {/* ── Page content — constrained per mode ── */}
-      <div style={{ maxWidth: isAdmin ? 900 : 430, margin: '0 auto', padding: '14px 16px 40px' }}>
-        {/* ── Crew pages ── */}
-        {!isAdmin && page === 'home' && (
-          <FieldHome
-            vehicle={effectiveVehicle}
-            weather={weather}
-            logs={logs}
-            employees={employees}
-            crews={crews}
-            onNav={setPage}
-            loggedInEmployee={loggedInEmployee}
-            loggedInCrew={loggedInCrew}
-          />
-        )}
-        {!isAdmin && page === 'crew' && (
-          <CrewPage
-            employees={employees}
-            crews={crews}
-            loggedInEmployee={loggedInEmployee}
-            loggedInCrew={loggedInCrew}
-            vehicle={effectiveVehicle}
-            showToast={showToast}
-          />
-        )}
-        {!isAdmin && page === 'routes' && (
-          <CrewRoutes
-            loggedInEmployee={loggedInEmployee}
-            loggedInCrew={loggedInCrew}
-          />
-        )}
-        {!isAdmin && page === 'spray' && (
-          <SprayTracker
-            vehicle={effectiveVehicle}
-            chemicals={chemicals}
-            equipment={equipment}
-            crews={crews}
-            logs={logs}
-            weather={weather}
-            onRefreshWeather={fetchWeather}
-            onSubmitLog={handleSubmitLog}
-            onLogsUpdated={refreshLogs}
-            loggedInEmployee={loggedInEmployee}
-            loggedInCrew={loggedInCrew}
-          />
-        )}
-
-        {/* ── Admin pages ── */}
-        {isAdmin && (
-          <AdminDashboard
-            page={page}
-            chemicals={chemicals}
-            equipment={equipment}
-            crews={crews}
-            employees={employees}
-            logs={logs}
-            accounts={accounts}
-            onRefresh={fetchAllData}
-            showToast={showToast}
-            onNav={setPage}
-          />
-        )}
-
-        {/* ── Unknown crew page fallback ── */}
-        {!isAdmin && !['home','crew','routes','spray'].includes(page) && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
-            <div>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
-              <div style={{ fontSize: 22, fontWeight: 800 }}>Coming Soon</div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── Toast notification ── */}
-      <Toast message={toast} />
-    </div>
+        {/* ── Catch-all → marketing root ── */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   )
 }

@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { useState, useCallback } from 'react'
-import { getSimulatedWeather, getWeatherByCoords } from '../lib/weather.js'
+import { getSimulatedWeather, getWeatherByCoords } from '@/lib/weather.js'
 
 /**
  * Provides current weather state and a refresh callback.

@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { APP, C } from '../config.js'
+import { APP, C } from '@/config/index.js'
 
 const NAV_ITEMS = [
   { key: 'home',   icon: '🏠', label: 'Home' },

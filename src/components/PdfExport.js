@@ -3,7 +3,7 @@
 // All user data is escaped before injection
 // ═══════════════════════════════════════════
 
-import { APP } from '../config.js'
+import { APP } from '@/config/index.js'
 
 // Escape HTML entities to prevent XSS
 const ESCAPE_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }

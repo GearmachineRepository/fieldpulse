@@ -3,9 +3,9 @@
 // ═══════════════════════════════════════════
 
 import { useState } from 'react'
-import { C, MONO, SIG_COLORS, cardStyle, labelStyle, inputStyle, btnStyle } from '../../config.js'
-import { createChemical, updateChemical, deleteChemical, createEquipment, updateEquipment, deleteEquipment } from '../../lib/api.js'
-import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field } from '../../components/admin/SharedAdmin.jsx'
+import { C, MONO, SIG_COLORS, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.js'
+import { createChemical, updateChemical, deleteChemical, createEquipment, updateEquipment, deleteEquipment } from '@/lib/api/index.js'
+import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field } from '@/admin/components/SharedAdmin.jsx'
 
 export default function InventorySection({ chemicals, equipment, onRefresh, showToast }) {
   const [subTab, setSubTab] = useState('chemicals')

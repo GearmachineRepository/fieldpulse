@@ -3,8 +3,8 @@
 // ═══════════════════════════════════════════
 
 import { useState, useEffect } from 'react'
-import { C, cardStyle, labelStyle, btnStyle, inputStyle } from '../config.js'
-import { submitRoster, getTodayRoster } from '../lib/api.js'
+import { C, cardStyle, labelStyle, btnStyle, inputStyle } from '@/config/index.js'
+import { submitRoster, getTodayRoster } from '@/lib/api/index.js'
 
 export default function CrewPage({ employees, crews, loggedInEmployee, loggedInCrew, vehicle, showToast }) {
   const crewObj = loggedInCrew ? crews.find(c => c.name === loggedInCrew.name) : crews.find(c => c.name === vehicle?.crewName)

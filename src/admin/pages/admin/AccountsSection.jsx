@@ -5,11 +5,11 @@
 // ═══════════════════════════════════════════
 
 import { useState } from 'react'
-import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '../../config.js'
-import { createAccount, updateAccount, deleteAccount, geocodeAddress } from '../../lib/api.js'
-import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field } from '../../components/admin/SharedAdmin.jsx'
-import LocationLink from '../../components/LocationLink.jsx'
-import AccountMap from '../../components/AccountMap.jsx'
+import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.js'
+import { createAccount, updateAccount, deleteAccount, geocodeAddress } from '@/lib/api/index.js'
+import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field } from '@/admin/components/SharedAdmin.jsx'
+import LocationLink from '@/components/LocationLink.jsx'
+import AccountMap from '@/components/AccountMap.jsx'
 
 const ACCOUNT_TYPES = [
   { key: 'residential', label: '🏠 Residential' },

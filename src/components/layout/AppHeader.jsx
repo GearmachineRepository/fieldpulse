@@ -3,7 +3,7 @@
 // Extracted from App.jsx's inline render block
 // ═══════════════════════════════════════════
 
-import { APP, C, FONT } from '../../config/index.js'
+import { APP, C, FONT } from '@/config/index.js'
 
 /**
  * @param {{

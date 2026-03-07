@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════
 // API barrel — re-exports all domain modules
-// so existing `import { getCrews } from '../lib/api.js'`
+// so existing `import { getCrews } from '@/lib/api/index.js'`
 // imports continue to work without modification.
 //
 // New code should import directly:
-//   import { getCrews } from '../lib/api/crews.js'
+//   import { getCrews } from '@/lib/api/crews.js'
 // ═══════════════════════════════════════════
 
 export * from './core.js'

@@ -10,7 +10,9 @@ export const C = {
   cardBorder:   '#E8E6E0',
   text:         '#1A1A18',
   textMed:      '#4A4A45',
-  textLight:    '#8A8A82',
+  // #8A8A82 → #6B6B64: passes WCAG AA 4.5:1 on all app backgrounds.
+  // 5.4:1 on #FFF · 5.2:1 on #FAFAF7 · 5.0:1 on #F4F3EF
+  textLight:    '#6B6B64',
   accent:       '#2D7A3A',
   accentLight:  '#E8F5EA',
   accentBorder: '#B8DEC0',

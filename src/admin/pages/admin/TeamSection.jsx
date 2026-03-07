@@ -4,9 +4,9 @@
 // ═══════════════════════════════════════════
 
 import { useState, useRef } from 'react'
-import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '../../config.js'
-import { createCrew, updateCrew, deleteCrew, createEmployee, updateEmployee, deleteEmployee } from '../../lib/api.js'
-import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field } from '../../components/admin/SharedAdmin.jsx'
+import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.js'
+import { createCrew, updateCrew, deleteCrew, createEmployee, updateEmployee, deleteEmployee } from '@/lib/api/index.js'
+import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field } from '@/admin/components/SharedAdmin.jsx'
 
 export default function TeamSection({ employees, crews, onRefresh, showToast }) {
   const [subTab, setSubTab] = useState('employees')

@@ -2,12 +2,35 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!--
+      user-scalable=no removed — it's an accessibility violation (WCAG 1.4.4).
+      Users who need to zoom (low vision, motor issues) must be able to.
+      maximum-scale=5 allows zoom while still preventing accidental double-tap zoom on iOS.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+
+    <!-- SEO: meta description shown in search engine results -->
+    <meta name="description" content="FieldPulse — Pesticide application tracking and DPR compliance for landscape crews. Log spray applications, manage crews, and generate reports." />
+
+    <!-- PWA / iOS home screen -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
     <title>FieldPulse</title>
+
+    <!--
+      Leaflet CSS removed from here.
+      It was render-blocking (Lighthouse: "Render blocking requests — est. 150ms savings").
+      It's now imported directly in AccountMap.jsx via:
+        import 'leaflet/dist/leaflet.css'
+      Vite bundles it only when the map component is loaded, making it non-blocking.
+    -->
+
+    <!-- Preconnect to tile servers used by Leaflet — reduces map tile latency -->
+    <link rel="preconnect" href="https://tile.openstreetmap.org" />
+
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
       body { font-family: 'Nunito Sans', 'Avenir', 'Segoe UI', sans-serif; background: #F4F3EF; }

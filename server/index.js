@@ -10,18 +10,18 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import db from './db.js'
 
-import authRoutes     from './routes/auth.js'
-import adminsRoutes   from './routes/admins.js'
-import vehicleRoutes  from './routes/vehicles.js'
-import crewRoutes     from './routes/crews.js'
-import employeeRoutes from './routes/employees.js'
+import authRoutes      from './routes/auth.js'
+import adminsRoutes    from './routes/admins.js'
+import vehicleRoutes   from './routes/vehicles.js'
+import crewRoutes      from './routes/crews.js'
+import employeeRoutes  from './routes/employees.js'
 import equipmentRoutes from './routes/equipment.js'
-import chemicalRoutes from './routes/chemicals.js'
-import sprayLogRoutes from './routes/sprayLogs.js'
-import rosterRoutes   from './routes/rosters.js'
-import reportRoutes   from './routes/reports.js'
-import accountRoutes  from './routes/accounts.js'
-import routeRoutes    from './routes/routes.js'
+import chemicalRoutes  from './routes/chemicals.js'
+import sprayLogRoutes  from './routes/sprayLogs.js'
+import rosterRoutes    from './routes/rosters.js'
+import reportRoutes    from './routes/reports.js'
+import accountRoutes   from './routes/accounts.js'
+import routeRoutes     from './routes/routes.js'
 
 import { createUpload }           from './middleware/upload.js'
 import { notFound, errorHandler } from './middleware/error.js'
@@ -31,6 +31,47 @@ dotenv.config()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app  = express()
 const PORT = process.env.PORT || 3001
+
+// ── Security headers ──
+// Applied before all routes so every response gets them.
+//
+// In production these should ideally come from a reverse proxy (nginx/Caddy),
+// but Express-level headers are a solid fallback and required for localhost dev.
+app.use((req, res, next) => {
+  // Prevent MIME-type sniffing attacks
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+
+  // Clickjacking protection — only allow framing by same origin
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+
+  // Cross-Origin-Opener-Policy — isolates browsing context, enables SharedArrayBuffer
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+
+  // HSTS — tell browsers to always use HTTPS for 1 year (skip on localhost)
+  if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
+
+  // Content-Security-Policy — restrict resource origins.
+  // Leaflet tiles and CDN marker images are explicitly allowed.
+  // 'unsafe-inline' is required for React's inline styles and Leaflet's SVG icons.
+  // Tighten this further if you ever adopt a nonce-based CSP strategy.
+  const isDev = process.env.NODE_ENV !== 'production'
+  const csp = [
+    `default-src 'self'`,
+    `script-src 'self' ${isDev ? "'unsafe-eval'" : ''} 'unsafe-inline'`,
+    `style-src 'self' 'unsafe-inline'`,
+    `img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://cdnjs.cloudflare.com`,
+    `connect-src 'self' https://api.openweathermap.org https://geocoding.geo.census.gov https://nominatim.openstreetmap.org`,
+    `font-src 'self'`,
+    `frame-ancestors 'self'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+  ].join('; ')
+  res.setHeader('Content-Security-Policy', csp)
+
+  next()
+})
 
 // ── CORS ──
 // Comma-separated allowed origins from env (see .env.example)

@@ -4,13 +4,13 @@
 // ═══════════════════════════════════════════
 
 import { useState, useEffect, useCallback } from 'react'
-import { APP, C, MONO, cardStyle, labelStyle, inputStyle, btnStyle } from '../../config.js'
+import { APP, C, MONO, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.js'
 import { getRoutes, getRoute, createRoute, updateRoute, deleteRoute, getAccounts,
   addRouteStop, removeRouteStop, updateRouteStop, reorderRouteStops,
-  getWeekSchedule, getCompletionLog, undoCompletion } from '../../lib/api.js'
-import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field, DateRangePicker, getDateRange } from '../../components/admin/SharedAdmin.jsx'
-import AccountMap from '../../components/AccountMap.jsx'
-import LocationLink from '../../components/LocationLink.jsx'
+  getWeekSchedule, getCompletionLog, undoCompletion } from '@/lib/api/index.js'
+import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field, DateRangePicker, getDateRange } from '@/admin/components/SharedAdmin.jsx'
+import AccountMap from '@/components/AccountMap.jsx'
+import LocationLink from '@/components/LocationLink.jsx'
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const DAY_OPTIONS = [

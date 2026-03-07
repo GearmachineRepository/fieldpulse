@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { useState } from 'react'
-import { C, SIG_COLORS, cardStyle, labelStyle, inputStyle, btnStyle } from '../../config.js'
+import { C, SIG_COLORS, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.js'
 
 export default function SdsTab({ chemicals }) {
   const [q, setQ] = useState('')

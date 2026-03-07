@@ -11,7 +11,10 @@
   --card-border:   #E8E6E0;
   --text:          #1A1A18;
   --text-med:      #4A4A45;
-  --text-light:    #8A8A82;
+  /* #8A8A82 → #6B6B64: darkened to pass WCAG AA 4.5:1 on all app backgrounds.
+     Verified: 5.4:1 on #FFF, 5.2:1 on #FAFAF7, 5.0:1 on #F4F3EF.
+     Visually still reads as "secondary/muted" against --text-med (#4A4A45). */
+  --text-light:    #6B6B64;
   --accent:        #2D7A3A;
   --accent-light:  #E8F5EA;
   --accent-border: #B8DEC0;

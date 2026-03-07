@@ -6,10 +6,10 @@
 // ═══════════════════════════════════════════
 
 import { useState, useEffect } from 'react'
-import { APP, C, cardStyle, btnStyle } from '../../config.js'
-import { getRosters, deleteRoster, getRosterReport } from '../../lib/api.js'
-import { SectionHeader, SubTabs, ConfirmDelete, FilterPills, DateRangePicker, getDateRange } from '../../components/admin/SharedAdmin.jsx'
-import { formatDateShort } from '../../lib/dateUtils.js'
+import { APP, C, cardStyle, btnStyle } from '@/config/index.js'
+import { getRosters, deleteRoster, getRosterReport } from '@/lib/api/index.js'
+import { SectionHeader, SubTabs, ConfirmDelete, FilterPills, DateRangePicker, getDateRange } from '@/admin/components/SharedAdmin.jsx'
+import { formatDateShort } from '@/lib/dateUtils.js'
 
 export default function CrewRostersSection({ crews, employees, showToast }) {
   const [subTab, setSubTab] = useState('rosters')

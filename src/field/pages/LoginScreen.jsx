@@ -3,8 +3,8 @@
 // ═══════════════════════════════════════════
 
 import { useState, useEffect } from 'react'
-import { APP, C, FONT, cardStyle, inputStyle, btnStyle, labelStyle } from '../config.js'
-import { checkHealth, getAdminsList, getCrewLoginTiles, crewLogin, verifyAdminPin } from '../lib/api.js'
+import { APP, C, FONT, cardStyle, inputStyle, btnStyle, labelStyle } from '@/config/index.js'
+import { checkHealth, getAdminsList, getCrewLoginTiles, crewLogin, verifyAdminPin } from '@/lib/api/index.js'
 import styles from './LoginScreen.module.css'
 
 export default function LoginScreen({ onCrewLogin, onAdminLogin }) {
@@ -59,19 +59,23 @@ export default function LoginScreen({ onCrewLogin, onAdminLogin }) {
   }
 
   // ── Loading ──
+  // <main> used here so Lighthouse sees a landmark on first paint
   if (loading) {
     return (
-      <div className={styles.loading} style={{ fontFamily: FONT }}>
+      <main className={styles.loading} style={{ fontFamily: FONT }}>
         <div className={styles.loadingInner}>
           <div className={styles.loadingIcon}>💧</div>
           <div className={styles.loadingText}>Loading {APP.name}...</div>
         </div>
-      </div>
+      </main>
     )
   }
 
+  // <main> replaces the outer wrapper div — this is the page's primary content
+  // landmark. Required by WCAG 1.3.6 / Lighthouse "Document does not have a
+  // main landmark". The .wrapper CSS class still applies; the tag change is semantic only.
   return (
-    <div className={styles.wrapper} style={{ fontFamily: FONT }}>
+    <main className={styles.wrapper} style={{ fontFamily: FONT }}>
       <div style={{ width: '100%', maxWidth: 440 }}>
 
         {/* ── Brand ── */}
@@ -142,7 +146,7 @@ export default function LoginScreen({ onCrewLogin, onAdminLogin }) {
 
         <div className={styles.footer}>{APP.name} v{APP.version}</div>
       </div>
-    </div>
+    </main>
   )
 }
 
@@ -171,31 +175,45 @@ function CrewFlow({ crewTiles, selectedCrew, selectedEmployee, pin, error, onSel
                       <div className={styles.crewTileSub}>
                         {crew.employees.length} member{crew.employees.length !== 1 ? 's' : ''}
                         {crew.vehicle ? ` · ${crew.vehicle.name}` : ''}
-                        {crew.lead_name ? ` · Lead: ${crew.lead_name}` : ''}
                       </div>
                     </div>
-                    <div className={styles.crewTileArrow}>→</div>
+                    <div className={styles.crewTileArrow}>›</div>
                   </div>
                   {crew.employees.length > 0 && (
                     <div className={styles.crewTileAvatars}>
                       {crew.employees.slice(0, 5).map((emp, i) => (
-                        <div key={emp.id}
-                          className={`${styles.avatar} ${i > 0 ? styles.avatarStacked : ''}`}
-                          style={{ background: emp.photo_filename ? 'transparent' : C.blue, zIndex: 5 - i }}>
+                        <div key={emp.id} className={`${styles.avatar} ${i > 0 ? styles.avatarStacked : ''}`}
+                          style={{ background: C.blue, zIndex: crew.employees.length - i }}>
                           {emp.photo_filename ? (
                             <img src={`/uploads/${emp.photo_filename}`} alt="" className={styles.avatarImg} />
                           ) : (
-                            <>{emp.first_name[0]}{emp.last_name[0]}</>
+                            `${emp.first_name[0]}${emp.last_name[0]}`
                           )}
                         </div>
                       ))}
                       {crew.employees.length > 5 && (
-                        <div className={styles.avatarOverflow}>+{crew.employees.length - 5}</div>
+                        <div className={`${styles.avatarOverflow} ${styles.avatarStacked}`}>
+                          +{crew.employees.length - 5}
+                        </div>
                       )}
                     </div>
                   )}
                 </div>
               ))}
+              {crewTiles && crewTiles.unassigned.length > 0 && (
+                <div key="__unassigned__" tabIndex={0} role="button"
+                  onClick={() => onSelectCrew({ id: null, name: 'Unassigned', employees: crewTiles.unassigned, vehicle: null })}
+                  onKeyDown={e => e.key === 'Enter' && onSelectCrew({ id: null, name: 'Unassigned', employees: crewTiles.unassigned, vehicle: null })}
+                  className={styles.crewTile}>
+                  <div className={styles.crewTileRow}>
+                    <div>
+                      <div className={styles.crewTileName}>Unassigned</div>
+                      <div className={styles.crewTileSub}>{crewTiles.unassigned.length} employee{crewTiles.unassigned.length !== 1 ? 's' : ''}</div>
+                    </div>
+                    <div className={styles.crewTileArrow}>›</div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -210,9 +228,11 @@ function CrewFlow({ crewTiles, selectedCrew, selectedEmployee, pin, error, onSel
         <div className={styles.backRow}>
           <button tabIndex={0} onClick={onBack} className={styles.backBtn}>← Back</button>
           <div className={styles.backCrewName}>{selectedCrew.name}</div>
-          {selectedCrew.vehicle && <div className={styles.backVehicle}>🚛 {selectedCrew.vehicle.name}</div>}
+          {selectedCrew.vehicle && (
+            <span className={styles.backVehicle}>{selectedCrew.vehicle.name}</span>
+          )}
         </div>
-        <div style={labelStyle}>Who's Signing In?</div>
+        <div style={labelStyle}>Select Your Name</div>
         <div className={styles.listCol}>
           {selectedCrew.employees.filter(e => e.has_pin).length === 0 ? (
             <div className={styles.emptyMsg}>No employees with PINs in this crew. Set PINs in admin → Employees.</div>

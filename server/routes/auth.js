@@ -6,7 +6,7 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import rateLimit from 'express-rate-limit'
 import db from '../db.js'
-import { signToken } from '../middleware/auth.js'
+import { signToken, requireAuth } from '../middleware/auth.js'
 import { validateBody } from '../middleware/validate.js'
 
 const router = Router()
@@ -123,5 +123,56 @@ router.post('/crew-login',
     }
   }
 )
+
+// ── Session restore ──
+// Called on page load if a token exists in sessionStorage.
+// Decodes the token, re-fetches the user's current record from the DB,
+// and returns the same shape as the original login response so the
+// client can rebuild React state without asking for a PIN again.
+router.get('/me', requireAuth, async (req, res) => {
+  try {
+    const { type, adminId, employeeId } = req.user
+
+    if (type === 'admin') {
+      const r = await db.query(
+        'SELECT id, name, role FROM admins WHERE id = $1 AND active = true',
+        [adminId]
+      )
+      if (!r.rows.length) return res.status(401).json({ error: 'Account not found' })
+      return res.json({ type: 'admin', admin: r.rows[0] })
+    }
+
+    if (type === 'employee') {
+      const r = await db.query(
+        `SELECT e.id, e.first_name, e.last_name, e.license_number, e.cert_number,
+                e.is_crew_lead, e.default_crew_id,
+                c.name AS crew_name,
+                v.id AS vehicle_id, v.name AS vehicle_name
+         FROM employees e
+         LEFT JOIN crews c ON c.id = e.default_crew_id
+         LEFT JOIN vehicles v ON v.crew_name = c.name AND v.active = true
+         WHERE e.id = $1 AND e.active = true`,
+        [employeeId]
+      )
+      if (!r.rows.length) return res.status(401).json({ error: 'Account not found' })
+      const emp = r.rows[0]
+      return res.json({
+        type: 'employee',
+        employee: {
+          id: emp.id, firstName: emp.first_name, lastName: emp.last_name,
+          license: emp.license_number, certNumber: emp.cert_number,
+          isCrewLead: emp.is_crew_lead,
+        },
+        crew: emp.default_crew_id ? { id: emp.default_crew_id, name: emp.crew_name } : null,
+        vehicle: emp.vehicle_id   ? { id: emp.vehicle_id, name: emp.vehicle_name }   : null,
+      })
+    }
+
+    return res.status(400).json({ error: 'Unknown token type' })
+  } catch (e) {
+    console.error('/me error:', e)
+    res.status(500).json({ error: 'Server error' })
+  }
+})
 
 export default router

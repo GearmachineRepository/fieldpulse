@@ -2,24 +2,30 @@
 // App Context — centralized state + actions
 // ═══════════════════════════════════════════
 
-import { createContext, useContext, useReducer, useCallback } from 'react'
-import { getChemicals, getEquipment, getCrews, getEmployees, getSprayLogs, getAccounts, clearAuthToken } from '../lib/api/index.js'
-import { getSimulatedWeather, getWeatherByCoords } from '../lib/weather.js'
+import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
+import { getChemicals, getEquipment, getCrews, getEmployees, getSprayLogs, getAccounts, clearAuthToken } from '@/lib/api/index.js'
+import { restoreSession } from '@/lib/api/auth.js'
+import { getSimulatedWeather, getWeatherByCoords } from '@/lib/weather.js'
 
 // ────────────────────────────────────────────
 // State shape
 // ────────────────────────────────────────────
 const initialState = {
   // Auth
-  vehicle:         null,
-  admin:           null,
+  vehicle:          null,
+  admin:            null,
   loggedInEmployee: null,
-  loggedInCrew:    null,
+  loggedInCrew:     null,
 
   // Navigation & UI
-  page:        'spray',
+  page:        'home',
   sidebarOpen: false,
   toast:       null,
+
+  // true while checking sessionStorage for an existing token on startup.
+  // Every shell reads this flag — the restore runs in AppProvider so it
+  // fires immediately regardless of which route is loaded first.
+  restoring: true,
 
   // Data
   chemicals:  [],
@@ -37,6 +43,7 @@ const initialState = {
 // ────────────────────────────────────────────
 function appReducer(state, action) {
   switch (action.type) {
+
     case 'LOGIN_CREW':
       return {
         ...state,
@@ -44,11 +51,35 @@ function appReducer(state, action) {
         loggedInCrew:     action.crew,
         vehicle:          action.vehicle || state.vehicle,
         page:             'home',
+        restoring:        false,
       }
+
     case 'LOGIN_ADMIN':
-      return { ...state, admin: action.admin, page: 'admin-home' }
+      return { ...state, admin: action.admin, page: 'admin-home', restoring: false }
+
     case 'LOGOUT':
-      return { ...initialState, weather: getSimulatedWeather() }
+      return { ...initialState, restoring: false, weather: getSimulatedWeather() }
+
+    // Dispatched once on app startup after /api/auth/me resolves.
+    // Rebuilds auth state from a stored token — no PIN re-entry needed.
+    case 'RESTORE_SESSION': {
+      const { session } = action
+      if (!session) return { ...state, restoring: false }
+      if (session.type === 'admin') {
+        return { ...state, admin: session.admin, page: 'admin-home', restoring: false }
+      }
+      if (session.type === 'employee') {
+        return {
+          ...state,
+          loggedInEmployee: session.employee,
+          loggedInCrew:     session.crew,
+          vehicle:          session.vehicle || state.vehicle,
+          page:             'home',
+          restoring:        false,
+        }
+      }
+      return { ...state, restoring: false }
+    }
 
     case 'SET_PAGE':        return { ...state, page: action.page }
     case 'SET_SIDEBAR':     return { ...state, sidebarOpen: action.open }
@@ -89,6 +120,16 @@ const DispatchContext = createContext(null)
 // ────────────────────────────────────────────
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState)
+
+  // ── Session restore — runs once, immediately on app start ──
+  // Lives here in the Provider (not in a shell) so it fires regardless
+  // of which route is loaded first. Shells just read the `restoring` flag.
+  useEffect(() => {
+    restoreSession()
+      .then(session => dispatch({ type: 'RESTORE_SESSION', session }))
+      .catch(() => dispatch({ type: 'RESTORE_SESSION', session: null }))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <AppContext.Provider value={state}>
       <DispatchContext.Provider value={dispatch}>
@@ -113,10 +154,6 @@ export function useAppDispatch() {
   return ctx
 }
 
-/**
- * Convenience hook — returns bound action helpers so components
- * don't have to build their own dispatch calls.
- */
 export function useAppActions() {
   const dispatch = useAppDispatch()
   const state    = useAppState()
@@ -131,31 +168,20 @@ export function useAppActions() {
     dispatch({ type: 'LOGOUT' })
   }, [dispatch])
 
-  const setPage = useCallback((page) => {
-    dispatch({ type: 'SET_PAGE', page })
-  }, [dispatch])
+  const setPage     = useCallback((page) => dispatch({ type: 'SET_PAGE', page }), [dispatch])
+  const setSidebar  = useCallback((open) => dispatch({ type: 'SET_SIDEBAR', open }), [dispatch])
 
-  const setSidebar = useCallback((open) => {
-    dispatch({ type: 'SET_SIDEBAR', open })
-  }, [dispatch])
-
-  /** Returns the query params for log fetching based on who's logged in. */
   const getLogParams = useCallback(() => {
-    if (state.admin)                   return {}
-    if (state.vehicle?.id)             return { vehicleId: state.vehicle.id }
-    if (state.loggedInCrew?.name)      return { crewName: state.loggedInCrew.name }
+    if (state.admin)              return {}
+    if (state.vehicle?.id)        return { vehicleId: state.vehicle.id }
+    if (state.loggedInCrew?.name) return { crewName: state.loggedInCrew.name }
     return {}
   }, [state.admin, state.vehicle, state.loggedInCrew])
 
   const fetchAllData = useCallback(async () => {
-    const logParams = getLogParams()
     const [chemicals, equipment, crews, employees, logs, accounts] = await Promise.all([
-      getChemicals(),
-      getEquipment(),
-      getCrews(),
-      getEmployees(),
-      getSprayLogs(logParams),
-      getAccounts(),
+      getChemicals(), getEquipment(), getCrews(), getEmployees(),
+      getSprayLogs(getLogParams()), getAccounts(),
     ])
     dispatch({ type: 'SET_ALL_DATA', chemicals, equipment, crews, employees, logs, accounts })
   }, [dispatch, getLogParams])
@@ -184,14 +210,5 @@ export function useAppActions() {
     )
   }, [dispatch])
 
-  return {
-    showToast,
-    logout,
-    setPage,
-    setSidebar,
-    getLogParams,
-    fetchAllData,
-    refreshLogs,
-    fetchWeather,
-  }
+  return { showToast, logout, setPage, setSidebar, getLogParams, fetchAllData, refreshLogs, fetchWeather }
 }

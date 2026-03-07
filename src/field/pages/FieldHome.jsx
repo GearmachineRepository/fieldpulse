@@ -3,10 +3,10 @@
 // ═══════════════════════════════════════════
 
 import { useState, useEffect } from 'react'
-import { C, cardStyle, labelStyle, btnStyle } from '../config/index.js'
-import { getGreeting, getTodayLabel, getTodayShort } from '../utils/date.js'
-import { getTodayRoster } from '../lib/api/rosters.js'
-import WindCompass from '../components/WindCompass.jsx'
+import { C, cardStyle, labelStyle, btnStyle } from '@/config/index.js'
+import { getGreeting, getTodayLabel, getTodayShort } from '@/utils/date.js'
+import { getTodayRoster } from '@/lib/api/rosters.js'
+import WindCompass from '@/components/WindCompass.jsx'
 
 export default function FieldHome({
   vehicle, weather, logs, employees, crews,

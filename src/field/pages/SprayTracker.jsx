@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════
 
 import { useState } from 'react'
-import TabBar     from '../components/common/TabBar.jsx'
+import TabBar     from '@/components/common/TabBar.jsx'
 import NewLogTab  from './spray/NewLogTab.jsx'
 import HistoryTab from './spray/HistoryTab.jsx'
 import SdsTab     from './spray/SdsTab.jsx'

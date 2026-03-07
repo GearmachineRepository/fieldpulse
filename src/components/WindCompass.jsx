@@ -1,4 +1,4 @@
-import { C, WIND_DIRS, FONT } from '../config.js'
+import { C, WIND_DIRS, FONT } from '@/config/index.js'
 
 export default function WindCompass({ direction, speed, size = 86 }) {
   const di = WIND_DIRS.indexOf(direction)

@@ -3,12 +3,12 @@
 // ═══════════════════════════════════════════
 
 import { useState } from 'react'
-import { APP, C, MONO, cardStyle, btnStyle, inputStyle } from '../../config.js'
-import { deleteSprayLog, getPurReport } from '../../lib/api.js'
-import { openPdf } from '../../components/PdfExport.js'
-import WindCompass from '../../components/WindCompass.jsx'
-import { SectionHeader, SubTabs, ConfirmDelete, FilterPills, DateRangePicker, getDateRange } from '../../components/admin/SharedAdmin.jsx'
-import LocationLink from '../../components/LocationLink.jsx'
+import { APP, C, MONO, cardStyle, btnStyle, inputStyle } from '@/config/index.js'
+import { deleteSprayLog, getPurReport } from '@/lib/api/index.js'
+import { openPdf } from '@/components/PdfExport.js'
+import WindCompass from '@/components/WindCompass.jsx'
+import { SectionHeader, SubTabs, ConfirmDelete, FilterPills, DateRangePicker, getDateRange } from '@/admin/components/SharedAdmin.jsx'
+import LocationLink from '@/components/LocationLink.jsx'
 
 export default function SprayLogsSection({ logs, showToast, onRefresh }) {
   const [subTab, setSubTab] = useState('logs')

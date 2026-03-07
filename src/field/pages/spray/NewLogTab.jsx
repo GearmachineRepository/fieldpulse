@@ -3,11 +3,11 @@
 // ═══════════════════════════════════════════
 
 import { useState, useRef } from 'react'
-import { C, MONO, SIG_COLORS, WIND_DIRS, cardStyle, labelStyle, inputStyle, btnStyle } from '../../config/index.js'
-import { checkRestrictions } from '../../lib/weather.js'
-import { uploadPhotos } from '../../lib/api/sprayLogs.js'
-import { validateSprayLog } from '../../utils/validation.js'
-import WindCompass from '../../components/WindCompass.jsx'
+import { C, MONO, SIG_COLORS, WIND_DIRS, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.js'
+import { checkRestrictions } from '@/lib/weather.js'
+import { uploadPhotos } from '@/lib/api/sprayLogs.js'
+import { validateSprayLog } from '@/utils/validation.js'
+import WindCompass from '@/components/WindCompass.jsx'
 
 export default function NewLogTab({
   vehicle, chemicals, equipment, crews, weather,

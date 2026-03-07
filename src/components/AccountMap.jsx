@@ -7,15 +7,21 @@
 import { useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { C } from '../config.js'
+
+// Leaflet CSS imported here instead of index.html.
+// This makes it non-blocking — Vite only includes it in the bundle
+// for pages that actually render a map, not on every initial page load.
+import 'leaflet/dist/leaflet.css'
+
+import { C } from '@/config/index.js'
 import LocationLink from './LocationLink.jsx'
 
 // ── Fix Leaflet's default icon paths (broken in bundlers) ──
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconUrl:        'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl:      'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 })
 
 // ── Custom colored marker using SVG ──
@@ -39,8 +45,8 @@ function createColoredIcon(color = '#2D7A3A', label = '') {
 // ── Type → color mapping ──
 const TYPE_COLORS = {
   residential: '#2D7A3A',
-  commercial: '#2563EB',
-  hoa: '#D97706',
+  commercial:  '#2563EB',
+  hoa:         '#D97706',
 }
 
 // ── Auto-fit map to show all markers ──

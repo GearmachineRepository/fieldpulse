@@ -3,14 +3,14 @@
 // Add new sections by: 1) create file, 2) import here, 3) add route, 4) add to AdminSidebar NAV_GROUPS
 // ═══════════════════════════════════════════
 
-import AdminHome from './admin/AdminHome.jsx'
-import SprayLogsSection from './admin/SprayLogsSection.jsx'
-import CrewRostersSection from './admin/CrewRostersSection.jsx'
-import VehiclesSection from './admin/VehiclesSection.jsx'
-import TeamSection from './admin/TeamSection.jsx'
-import InventorySection from './admin/InventorySection.jsx'
-import AccountsSection from './admin/AccountsSection.jsx'
-import RoutesSection from './admin/RoutesSection.jsx'      // ← Phase 3
+import AdminHome from '@/admin/pages/admin/AdminHome.jsx'
+import SprayLogsSection from '@/admin/pages/admin/SprayLogsSection.jsx'
+import CrewRostersSection from '@/admin/pages/admin/CrewRostersSection.jsx'
+import VehiclesSection from '@/admin/pages/admin/VehiclesSection.jsx'
+import TeamSection from '@/admin/pages/admin/TeamSection.jsx'
+import InventorySection from '@/admin/pages/admin/InventorySection.jsx'
+import AccountsSection from '@/admin/pages/admin/AccountsSection.jsx'
+import RoutesSection from '@/admin/pages/admin/RoutesSection.jsx'      // ← Phase 3
 
 export default function AdminDashboard({ page, chemicals, equipment, crews, employees, logs, accounts, onRefresh, showToast, onNav }) {
   // ── Operations ──

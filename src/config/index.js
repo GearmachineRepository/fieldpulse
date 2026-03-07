@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════
 // Config barrel — re-exports everything so that
-// existing `import { C, APP, cardStyle } from '../config.js'`
+// existing `import { C, APP, cardStyle } from '@/config/index.js'`
 // imports continue to work without touching every file.
 //
 // New code should import directly from the sub-modules:

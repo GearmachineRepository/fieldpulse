@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════
 
 import { useRef, useEffect } from 'react'
-import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '../../config.js'
+import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.js'
 
 // ── Section Header with optional Add button ──
 export function SectionHeader({ title, count, onAdd, addLabel }) {

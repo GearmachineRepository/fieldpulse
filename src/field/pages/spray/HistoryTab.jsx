@@ -3,11 +3,11 @@
 // ═══════════════════════════════════════════
 
 import { useState } from 'react'
-import { C, MONO, cardStyle, labelStyle, btnStyle } from '../../config/index.js'
-import EmptyState  from '../../components/common/EmptyState.jsx'
-import WindCompass from '../../components/WindCompass.jsx'
-import { openPdf } from '../../components/PdfExport.js'
-import LocationLink from '../../components/LocationLink.jsx'
+import { C, MONO, cardStyle, labelStyle, btnStyle } from '@/config/index.js'
+import EmptyState  from '@/components/common/EmptyState.jsx'
+import WindCompass from '@/components/WindCompass.jsx'
+import { openPdf } from '@/components/PdfExport.js'
+import LocationLink from '@/components/LocationLink.jsx'
 
 export default function HistoryTab({ logs }) {
   const [expanded, setExpanded] = useState(null)

@@ -4,9 +4,9 @@
 // ═══════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '../config.js'
-import { getCrewRoutes, getRouteDay, completeRouteStop, undoCompletion, uploadFieldNotes } from '../lib/api.js'
-import LocationLink from '../components/LocationLink.jsx'
+import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.js'
+import { getCrewRoutes, getRouteDay, completeRouteStop, undoCompletion, uploadFieldNotes } from '@/lib/api/index.js'
+import LocationLink from '@/components/LocationLink.jsx'
 
 const STATUS_OPTIONS = [
   { value: 'complete',    label: '✅ Complete',    color: C.accent },

@@ -3,9 +3,9 @@
 // ═══════════════════════════════════════════
 
 import { useState, useEffect } from 'react'
-import { C, cardStyle, labelStyle, inputStyle } from '../../config.js'
-import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from '../../lib/api.js'
-import { SectionHeader, FormModal, ConfirmDelete, Field } from '../../components/admin/SharedAdmin.jsx'
+import { C, cardStyle, labelStyle, inputStyle } from '@/config/index.js'
+import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from '@/lib/api/index.js'
+import { SectionHeader, FormModal, ConfirmDelete, Field } from '@/admin/components/SharedAdmin.jsx'
 
 export default function VehiclesSection({ crews, onRefresh, showToast }) {
   const [vehicles, setVehicles]   = useState([])

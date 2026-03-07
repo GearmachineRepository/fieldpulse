@@ -4,7 +4,7 @@
 // falls back to simulated data for testing
 // ═══════════════════════════════════════════
 
-import { WIND_DIRS } from '../config.js'
+import { WIND_DIRS } from '@/config/index.js'
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY
 

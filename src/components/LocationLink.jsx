@@ -5,7 +5,7 @@
 // On desktop: opens Google Maps in browser.
 // ═══════════════════════════════════════════
 
-import { C, MONO } from '../config.js'
+import { C, MONO } from '@/config/index.js'
 
 // Match patterns like "34.0522, -118.2437" or "34.0522,-118.2437"
 const GPS_PATTERN = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/

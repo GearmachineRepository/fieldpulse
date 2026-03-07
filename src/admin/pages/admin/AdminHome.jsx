@@ -3,8 +3,8 @@
 // ═══════════════════════════════════════════
 
 import { useState, useEffect } from 'react'
-import { C, cardStyle, labelStyle } from '../../config.js'
-import { getAttendanceToday } from '../../lib/api.js'
+import { C, cardStyle, labelStyle } from '@/config/index.js'
+import { getAttendanceToday } from '@/lib/api/index.js'
 
 export default function AdminHome({ crews, employees, onNav }) {
   const [attendance, setAttendance] = useState(null)
