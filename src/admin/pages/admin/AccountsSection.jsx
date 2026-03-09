@@ -9,7 +9,7 @@ import { C, cardStyle, labelStyle, inputStyle, btnStyle } from '@/config/index.j
 import { createAccount, updateAccount, deleteAccount, geocodeAddress } from '@/lib/api/index.js'
 import { SectionHeader, SubTabs, FormModal, ConfirmDelete, Field } from '@/admin/components/SharedAdmin.jsx'
 import LocationLink from '@/components/LocationLink.jsx'
-import AccountMap from '@/components/AccountMap.jsx'
+import AccountMap from '@/admin/components/AccountMap.jsx'
 
 const ACCOUNT_TYPES = [
   { key: 'residential', label: '🏠 Residential' },

@@ -4,7 +4,7 @@
 // AllLogs, RoutesList, etc.
 // ═══════════════════════════════════════════
 
-import { C } from '../../config/colors.js'
+import { C } from '@/config/colors.js'
 
 /**
  * @param {{ icon?: string, title: string, subtitle?: string }} props

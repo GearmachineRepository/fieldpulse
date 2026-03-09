@@ -4,7 +4,7 @@
 // LoginScreen, SprayLogsSection, SubTabs, etc.
 // ═══════════════════════════════════════════
 
-import { C } from '../../config/colors.js'
+import { C } from '@/config/colors.js'
 
 /**
  * @param {{ tabs: {key:string, label:string, icon?:string}[], active: string, onChange: (key:string)=>void, activeColor?: string }} props

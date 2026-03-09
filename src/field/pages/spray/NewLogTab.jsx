@@ -7,7 +7,7 @@ import { C, MONO, SIG_COLORS, WIND_DIRS, cardStyle, labelStyle, inputStyle, btnS
 import { checkRestrictions } from '@/lib/weather.js'
 import { uploadPhotos } from '@/lib/api/sprayLogs.js'
 import { validateSprayLog } from '@/utils/validation.js'
-import WindCompass from '@/components/WindCompass.jsx'
+import WindCompass from '@/field/components/WindCompass.jsx'
 
 export default function NewLogTab({
   vehicle, chemicals, equipment, crews, weather,

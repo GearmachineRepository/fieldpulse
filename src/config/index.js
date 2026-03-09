@@ -4,8 +4,8 @@
 // imports continue to work without touching every file.
 //
 // New code should import directly from the sub-modules:
-//   import { C } from '../config/colors.js'
-//   import { APP } from '../config/app.js'
+//   import { C } from '@/config/colors.js'
+//   import { APP } from '@/config/app.js'
 // ═══════════════════════════════════════════
 
 export * from './app.js'

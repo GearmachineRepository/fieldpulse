@@ -14,7 +14,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 import { C } from '@/config/index.js'
-import LocationLink from './LocationLink.jsx'
+import LocationLink from '@/components/LocationLink.jsx'
 
 // ── Fix Leaflet's default icon paths (broken in bundlers) ──
 delete L.Icon.Default.prototype._getIconUrl

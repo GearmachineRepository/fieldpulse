@@ -18,7 +18,7 @@ import CrewRoutes   from '@/field/pages/CrewRoutes.jsx'
 import SprayTracker from '@/field/pages/SprayTracker.jsx'
 
 import AppHeader from '@/components/layout/AppHeader.jsx'
-import Sidebar   from '@/components/Sidebar.jsx'
+import Sidebar   from '@/field/components/Sidebar.jsx'
 import Toast     from '@/components/common/Toast.jsx'
 
 export default function FieldShell() {

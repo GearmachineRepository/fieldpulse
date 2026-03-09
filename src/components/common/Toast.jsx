@@ -2,8 +2,8 @@
 // Toast — floating feedback notification
 // ═══════════════════════════════════════════
 
-import { C } from '../../config/colors.js'
-import { FONT } from '../../config/constants.js'
+import { C } from '@/config/colors.js'
+import { FONT } from '@/config/constants.js'
 
 /**
  * @param {{ message: string|null }} props
