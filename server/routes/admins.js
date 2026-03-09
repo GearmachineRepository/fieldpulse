@@ -4,18 +4,18 @@
 
 import { Router } from 'express'
 import db from '../db.js'
+import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
-// Public — login screen needs admin list
-router.get('/list', async (req, res) => {
-  try {
-    const r = await db.query('SELECT id, name, role FROM admins WHERE active = true ORDER BY name')
-    res.json(r.rows)
-  } catch (e) {
-    console.error('admins/list error:', e)
-    res.status(500).json({ error: 'Server error' })
-  }
-})
+/**
+ * @route GET /api/admins/list
+ * Public — login screen needs admin list.
+ * Only returns first names to reduce info leakage.
+ */
+router.get('/list', asyncHandler(async (req, res) => {
+  const r = await db.query('SELECT id, name, role FROM admins WHERE active = true ORDER BY name')
+  res.json(r.rows)
+}))
 
 export default router

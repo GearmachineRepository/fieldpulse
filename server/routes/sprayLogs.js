@@ -5,12 +5,18 @@
 import { Router } from 'express'
 import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
-import { validateBody, validateIdParam } from '../middleware/validate.js'
+import { validateBody, validateIdParam, sanitizeQueryInt } from '../middleware/validate.js'
+import { asyncHandler } from '../utils/asyncHandler.js'
+import { withTransaction } from '../utils/db.js'
+import { SPRAY_LOG_DEFAULT_LIMIT, SPRAY_LOG_MAX_LIMIT } from '../constants/index.js'
 
 export default function sprayLogRoutes(upload) {
   const router = Router()
 
-  // ── Create spray log ──
+  /**
+   * @route POST /api/spray-logs — Create a spray log with products and crew members.
+   * Uses withTransaction() so BEGIN/COMMIT/ROLLBACK and client.release() are automatic.
+   */
   router.post('/',
     requireAuth,
     validateBody({
@@ -19,11 +25,10 @@ export default function sprayLogRoutes(upload) {
       property: { required: true, type: 'string' },
       products: { required: true, type: 'array' },
     }),
-    async (req, res) => {
-      const client = await db.connect()
-      try {
-        await client.query('BEGIN')
-        const b = req.body
+    asyncHandler(async (req, res) => {
+      const b = req.body
+
+      const result = await withTransaction(async (client) => {
         const logR = await client.query(
           `INSERT INTO spray_logs
            (vehicle_id, crew_name, crew_lead, license, property, location,
@@ -45,7 +50,7 @@ export default function sprayLogRoutes(upload) {
           )
         }
 
-        if (b.crewMembers && b.crewMembers.length > 0) {
+        if (b.crewMembers?.length > 0) {
           for (const m of b.crewMembers) {
             await client.query(
               'INSERT INTO spray_log_members (spray_log_id, employee_id, employee_name) VALUES ($1,$2,$3)',
@@ -54,93 +59,74 @@ export default function sprayLogRoutes(upload) {
           }
         }
 
-        await client.query('COMMIT')
-        res.json({ id: logId, createdAt: logR.rows[0].created_at })
-      } catch (e) {
-        await client.query('ROLLBACK')
-        console.error('POST /spray-logs error:', e)
-        res.status(500).json({ error: 'Failed' })
-      } finally {
-        client.release()
-      }
-    }
+        return { id: logId, createdAt: logR.rows[0].created_at }
+      })
+
+      res.json(result)
+    })
   )
 
-  // ── Upload photos to a spray log ──
-  router.post('/:id/photos', requireAuth, validateIdParam, upload.array('photos', 10), async (req, res) => {
-    try {
-      const saved = []
-      for (const f of req.files) {
-        const r = await db.query(
-          `INSERT INTO spray_log_photos (spray_log_id, filename, original_name, mime_type, size_bytes)
-           VALUES ($1,$2,$3,$4,$5) RETURNING id, filename, original_name`,
-          [req.params.id, f.filename, f.originalname, f.mimetype, f.size]
-        )
-        saved.push(r.rows[0])
-      }
-      res.json(saved)
-    } catch (e) {
-      console.error('POST /spray-logs/:id/photos error:', e)
-      res.status(500).json({ error: 'Upload failed' })
+  /** @route POST /api/spray-logs/:id/photos — Upload photos to a spray log */
+  router.post('/:id/photos', requireAuth, validateIdParam, upload.array('photos', 10), asyncHandler(async (req, res) => {
+    const saved = []
+    for (const f of req.files) {
+      const r = await db.query(
+        `INSERT INTO spray_log_photos (spray_log_id, filename, original_name, mime_type, size_bytes)
+         VALUES ($1,$2,$3,$4,$5) RETURNING id, filename, original_name`,
+        [req.params.id, f.filename, f.originalname, f.mimetype, f.size]
+      )
+      saved.push(r.rows[0])
     }
-  })
+    res.json(saved)
+  }))
 
-  // ── List spray logs ──
-  router.get('/', requireAuth, async (req, res) => {
-    try {
-      const { vehicleId, crewName, limit = 50 } = req.query
-      const where = []
-      const params = []
+  /** @route GET /api/spray-logs — List spray logs with optional filters */
+  router.get('/', requireAuth, asyncHandler(async (req, res) => {
+    const { vehicleId, crewName } = req.query
+    const limit = sanitizeQueryInt(req.query.limit, SPRAY_LOG_DEFAULT_LIMIT, 1, SPRAY_LOG_MAX_LIMIT)
+    const where = []
+    const params = []
 
-      if (vehicleId) { params.push(vehicleId); where.push(`sl.vehicle_id = $${params.length}`) }
-      if (crewName) { params.push(crewName); where.push(`sl.crew_name = $${params.length}`) }
+    if (vehicleId) { params.push(vehicleId); where.push(`sl.vehicle_id = $${params.length}`) }
+    if (crewName) { params.push(crewName); where.push(`sl.crew_name = $${params.length}`) }
 
-      const whereStr = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
-      params.push(limit)
+    const whereStr = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
+    params.push(limit)
 
-      const result = await db.query(`
-        SELECT sl.*,
-          COALESCE((SELECT json_agg(json_build_object('id',slp.id,'chemicalName',slp.chemical_name,'epa',slp.epa,'amount',slp.amount))
-            FROM spray_log_products slp WHERE slp.spray_log_id = sl.id), '[]') AS products,
-          COALESCE((SELECT json_agg(json_build_object('id',ph.id,'filename',ph.filename,'originalName',ph.original_name))
-            FROM spray_log_photos ph WHERE ph.spray_log_id = sl.id), '[]') AS photos,
-          COALESCE((SELECT json_agg(json_build_object('id',sm.id,'employeeId',sm.employee_id,'name',sm.employee_name))
-            FROM spray_log_members sm WHERE sm.spray_log_id = sl.id), '[]') AS members
-        FROM spray_logs sl ${whereStr}
-        ORDER BY sl.created_at DESC
-        LIMIT $${params.length}`, params)
+    const result = await db.query(`
+      SELECT sl.*,
+        COALESCE((SELECT json_agg(json_build_object('id',slp.id,'chemicalName',slp.chemical_name,'epa',slp.epa,'amount',slp.amount))
+          FROM spray_log_products slp WHERE slp.spray_log_id = sl.id), '[]') AS products,
+        COALESCE((SELECT json_agg(json_build_object('id',ph.id,'filename',ph.filename,'originalName',ph.original_name))
+          FROM spray_log_photos ph WHERE ph.spray_log_id = sl.id), '[]') AS photos,
+        COALESCE((SELECT json_agg(json_build_object('id',sm.id,'employeeId',sm.employee_id,'name',sm.employee_name))
+          FROM spray_log_members sm WHERE sm.spray_log_id = sl.id), '[]') AS members
+      FROM spray_logs sl ${whereStr}
+      ORDER BY sl.created_at DESC
+      LIMIT $${params.length}`, params)
 
-      res.json(result.rows.map(row => ({
-        id: row.id, crewName: row.crew_name, crewLead: row.crew_lead, license: row.license,
-        property: row.property, location: row.location, equipment: row.equipment_name,
-        totalMixVol: row.total_mix_vol, targetPest: row.target_pest, notes: row.notes,
-        date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        time: new Date(row.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        weather: {
-          temp: row.wx_temp, humidity: row.wx_humidity, windSpeed: row.wx_wind_speed,
-          windDir: row.wx_wind_dir, conditions: row.wx_conditions,
-        },
-        products: (row.products || []).filter(p => p.id !== null).map(p => ({ name: p.chemicalName, epa: p.epa, ozConcentrate: p.amount })),
-        photos: (row.photos || []).filter(p => p.id !== null),
-        members: (row.members || []).filter(m => m.id !== null),
-        status: 'synced',
-      })))
-    } catch (e) {
-      console.error('GET /spray-logs error:', e)
-      res.status(500).json({ error: 'Server error' })
-    }
-  })
+    res.json(result.rows.map(row => ({
+      id: row.id, crewName: row.crew_name, crewLead: row.crew_lead, license: row.license,
+      property: row.property, location: row.location, equipment: row.equipment_name,
+      totalMixVol: row.total_mix_vol, targetPest: row.target_pest, notes: row.notes,
+      date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      time: new Date(row.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+      weather: {
+        temp: row.wx_temp, humidity: row.wx_humidity, windSpeed: row.wx_wind_speed,
+        windDir: row.wx_wind_dir, conditions: row.wx_conditions,
+      },
+      products: (row.products || []).filter(p => p.id !== null).map(p => ({ name: p.chemicalName, epa: p.epa, ozConcentrate: p.amount })),
+      photos: (row.photos || []).filter(p => p.id !== null),
+      members: (row.members || []).filter(m => m.id !== null),
+      status: 'synced',
+    })))
+  }))
 
-  // ── Delete spray log ──
-  router.delete('/:id', requireAuth, validateIdParam, async (req, res) => {
-    try {
-      await db.query('DELETE FROM spray_logs WHERE id = $1', [req.params.id])
-      res.json({ success: true })
-    } catch (e) {
-      console.error('DELETE /spray-logs error:', e)
-      res.status(500).json({ error: 'Failed to delete' })
-    }
-  })
+  /** @route DELETE /api/spray-logs/:id — Hard-delete a spray log (cascades) */
+  router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+    await db.query('DELETE FROM spray_logs WHERE id = $1', [req.params.id])
+    res.json({ success: true })
+  }))
 
   return router
 }

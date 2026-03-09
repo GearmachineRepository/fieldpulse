@@ -10,14 +10,25 @@ import VehiclesSection from '@/admin/pages/admin/VehiclesSection.jsx'
 import TeamSection from '@/admin/pages/admin/TeamSection.jsx'
 import InventorySection from '@/admin/pages/admin/InventorySection.jsx'
 import AccountsSection from '@/admin/pages/admin/AccountsSection.jsx'
-import RoutesSection from '@/admin/pages/admin/RoutesSection.jsx'      // ← Phase 3
+import RoutesSection from '@/admin/pages/admin/RoutesSection.jsx'
 
-export default function AdminDashboard({ page, chemicals, equipment, crews, employees, logs, accounts, onRefresh, showToast, onNav }) {
+export default function AdminDashboard({
+  page,
+  chemicals = [],
+  equipment = [],
+  crews = [],
+  employees = [],
+  logs = [],
+  accounts = [],
+  onRefresh,
+  showToast,
+  onNav,
+}) {
   // ── Operations ──
   if (page === 'admin-home')       return <AdminHome crews={crews} employees={employees} onNav={onNav} />
   if (page === 'admin-spraylogs')  return <SprayLogsSection logs={logs} showToast={showToast} onRefresh={onRefresh} />
   if (page === 'admin-rosters')    return <CrewRostersSection crews={crews} employees={employees} showToast={showToast} />
-  if (page === 'admin-routes')     return <RoutesSection crews={crews} accounts={accounts} onRefresh={onRefresh} showToast={showToast} />  // ← Phase 3
+  if (page === 'admin-routes')     return <RoutesSection crews={crews} accounts={accounts} onRefresh={onRefresh} showToast={showToast} />
 
   // ── Manage ──
   if (page === 'admin-team')       return <TeamSection employees={employees} crews={crews} onRefresh={onRefresh} showToast={showToast} />

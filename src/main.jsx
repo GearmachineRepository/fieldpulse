@@ -4,10 +4,13 @@ import { BrowserRouter } from 'react-router-dom'
 import { AppProvider } from '@/context/AppContext.jsx'
 import App from '@/App.jsx'
 import '@/global.css'
+import * as Sentry from '@sentry/react'
 
-// BrowserRouter lives here — one level above everything — so all shells
-// (marketing, field, admin) share the same router context and can use
-// useNavigate, useLocation, Link etc. without any extra setup.
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.MODE,
+})
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>

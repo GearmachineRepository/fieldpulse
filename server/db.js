@@ -1,11 +1,10 @@
-// ═══════════════════════════════════════════
-// Database — PostgreSQL connection pool
-// ═══════════════════════════════════════════
-
 import pg from 'pg'
 import dotenv from 'dotenv'
 
 dotenv.config()
+
+// Return DATE columns as 'YYYY-MM-DD' strings, not JS Date objects
+pg.types.setTypeParser(1082, (val) => val)
 
 const pool = new pg.Pool({
   host:     process.env.DB_HOST     || 'localhost',
@@ -13,19 +12,15 @@ const pool = new pg.Pool({
   database: process.env.DB_NAME     || 'fieldpulse',
   user:     process.env.DB_USER     || 'postgres',
   password: process.env.DB_PASSWORD || '',
-
-  // Pool tuning
   max:                    10,
   idleTimeoutMillis:      30_000,
   connectionTimeoutMillis: 5_000,
 })
 
-// Surface pool-level errors (e.g. DB server restarted mid-session)
 pool.on('error', (err) => {
   console.error('  ✗ Unexpected PostgreSQL pool error:', err.message)
 })
 
-// Verify connection at startup
 pool.query('SELECT NOW()')
   .then(() => console.log('  ✓ Connected to PostgreSQL'))
   .catch(err => {

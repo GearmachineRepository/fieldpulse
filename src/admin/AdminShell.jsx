@@ -25,14 +25,9 @@ export default function AdminShell() {
     admin, restoring,
     page, sidebarOpen, toast,
     chemicals, equipment, crews, employees, logs, accounts,
+    dataLoaded,
   } = state
 
-  // ── Session restore is handled by FieldShell ──
-  // If someone navigates directly to /admin and has a valid admin token,
-  // FieldShell (which runs first at /app) has already restored the session.
-  // If they land directly on /admin without going through /app first, we need
-  // to redirect them to /app so session restore can run.
-  // Step 2 will give AdminShell its own context and restore flow.
   useEffect(() => {
     if (restoring) return
     if (!admin) navigate('/app', { replace: true })
@@ -45,7 +40,7 @@ export default function AdminShell() {
   }, [admin?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Loading / redirect in progress ──
-  if (restoring || !admin) {
+  if (restoring || !admin || !dataLoaded) {
     return (
       <main style={{
         minHeight: '100vh', display: 'flex', alignItems: 'center',

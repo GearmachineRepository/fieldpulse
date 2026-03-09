@@ -2,13 +2,17 @@
 // FieldPulse API — Express Server
 // ═══════════════════════════════════════════
 
+import * as Sentry from '@sentry/node'
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import dotenv from 'dotenv'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import pinoHttp from 'pino-http'
 import db from './db.js'
+import { logger } from './utils/logger.js'
 
 import authRoutes      from './routes/auth.js'
 import adminsRoutes    from './routes/admins.js'
@@ -31,50 +35,47 @@ dotenv.config()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app  = express()
 const PORT = process.env.PORT || 3001
+const isDev = process.env.NODE_ENV !== 'production'
 
-// ── Security headers ──
-// Applied before all routes so every response gets them.
-//
-// In production these should ideally come from a reverse proxy (nginx/Caddy),
-// but Express-level headers are a solid fallback and required for localhost dev.
-app.use((req, res, next) => {
-  // Prevent MIME-type sniffing attacks
-  res.setHeader('X-Content-Type-Options', 'nosniff')
+if (process.env.SENTRY_DSN) {
+  logger.info('Sentry error tracking enabled')
+}
 
-  // Clickjacking protection — only allow framing by same origin
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+// ── Request logging ──
+app.use(pinoHttp({
+  logger,
+  autoLogging: {
+    ignore: (req) => req.url === '/api/health',
+  },
+  // Only log requests that result in errors (4xx/5xx)
+  customSuccessMessage: () => undefined,
+  customSuccessObject: () => undefined,
+  quietReqLogger: true,
+  serializers: {
+    req: (req) => ({ method: req.method, url: req.url }),
+    res: (res) => ({ statusCode: res.statusCode }),
+  },
+}))
 
-  // Cross-Origin-Opener-Policy — isolates browsing context, enables SharedArrayBuffer
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
-
-  // HSTS — tell browsers to always use HTTPS for 1 year (skip on localhost)
-  if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
-  }
-
-  // Content-Security-Policy — restrict resource origins.
-  // Leaflet tiles and CDN marker images are explicitly allowed.
-  // 'unsafe-inline' is required for React's inline styles and Leaflet's SVG icons.
-  // Tighten this further if you ever adopt a nonce-based CSP strategy.
-  const isDev = process.env.NODE_ENV !== 'production'
-  const csp = [
-    `default-src 'self'`,
-    `script-src 'self' ${isDev ? "'unsafe-eval'" : ''} 'unsafe-inline'`,
-    `style-src 'self' 'unsafe-inline'`,
-    `img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://cdnjs.cloudflare.com`,
-    `connect-src 'self' https://api.openweathermap.org https://geocoding.geo.census.gov https://nominatim.openstreetmap.org`,
-    `font-src 'self'`,
-    `frame-ancestors 'self'`,
-    `base-uri 'self'`,
-    `form-action 'self'`,
-  ].join('; ')
-  res.setHeader('Content-Security-Policy', csp)
-
-  next()
-})
+// ── Security headers via helmet ──
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", ...(isDev ? ["'unsafe-eval'"] : []), "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https://tile.openstreetmap.org', 'https://*.tile.openstreetmap.org', 'https://cdnjs.cloudflare.com'],
+      connectSrc: ["'self'", 'https://api.openweathermap.org', 'https://geocoding.geo.census.gov', 'https://nominatim.openstreetmap.org'],
+      fontSrc: ["'self'"],
+      frameAncestors: ["'self'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+}))
 
 // ── CORS ──
-// Comma-separated allowed origins from env (see .env.example)
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:3001')
   .split(',').map(o => o.trim())
 
@@ -94,7 +95,11 @@ const uploadsDir = path.join(__dirname, '..', 'uploads')
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true })
 const upload = createUpload(uploadsDir)
 
-app.use('/uploads', express.static(uploadsDir))
+app.use('/uploads', express.static(uploadsDir, {
+  setHeaders: (res) => {
+    res.setHeader('Content-Disposition', 'attachment')
+  },
+}))
 
 // ── Routes — public (no auth) ──
 app.use('/api/auth',   authRoutes)
@@ -122,8 +127,44 @@ app.get('/api/health', async (req, res) => {
   }
 })
 
-// ── 404 + error handlers — must be last ──
+// ── Error handlers — must be last ──
 app.use(notFound)
+Sentry.setupExpressErrorHandler(app)
 app.use(errorHandler)
 
-app.listen(PORT, () => console.log(`\n  FieldPulse API → http://localhost:${PORT}\n`))
+// ═══════════════════════════════════════════
+// Start server + graceful shutdown
+// ═══════════════════════════════════════════
+
+const server = app.listen(PORT, () => {
+  logger.info(`FieldPulse API → http://localhost:${PORT}`)
+})
+
+function gracefulShutdown(signal) {
+  logger.info({ signal }, 'Shutdown signal received — closing server')
+  server.close(() => {
+    logger.info('HTTP server closed')
+    db.end().then(() => {
+      logger.info('Database pool closed')
+      process.exit(0)
+    })
+  })
+  setTimeout(() => {
+    logger.error('Graceful shutdown timed out — forcing exit')
+    process.exit(1)
+  }, 10_000)
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'))
+
+process.on('unhandledRejection', (reason) => {
+  logger.error({ err: reason }, 'Unhandled promise rejection')
+  Sentry.captureException(reason)
+})
+
+process.on('uncaughtException', (err) => {
+  logger.fatal({ err }, 'Uncaught exception — shutting down')
+  Sentry.captureException(err)
+  gracefulShutdown('uncaughtException')
+})

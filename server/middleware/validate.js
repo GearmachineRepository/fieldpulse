@@ -8,6 +8,9 @@
  *
  * Schema shape:
  *   { fieldName: { required?: bool, type?: 'string'|'number'|'boolean'|'array', maxLength?: number } }
+ *
+ * @param {Record<string, {required?: boolean, type?: string, maxLength?: number}>} schema
+ * @returns {import('express').RequestHandler}
  */
 export function validateBody(schema) {
   return (req, res, next) => {
@@ -48,4 +51,56 @@ export function validateIdParam(req, res, next) {
 /** Guards dynamic DB names against SQL injection in CREATE DATABASE statements. */
 export function isSafeDbName(name) {
   return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)
+}
+
+/**
+ * Parses a query-string value as an integer, clamped to [min, max].
+ * Returns the default if the value is missing or not a number.
+ *
+ * Use this to prevent unbounded LIMIT or OFFSET values.
+ *
+ * @param {string|undefined} raw  The raw query-string value
+ * @param {number} defaultVal     Fallback if raw is missing/NaN
+ * @param {number} [min=1]        Floor
+ * @param {number} [max=500]      Ceiling
+ * @returns {number}
+ *
+ * @example
+ * const limit = sanitizeQueryInt(req.query.limit, 50, 1, 500)
+ */
+export function sanitizeQueryInt(raw, defaultVal, min = 1, max = 500) {
+  const n = parseInt(raw, 10)
+  if (isNaN(n)) return defaultVal
+  return Math.max(min, Math.min(max, n))
+}
+
+/**
+ * Builds a SET clause dynamically, skipping null/undefined values.
+ * Useful for PATCH-style updates where not every field is provided.
+ *
+ * @param {Record<string, unknown>} fields  Column-name → value map
+ * @param {number} [startIndex=1]           Starting $N index
+ * @returns {{ setClause: string, values: unknown[], nextIndex: number }}
+ *
+ * @example
+ * const { setClause, values, nextIndex } = buildSetClause({
+ *   first_name: 'Carlos', last_name: 'Martinez', phone: null
+ * })
+ * // setClause = "first_name = $1, last_name = $2"
+ * // values = ['Carlos', 'Martinez']
+ * // nextIndex = 3
+ */
+export function buildSetClause(fields, startIndex = 1) {
+  const parts = []
+  const values = []
+  let idx = startIndex
+
+  for (const [col, val] of Object.entries(fields)) {
+    if (val === undefined) continue // skip undefined, allow null
+    parts.push(`${col} = $${idx}`)
+    values.push(val)
+    idx++
+  }
+
+  return { setClause: parts.join(', '), values, nextIndex: idx }
 }

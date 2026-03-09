@@ -3,14 +3,24 @@
 // ═══════════════════════════════════════════
 
 import jwt from 'jsonwebtoken'
+import { logger } from '../utils/logger.js'
 
+const DEFAULT_SECRET = 'fieldpulse-change-me-in-production'
 const SECRET = process.env.JWT_SECRET
-if (!SECRET || SECRET === 'fieldpulse-change-me-in-production') {
-  console.warn('\n  ⚠  WARNING: JWT_SECRET is not set or is using the insecure default.')
-  console.warn('     Generate one with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"')
-  console.warn('     Then set JWT_SECRET in your .env file.\n')
+
+// ── Production guard: refuse to start with the default secret ──
+if (process.env.NODE_ENV === 'production' && (!SECRET || SECRET === DEFAULT_SECRET)) {
+  logger.fatal('JWT_SECRET is not set or is using the insecure default. Refusing to start in production.')
+  logger.fatal('Generate one with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"')
+  process.exit(1)
 }
-const EFFECTIVE_SECRET = SECRET || 'fieldpulse-change-me-in-production'
+
+if (!SECRET || SECRET === DEFAULT_SECRET) {
+  logger.warn('JWT_SECRET is not set or is using the insecure default.')
+  logger.warn('Generate one with: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"')
+}
+
+const EFFECTIVE_SECRET = SECRET || DEFAULT_SECRET
 const TOKEN_EXPIRY = '12h'
 
 /** Signs a JWT with the given payload. */
