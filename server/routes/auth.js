@@ -1,9 +1,14 @@
 // ═══════════════════════════════════════════
 // Auth Routes — login + token issuance
 //
-// All login failures return a generic 401
-// "Invalid credentials" to prevent user
-// enumeration attacks (goldbergyoni §6.8).
+// Endpoints:
+//   POST /api/auth/login       — Email + password (admin dashboard)
+//   POST /api/auth/crew-login  — Employee PIN (field app)
+//   GET  /api/auth/me          — Session restore
+//
+// Legacy (kept for backward compat):
+//   POST /api/auth/admin-pin   — Admin PIN login
+//   POST /api/auth/verify-pin  — Vehicle PIN login
 // ═══════════════════════════════════════════
 
 import { Router } from 'express'
@@ -16,10 +21,8 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
-// Unified error message — never reveal whether the user or PIN was wrong
 const INVALID_CREDS = { error: 'Invalid credentials' }
 
-// Rate-limit auth endpoints: 10 attempts per 15 min per IP
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -28,43 +31,49 @@ const authLimiter = rateLimit({
   message: { error: 'Too many login attempts — try again in 15 minutes' },
 })
 
-/** @route POST /api/auth/verify-pin — Vehicle PIN login */
-router.post('/verify-pin',
+// ═══════════════════════════════════════════
+// NEW: Email + Password Login (Admin Dashboard)
+// ═══════════════════════════════════════════
+
+/** @route POST /api/auth/login — Email + password login */
+router.post('/login',
   authLimiter,
-  validateBody({ vehicleId: { required: true }, pin: { required: true, type: 'string' } }),
+  validateBody({
+    email: { required: true, type: 'string' },
+    password: { required: true, type: 'string' },
+  }),
   asyncHandler(async (req, res) => {
-    const { vehicleId, pin } = req.body
+    const { email, password } = req.body
+
     const r = await db.query(
-      'SELECT id, name, crew_name, pin_hash FROM vehicles WHERE id = $1 AND active = true',
-      [vehicleId]
+      'SELECT id, name, email, role, password_hash FROM admins WHERE LOWER(email) = LOWER($1) AND active = true',
+      [email.trim()]
     )
-    if (!r.rows.length || !(await bcrypt.compare(pin, r.rows[0].pin_hash))) {
+
+    if (!r.rows.length || !r.rows[0].password_hash) {
       return res.status(401).json(INVALID_CREDS)
     }
-    const v = r.rows[0]
-    const token = signToken({ type: 'vehicle', vehicleId: v.id, crewName: v.crew_name })
-    res.json({ id: v.id, name: v.name, crewName: v.crew_name, token })
+
+    const admin = r.rows[0]
+    const valid = await bcrypt.compare(password, admin.password_hash)
+    if (!valid) {
+      return res.status(401).json(INVALID_CREDS)
+    }
+
+    const token = signToken({ type: 'admin', adminId: admin.id, role: admin.role })
+    res.json({
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+      role: admin.role,
+      token,
+    })
   })
 )
 
-/** @route POST /api/auth/admin-pin — Admin PIN login */
-router.post('/admin-pin',
-  authLimiter,
-  validateBody({ adminId: { required: true }, pin: { required: true, type: 'string' } }),
-  asyncHandler(async (req, res) => {
-    const { adminId, pin } = req.body
-    const r = await db.query(
-      'SELECT id, name, role, pin_hash FROM admins WHERE id = $1 AND active = true',
-      [adminId]
-    )
-    if (!r.rows.length || !(await bcrypt.compare(pin, r.rows[0].pin_hash))) {
-      return res.status(401).json(INVALID_CREDS)
-    }
-    const a = r.rows[0]
-    const token = signToken({ type: 'admin', adminId: a.id, role: a.role })
-    res.json({ id: a.id, name: a.name, role: a.role, token })
-  })
-)
+// ═══════════════════════════════════════════
+// Crew Login (Field App — PIN-based)
+// ═══════════════════════════════════════════
 
 /** @route POST /api/auth/crew-login — Employee PIN login */
 router.post('/crew-login',
@@ -114,17 +123,17 @@ router.post('/crew-login',
   })
 )
 
-/**
- * @route GET /api/auth/me — Session restore
- * Decodes the token, re-fetches the current user from the DB,
- * and returns the same shape as the original login response.
- */
+// ═══════════════════════════════════════════
+// Session Restore
+// ═══════════════════════════════════════════
+
+/** @route GET /api/auth/me — Rebuild session from token */
 router.get('/me', requireAuth, asyncHandler(async (req, res) => {
   const { type, adminId, employeeId } = req.user
 
   if (type === 'admin') {
     const r = await db.query(
-      'SELECT id, name, role FROM admins WHERE id = $1 AND active = true',
+      'SELECT id, name, email, role FROM admins WHERE id = $1 AND active = true',
       [adminId]
     )
     if (!r.rows.length) return res.status(401).json({ error: 'Account not found' })
@@ -159,5 +168,47 @@ router.get('/me', requireAuth, asyncHandler(async (req, res) => {
 
   return res.status(400).json({ error: 'Unknown token type' })
 }))
+
+// ═══════════════════════════════════════════
+// Legacy PIN endpoints (keep for now)
+// ═══════════════════════════════════════════
+
+/** @route POST /api/auth/verify-pin — Vehicle PIN login */
+router.post('/verify-pin',
+  authLimiter,
+  validateBody({ vehicleId: { required: true }, pin: { required: true, type: 'string' } }),
+  asyncHandler(async (req, res) => {
+    const { vehicleId, pin } = req.body
+    const r = await db.query(
+      'SELECT id, name, crew_name, pin_hash FROM vehicles WHERE id = $1 AND active = true',
+      [vehicleId]
+    )
+    if (!r.rows.length || !(await bcrypt.compare(pin, r.rows[0].pin_hash))) {
+      return res.status(401).json(INVALID_CREDS)
+    }
+    const v = r.rows[0]
+    const token = signToken({ type: 'vehicle', vehicleId: v.id, crewName: v.crew_name })
+    res.json({ id: v.id, name: v.name, crewName: v.crew_name, token })
+  })
+)
+
+/** @route POST /api/auth/admin-pin — Legacy admin PIN login */
+router.post('/admin-pin',
+  authLimiter,
+  validateBody({ adminId: { required: true }, pin: { required: true, type: 'string' } }),
+  asyncHandler(async (req, res) => {
+    const { adminId, pin } = req.body
+    const r = await db.query(
+      'SELECT id, name, email, role, pin_hash FROM admins WHERE id = $1 AND active = true',
+      [adminId]
+    )
+    if (!r.rows.length || !(await bcrypt.compare(pin, r.rows[0].pin_hash))) {
+      return res.status(401).json(INVALID_CREDS)
+    }
+    const a = r.rows[0]
+    const token = signToken({ type: 'admin', adminId: a.id, role: a.role })
+    res.json({ id: a.id, name: a.name, email: a.email, role: a.role, token })
+  })
+)
 
 export default router

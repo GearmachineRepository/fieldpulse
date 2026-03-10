@@ -26,6 +26,10 @@ import rosterRoutes    from './routes/rosters.js'
 import reportRoutes    from './routes/reports.js'
 import accountRoutes   from './routes/accounts.js'
 import routeRoutes     from './routes/routes.js'
+import deviceRoutes from './routes/device.js'
+import accountGroupRoutes from './routes/accountGroups.js'
+import scheduleEventRoutes from './routes/scheduleEvents.js'
+import resourceRoutes from './routes/resources.js'
 
 import { createUpload }           from './middleware/upload.js'
 import { notFound, errorHandler } from './middleware/error.js'
@@ -116,6 +120,10 @@ app.use('/api/rosters',    rosterRoutes)
 app.use('/api/reports',    reportRoutes)
 app.use('/api/accounts',   accountRoutes)
 app.use('/api/routes',     routeRoutes(upload))
+app.use('/api/device', deviceRoutes)
+app.use('/api/account-groups', accountGroupRoutes)
+app.use('/api/schedule-events', scheduleEventRoutes)
+app.use('/api/resources', resourceRoutes)
 
 // ── Health check ──
 app.get('/api/health', async (req, res) => {

@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { AppProvider } from '@/context/AppContext.jsx'
+import { AuthProvider } from '@/hooks/useAuth.jsx'
 import { DataProvider } from '@/context/DataProvider.jsx'
 import App from '@/App.jsx'
 import '@/ui/tokens/index.css'
@@ -16,13 +16,11 @@ Sentry.init({
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      {/* AppProvider: legacy context for existing pages (backward compat) */}
-      <AppProvider>
-        {/* DataProvider: new hook-based context for new/refactored pages */}
+      <AuthProvider>
         <DataProvider>
           <App />
         </DataProvider>
-      </AppProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )

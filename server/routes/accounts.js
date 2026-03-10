@@ -309,6 +309,7 @@ function formatAccount(row) {
     accountType: row.account_type,
     notes: row.notes,
     createdAt: row.created_at,
+    group_id: row.group_id,
   }
 }
 

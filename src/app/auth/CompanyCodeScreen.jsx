@@ -1,0 +1,177 @@
+// ═══════════════════════════════════════════
+// Company Code Screen
+//
+// First screen field devices see before crew
+// tiles. Enter a company code to register the
+// device. The code is remembered in localStorage
+// so this only shows once per device.
+//
+// Future: QR code scanning replaces manual entry.
+// The screen supports both — QR button is a
+// placeholder that currently does nothing.
+// ═══════════════════════════════════════════
+
+import { useState } from "react"
+import { Leaf, ArrowRight, QrCode, Loader2, Building2, AlertCircle } from "lucide-react"
+import { T } from "@/app/tokens.js"
+import { verifyCompanyCode, setDeviceRegistration } from "@/lib/api/device.js"
+
+export default function CompanyCodeScreen({ onRegistered }) {
+  const [code, setCode]         = useState("")
+  const [error, setError]       = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!code.trim()) return
+    setError(null)
+    setSubmitting(true)
+    try {
+      const result = await verifyCompanyCode(code.trim())
+      setDeviceRegistration(result.company)
+      onRegistered(result.company)
+    } catch (err) {
+      setError(err.message || "Invalid company code")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.font }}>
+      {/* Header */}
+      <div style={{ background: T.sidebar, padding: "40px 20px 36px", textAlign: "center" }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: 16, background: T.accent, margin: "0 auto 14px",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <Leaf size={30} color="#fff" />
+        </div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: "#fff" }}>FieldPulse</div>
+        <div style={{ fontSize: 14, color: "#64748B", marginTop: 6 }}>Field App</div>
+      </div>
+
+      <div style={{ padding: "32px 20px", maxWidth: 430, margin: "0 auto" }}>
+        {/* Welcome message */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 14, background: T.blueLight, margin: "0 auto 14px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Building2 size={24} color={T.blue} />
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: T.text, marginBottom: 6 }}>
+            Connect to your company
+          </div>
+          <div style={{ fontSize: 14, color: T.textLight, lineHeight: 1.5 }}>
+            Enter the company code provided by your admin to set up this device.
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
+            background: T.redLight, borderRadius: 12, marginBottom: 16,
+            border: "1px solid #FECACA",
+          }}>
+            <AlertCircle size={18} color={T.red} style={{ flexShrink: 0 }} />
+            <div style={{ fontSize: 14, fontWeight: 600, color: T.red }}>{error}</div>
+          </div>
+        )}
+
+        {/* Code input */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{
+            display: "block", fontSize: 13, fontWeight: 600, color: T.textMed, marginBottom: 8,
+          }}>
+            Company Code
+          </label>
+          <input
+            type="text"
+            value={code}
+            onChange={e => { setCode(e.target.value.toUpperCase()); setError(null) }}
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            placeholder="e.g. FIELDPULSE-A1B2"
+            autoFocus
+            autoCapitalize="characters"
+            autoComplete="off"
+            style={{
+              width: "100%", padding: "16px 18px", borderRadius: 12,
+              background: T.card, border: `1.5px solid ${error ? T.red : T.border}`,
+              color: T.text, fontSize: 18, fontWeight: 700, fontFamily: T.font,
+              letterSpacing: 1, textAlign: "center", outline: "none",
+              boxSizing: "border-box",
+              transition: "border-color 0.15s",
+            }}
+          />
+        </div>
+
+        {/* Submit */}
+        <button
+          onClick={handleSubmit}
+          disabled={submitting || !code.trim()}
+          style={{
+            width: "100%", padding: "16px", borderRadius: 12, border: "none", cursor: "pointer",
+            background: T.accent, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: T.font,
+            opacity: (submitting || !code.trim()) ? 0.5 : 1,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            boxShadow: "0 4px 14px rgba(5,150,105,0.2)",
+            transition: "opacity 0.15s",
+          }}
+        >
+          {submitting ? (
+            <>
+              <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
+              Verifying...
+            </>
+          ) : (
+            <>
+              Connect Device <ArrowRight size={18} />
+            </>
+          )}
+        </button>
+
+        {/* Divider */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 14, margin: "24px 0",
+        }}>
+          <div style={{ flex: 1, height: 1, background: T.border }} />
+          <span style={{ fontSize: 12, color: T.textLight, fontWeight: 600 }}>OR</span>
+          <div style={{ flex: 1, height: 1, background: T.border }} />
+        </div>
+
+        {/* QR Code placeholder */}
+        <button
+          onClick={() => {/* QR scanning — future feature */}}
+          style={{
+            width: "100%", padding: "16px", borderRadius: 12, cursor: "pointer",
+            background: T.card, border: `1.5px solid ${T.border}`,
+            color: T.text, fontSize: 15, fontWeight: 700, fontFamily: T.font,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+          }}
+        >
+          <QrCode size={20} color={T.textMed} />
+          Scan QR Code
+        </button>
+        <div style={{ textAlign: "center", marginTop: 8, fontSize: 12, color: T.textLight }}>
+          Ask your admin for a QR code
+        </div>
+
+        {/* Help text */}
+        <div style={{
+          marginTop: 32, padding: "16px 18px", background: T.card, borderRadius: 12,
+          border: `1px solid ${T.border}`,
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 }}>
+            Don't have a code?
+          </div>
+          <div style={{ fontSize: 13, color: T.textLight, lineHeight: 1.5 }}>
+            Contact your company admin. They can find the company code in the dashboard under Settings.
+          </div>
+        </div>
+
+        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+      </div>
+    </div>
+  )
+}
