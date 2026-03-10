@@ -1,16 +1,15 @@
 // ═══════════════════════════════════════════
 // FieldShell — /app/*
-// Everything a field crew member sees.
-// Session restore is handled by AppProvider —
-// this shell just reads the restoring flag.
+// Converted: inline styles → ShellLayout.
+// Data wiring via AppContext unchanged.
 // ═══════════════════════════════════════════
 
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { C, FONT } from '@/config/index.js'
 import { createSprayLog } from '@/lib/api/sprayLogs.js'
 import { useAppState, useAppActions, useAppDispatch } from '@/context/AppContext.jsx'
 
+import ShellLayout  from '@/ui/layouts/ShellLayout.jsx'
 import LoginScreen  from '@/field/pages/LoginScreen.jsx'
 import FieldHome    from '@/field/pages/FieldHome.jsx'
 import CrewPage     from '@/field/pages/CrewPage.jsx'
@@ -19,7 +18,6 @@ import SprayTracker from '@/field/pages/SprayTracker.jsx'
 
 import AppHeader from '@/components/layout/AppHeader.jsx'
 import Sidebar   from '@/field/components/Sidebar.jsx'
-import Toast     from '@/components/common/Toast.jsx'
 
 export default function FieldShell() {
   const navigate = useNavigate()
@@ -46,19 +44,9 @@ export default function FieldShell() {
     fetchWeather()
   }, [vehicle?.id, loggedInEmployee?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Wait for session restore before deciding what to show ──
+  // ── Wait for session restore ──
   if (restoring) {
-    return (
-      <main style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', background: C.bg, fontFamily: FONT,
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>💧</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: C.text }}>Loading…</div>
-        </div>
-      </main>
-    )
+    return <ShellLayout.Loader />
   }
 
   // ── Not logged in → login screen ──
@@ -81,79 +69,87 @@ export default function FieldShell() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT }}>
-      <AppHeader
-        pageTitle={pageTitle}
-        isAdmin={false}
-        displayName={displayName}
-        displaySub={displaySub}
-        onMenuOpen={() => setSidebar(true)}
-        onLogout={logout}
-      />
+    <ShellLayout
+      narrow
+      header={
+        <AppHeader
+          pageTitle={pageTitle}
+          isAdmin={false}
+          displayName={displayName}
+          displaySub={displaySub}
+          onMenuOpen={() => setSidebar(true)}
+          onLogout={logout}
+        />
+      }
+      sidebar={
+        <Sidebar
+          open={sidebarOpen}
+          onClose={() => setSidebar(false)}
+          currentPage={page}
+          onNav={(p) => { setPage(p); setSidebar(false) }}
+          loggedInEmployee={loggedInEmployee}
+        />
+      }
+      toast={toast}
+    >
+      {page === 'home' && (
+        <FieldHome
+          vehicle={effectiveVehicle}
+          weather={weather}
+          logs={logs}
+          employees={employees}
+          crews={crews}
+          onNav={setPage}
+          loggedInEmployee={loggedInEmployee}
+          loggedInCrew={loggedInCrew}
+        />
+      )}
+      {page === 'crew' && (
+        <CrewPage
+          employees={employees}
+          crews={crews}
+          loggedInEmployee={loggedInEmployee}
+          loggedInCrew={loggedInCrew}
+          vehicle={effectiveVehicle}
+          showToast={showToast}
+        />
+      )}
+      {page === 'routes' && (
+        <CrewRoutes
+          loggedInEmployee={loggedInEmployee}
+          loggedInCrew={loggedInCrew}
+        />
+      )}
+      {page === 'spray' && (
+        <SprayTracker
+          vehicle={effectiveVehicle}
+          chemicals={chemicals}
+          equipment={equipment}
+          crews={crews}
+          logs={logs}
+          weather={weather}
+          onRefreshWeather={fetchWeather}
+          onSubmitLog={handleSubmitLog}
+          onLogsUpdated={refreshLogs}
+          loggedInEmployee={loggedInEmployee}
+          loggedInCrew={loggedInCrew}
+        />
+      )}
+      {!['home', 'crew', 'routes', 'spray'].includes(page) && (
+        <EmptyState icon="🚧" title="Coming Soon" />
+      )}
+    </ShellLayout>
+  )
+}
 
-      <Sidebar
-        open={sidebarOpen}
-        onClose={() => setSidebar(false)}
-        currentPage={page}
-        onNav={(p) => { setPage(p); setSidebar(false) }}
-        loggedInEmployee={loggedInEmployee}
-      />
-
-      <main style={{ maxWidth: 430, margin: '0 auto', padding: '14px 16px 40px' }}>
-        {page === 'home' && (
-          <FieldHome
-            vehicle={effectiveVehicle}
-            weather={weather}
-            logs={logs}
-            employees={employees}
-            crews={crews}
-            onNav={setPage}
-            loggedInEmployee={loggedInEmployee}
-            loggedInCrew={loggedInCrew}
-          />
-        )}
-        {page === 'crew' && (
-          <CrewPage
-            employees={employees}
-            crews={crews}
-            loggedInEmployee={loggedInEmployee}
-            loggedInCrew={loggedInCrew}
-            vehicle={effectiveVehicle}
-            showToast={showToast}
-          />
-        )}
-        {page === 'routes' && (
-          <CrewRoutes
-            loggedInEmployee={loggedInEmployee}
-            loggedInCrew={loggedInCrew}
-          />
-        )}
-        {page === 'spray' && (
-          <SprayTracker
-            vehicle={effectiveVehicle}
-            chemicals={chemicals}
-            equipment={equipment}
-            crews={crews}
-            logs={logs}
-            weather={weather}
-            onRefreshWeather={fetchWeather}
-            onSubmitLog={handleSubmitLog}
-            onLogsUpdated={refreshLogs}
-            loggedInEmployee={loggedInEmployee}
-            loggedInCrew={loggedInCrew}
-          />
-        )}
-        {!['home', 'crew', 'routes', 'spray'].includes(page) && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
-            <div>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
-              <div style={{ fontSize: 22, fontWeight: 800 }}>Coming Soon</div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      <Toast message={toast} />
+// Inline fallback — avoids importing EmptyState just for this edge case
+function EmptyState({ icon, title }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
+      <div>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>{icon}</div>
+        <div style={{ fontSize: 22, fontWeight: 800 }}>{title}</div>
+      </div>
     </div>
   )
 }

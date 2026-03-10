@@ -1,25 +1,24 @@
 // ═══════════════════════════════════════════
-// useWeather — GPS-aware weather fetching
+// useWeather — Data Hook
+// Wraps geolocation + weather API.
+// Falls back to simulated weather if
+// geolocation is unavailable or denied.
 // ═══════════════════════════════════════════
 
 import { useState, useCallback } from 'react'
 import { getSimulatedWeather, getWeatherByCoords } from '@/lib/weather.js'
 
-/**
- * Provides current weather state and a refresh callback.
- * Automatically falls back to simulated weather if GPS or
- * the weather API is unavailable.
- *
- * @returns {{ weather: object, fetchWeather: () => void }}
- */
-export function useWeather() {
-  const [weather, setWeather] = useState(() => getSimulatedWeather())
+export default function useWeather() {
+  const [weather, setWeather] = useState(getSimulatedWeather())
+  const [loading, setLoading] = useState(false)
 
-  const fetchWeather = useCallback(() => {
+  const fetch = useCallback(() => {
     if (!navigator.geolocation) {
       setWeather(getSimulatedWeather())
       return
     }
+
+    setLoading(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -27,12 +26,17 @@ export function useWeather() {
           setWeather(w)
         } catch {
           setWeather(getSimulatedWeather())
+        } finally {
+          setLoading(false)
         }
       },
-      () => setWeather(getSimulatedWeather()),
-      { timeout: 8000 }
+      () => {
+        setWeather(getSimulatedWeather())
+        setLoading(false)
+      },
+      { timeout: 8000 },
     )
   }, [])
 
-  return { weather, fetchWeather, setWeather }
+  return { weather, loading, fetch }
 }

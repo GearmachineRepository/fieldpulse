@@ -1,0 +1,45 @@
+/* ═══════════════════════════════════════════
+   ShellLayout — Styles
+   ═══════════════════════════════════════════ */
+
+.shell {
+  min-height: 100vh;
+  background: var(--color-bg);
+  font-family: var(--font-sans);
+}
+
+.content {
+  max-width: var(--max-width-page);
+  margin: 0 auto;
+  padding: 14px 16px 40px;
+}
+
+.narrow {
+  max-width: 430px;
+}
+
+/* ── Loader ── */
+
+.loader {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  font-family: var(--font-sans);
+}
+
+.loaderInner {
+  text-align: center;
+}
+
+.loaderIcon {
+  font-size: 32px;
+  margin-bottom: var(--space-3);
+}
+
+.loaderText {
+  font-size: var(--text-xl);
+  font-weight: var(--font-extrabold);
+  color: var(--color-text);
+}

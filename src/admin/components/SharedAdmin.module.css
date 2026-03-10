@@ -1,0 +1,159 @@
+/* ═══════════════════════════════════════════
+   SharedAdmin — Styles
+   ═══════════════════════════════════════════ */
+
+/* ── Filter Pills / Range Buttons ── */
+.filterPills,
+.rangeButtons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.pill {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  background: #eee;
+  color: var(--color-text-med);
+  border: none;
+  transition: all var(--transition-fast);
+}
+
+.pillActive {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+/* ── Date range picker ── */
+.dateRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dateCol {
+  flex: 1;
+}
+
+.biweeklyNote {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--color-blue-light);
+  border: 1.5px solid var(--color-blue-border);
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--color-blue);
+  font-weight: 600;
+}
+
+/* ── Modal footer ── */
+.modalFooter {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* ── Confirm delete ── */
+.confirmCenter {
+  text-align: center;
+}
+
+.confirmIcon {
+  font-size: 40px;
+  margin-bottom: var(--space-3);
+}
+
+.confirmTitle {
+  font-size: var(--text-xl);
+  font-weight: var(--font-extrabold);
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.confirmText {
+  font-size: var(--text-sm);
+  color: var(--color-text-med);
+  margin-bottom: var(--space-6);
+}
+
+.confirmActions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── Field ── */
+.fieldWrap {
+  margin-bottom: 14px;
+}
+
+.label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: 6px;
+}
+
+.required {
+  color: var(--color-red);
+}
+
+.select {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--color-input-bg);
+  border: 1.5px solid var(--color-card-border);
+  color: var(--color-text);
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  box-sizing: border-box;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* ── Checkbox ── */
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--color-card-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--color-text-inverse);
+  transition: all var(--transition-fast);
+}
+
+.checkboxChecked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.checkboxLabel {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+}

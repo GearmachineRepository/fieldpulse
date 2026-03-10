@@ -1,0 +1,110 @@
+/* ═══════════════════════════════════════════
+   Button — Styles
+   ═══════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: var(--font-extrabold);
+  text-align: center;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Sizes ── */
+
+.sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+
+.md {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+  border-radius: var(--radius-md);
+}
+
+.lg {
+  padding: var(--space-4);
+  font-size: var(--text-lg);
+  border-radius: var(--radius-xl);
+}
+
+/* ── Width ── */
+
+.full {
+  width: 100%;
+}
+
+/* ── Variants ── */
+
+.accent {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(45, 122, 58, 0.19);
+}
+
+.blue {
+  background: var(--color-blue);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.19);
+}
+
+.red {
+  background: var(--color-red);
+  color: var(--color-text-inverse);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.19);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--color-text-med);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--color-card-border);
+}
+
+.outline {
+  background: transparent;
+  color: var(--color-accent);
+  border: 1.5px solid var(--color-accent-border);
+}
+
+.outline:hover:not(:disabled) {
+  background: var(--color-accent-light);
+}
+
+/* ── Loading spinner ── */
+
+.loading {
+  pointer-events: none;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,10 +1,12 @@
 // ═══════════════════════════════════════════
 // Admin Sidebar — Grouped navigation
-// Data-driven: add a section by adding to NAV_GROUPS
+// Converted: inline styles → CSS Modules.
+// Focus trap + inert logic unchanged.
 // ═══════════════════════════════════════════
 
 import { useRef, useEffect } from 'react'
-import { APP, C } from '@/config/index.js'
+import { APP } from '@/config/app.js'
+import styles from './AdminSidebar.module.css'
 
 // ── Navigation config — single source of truth ──
 export const NAV_GROUPS = [
@@ -35,6 +37,15 @@ export const NAV_GROUPS = [
 export const ADMIN_PAGE_TITLES = {}
 NAV_GROUPS.forEach(g => g.items.forEach(it => { ADMIN_PAGE_TITLES[it.key] = it.label }))
 
+function getActiveKey(page) {
+  for (const g of NAV_GROUPS) {
+    for (const it of g.items) {
+      if (it.key === page) return it.key
+    }
+  }
+  return 'admin-home'
+}
+
 export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
   const activeKey   = getActiveKey(currentPage)
   const sidebarRef  = useRef(null)
@@ -46,16 +57,12 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
     if (!sidebar) return
 
     if (open) {
-      // Remove inert so the sidebar is interactive
       sidebar.removeAttribute('inert')
-
-      // Focus the first nav item after the CSS transition starts
       requestAnimationFrame(() => {
         const first = sidebar.querySelector('[tabindex]:not([tabindex="-1"]), button')
         first?.focus()
       })
 
-      // ── Focus trap ──
       const trap = (e) => {
         if (e.key === 'Escape') { onCloseRef.current(); return }
         if (e.key !== 'Tab') return
@@ -74,7 +81,6 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
       sidebar.addEventListener('keydown', trap)
       return () => sidebar.removeEventListener('keydown', trap)
     } else {
-      // Sidebar is closed — make it fully inert so Tab cannot reach hidden nav items
       sidebar.setAttribute('inert', '')
     }
   }, [open])
@@ -82,58 +88,41 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
   return (
     <>
       {open && (
-        <div onClick={onClose}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 40, transition: 'opacity 0.2s' }} />
+        <div onClick={onClose} className={styles.overlay} />
       )}
 
       <div
         ref={sidebarRef}
-        // inert is set/removed by the effect above; start closed
         inert=""
-        style={{
-          position: 'fixed', top: 0, left: 0, bottom: 0, width: 280,
-          background: C.sidebar, zIndex: 50,
-          transform: open ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-          display: 'flex', flexDirection: 'column',
-          boxShadow: open ? '4px 0 32px rgba(0,0,0,0.18)' : 'none',
-        }}
+        className={`${styles.sidebar} ${open ? styles.open : ''}`}
       >
         {/* Header */}
-        <div style={{ padding: '20px 20px 12px', borderBottom: '1px solid #2E2E2A' }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: 3, marginBottom: 2 }}>{APP.name}</div>
-          <div style={{ fontSize: 13, color: '#777770' }}>Admin Panel</div>
+        <div className={styles.header}>
+          <div className={styles.brand}>{APP.name}</div>
+          <div className={styles.subtitle}>Admin Panel</div>
         </div>
 
         {/* Nav */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px' }}>
+        <div className={styles.nav}>
           {NAV_GROUPS.map((group, gi) => (
-            <div key={gi} style={{ marginBottom: 8 }}>
+            <div key={gi} className={styles.group}>
               {group.label && (
-                <div style={{ fontSize: 10, fontWeight: 800, color: '#555550', textTransform: 'uppercase', letterSpacing: 2, padding: '8px 8px 4px' }}>
-                  {group.label}
-                </div>
+                <div className={styles.groupLabel}>{group.label}</div>
               )}
               {group.items.map(item => {
                 const isActive = activeKey === item.key
                 return (
-                  <div key={item.key} tabIndex={0} role="button"
+                  <div
+                    key={item.key}
+                    tabIndex={0}
+                    role="button"
                     aria-current={isActive ? 'page' : undefined}
                     onClick={() => { onNav(item.key); onClose() }}
                     onKeyDown={e => e.key === 'Enter' && (onNav(item.key), onClose())}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '10px 12px', borderRadius: 10, cursor: 'pointer', marginBottom: 2,
-                      background: isActive ? C.accentLight : 'transparent',
-                      color: isActive ? C.accent : '#C8C8C0',
-                      fontWeight: isActive ? 800 : 600,
-                      fontSize: 14,
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = C.sidebarHover }}
-                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
-                    <span style={{ fontSize: 18 }}>{item.icon}</span>
-                    {item.label}
+                    className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+                  >
+                    <span className={styles.navIcon}>{item.icon}</span>
+                    <span className={styles.navLabel}>{item.label}</span>
                   </div>
                 )
               })}
@@ -143,13 +132,4 @@ export default function AdminSidebar({ open, onClose, currentPage, onNav }) {
       </div>
     </>
   )
-}
-
-function getActiveKey(page) {
-  for (const group of NAV_GROUPS) {
-    for (const item of group.items) {
-      if (page === item.key) return item.key
-    }
-  }
-  return null
 }

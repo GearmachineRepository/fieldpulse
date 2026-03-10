@@ -1,28 +1,34 @@
 // ═══════════════════════════════════════════
-// useToast — auto-dismissing toast state
+// useToast — Data Hook
+//
+// Manages toast notification state.
+// Auto-dismisses after a configurable duration.
 // ═══════════════════════════════════════════
 
-import { useState, useCallback } from 'react'
-
-const DEFAULT_DURATION_MS = 2500
+import { useState, useCallback, useRef } from 'react'
 
 /**
- * Returns a toast message and a showToast trigger.
- *
- * @param {number} [duration]  Auto-dismiss delay in ms
- * @returns {{ toast: string|null, showToast: (msg: string) => void }}
- *
- * @example
- * const { toast, showToast } = useToast()
- * showToast('Saved ✓')
+ * @param {number} [duration=2500]  Auto-dismiss duration in ms
+ * @returns {{
+ *   message: string|null,
+ *   show: (msg: string) => void,
+ *   dismiss: () => void,
+ * }}
  */
-export function useToast(duration = DEFAULT_DURATION_MS) {
-  const [toast, setToast] = useState(null)
+export default function useToast(duration = 2500) {
+  const [message, setMessage] = useState(null)
+  const timer = useRef(null)
 
-  const showToast = useCallback((message) => {
-    setToast(message)
-    setTimeout(() => setToast(null), duration)
+  const show = useCallback((msg) => {
+    if (timer.current) clearTimeout(timer.current)
+    setMessage(msg)
+    timer.current = setTimeout(() => setMessage(null), duration)
   }, [duration])
 
-  return { toast, showToast }
+  const dismiss = useCallback(() => {
+    if (timer.current) clearTimeout(timer.current)
+    setMessage(null)
+  }, [])
+
+  return { message, show, dismiss }
 }

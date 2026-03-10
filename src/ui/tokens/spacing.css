@@ -1,0 +1,33 @@
+/* ═══════════════════════════════════════════
+   Design Tokens — Spacing & Radii
+   ═══════════════════════════════════════════ */
+
+:root {
+  /* ── Spacing scale (4px base) ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  18px;
+  --space-6:  20px;
+  --space-8:  24px;
+  --space-10: 32px;
+  --space-12: 40px;
+
+  /* ── Border radius ── */
+  --radius-sm:   8px;
+  --radius-md:  10px;
+  --radius-lg:  12px;
+  --radius-xl:  14px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* ── Layout ── */
+  --max-width-page: 900px;
+  --sidebar-width:  280px;
+
+  /* ── Transitions ── */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slide: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -1,0 +1,73 @@
+/* ═══════════════════════════════════════════
+   Card — Styles
+   ═══════════════════════════════════════════ */
+
+.card {
+  background: var(--color-card);
+  border: 1.5px solid var(--color-card-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-3);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-sans);
+  text-align: left;
+  width: 100%;
+}
+
+.compact {
+  padding: var(--space-3) var(--space-4);
+}
+
+/* ── Clickable ── */
+
+.clickable {
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.clickable:hover {
+  border-color: var(--color-blue);
+}
+
+/* ── Variants ── */
+
+.selected {
+  border-color: var(--color-blue);
+  background: var(--color-blue-light);
+}
+
+.danger {
+  border-color: var(--color-red-border);
+  background: var(--color-red-light);
+}
+
+.info {
+  border-color: var(--color-blue-border);
+  background: var(--color-blue-light);
+}
+
+/* ── Header sub-component ── */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-extrabold);
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+.action {
+  flex-shrink: 0;
+}

@@ -1,0 +1,54 @@
+/* ═══════════════════════════════════════════
+   Design Tokens — Colors
+   
+   Single source of truth for the entire color
+   palette. Every UI Kit component references 
+   these variables instead of hardcoded values.
+   
+   To re-skin the app: swap this one file.
+   ═══════════════════════════════════════════ */
+
+:root {
+  /* ── Surface ── */
+  --color-bg:             #F4F3EF;
+  --color-card:           #FFFFFF;
+  --color-card-border:    #E8E6E0;
+  --color-input-bg:       #FAFAF7;
+
+  /* ── Text ── */
+  --color-text:           #1A1A18;
+  --color-text-med:       #4A4A45;
+  --color-text-light:     #8A8A82;
+  --color-text-inverse:   #FFFFFF;
+
+  /* ── Brand / Accent ── */
+  --color-accent:         #2D7A3A;
+  --color-accent-light:   #E8F5EA;
+  --color-accent-border:  #B8DEC0;
+
+  /* ── Semantic: Info ── */
+  --color-blue:           #2563EB;
+  --color-blue-light:     #EFF6FF;
+  --color-blue-border:    #BFDBFE;
+
+  /* ── Semantic: Warning ── */
+  --color-amber:          #D97706;
+  --color-amber-light:    #FFFBEB;
+  --color-amber-border:   #FDE68A;
+
+  /* ── Semantic: Danger ── */
+  --color-red:            #DC2626;
+  --color-red-light:      #FEF2F2;
+  --color-red-border:     #FECACA;
+
+  /* ── Chrome ── */
+  --color-sidebar:        #1B1B19;
+  --color-sidebar-hover:  #2A2A26;
+  --color-overlay:        rgba(0, 0, 0, 0.45);
+
+  /* ── Shadows ── */
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-toast: 0 8px 32px rgba(0, 0, 0, 0.25);
+}

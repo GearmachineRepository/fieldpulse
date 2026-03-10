@@ -1,0 +1,13 @@
+/* ═══════════════════════════════════════════
+   Design Tokens — Barrel Import
+   
+   Import this once in main.jsx:
+     import '@/ui/tokens/index.css'
+   
+   All custom properties are then available
+   globally to every CSS Module file.
+   ═══════════════════════════════════════════ */
+
+@import './colors.css';
+@import './typography.css';
+@import './spacing.css';
