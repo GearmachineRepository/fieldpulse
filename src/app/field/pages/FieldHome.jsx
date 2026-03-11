@@ -214,7 +214,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
                   </div>
                 </div>
                 <div style={{ fontSize: 12, color: T.textLight, flexShrink: 0, display: "flex", alignItems: "center", gap: 4 }}>
-                  <Clock size={12} /> {stop.estimatedMinutes}m
+                  <Clock size={12} /> {stop.account.estimatedMinutes || stop.estimatedMinutes || 30}m
                 </div>
               </button>
             ))

@@ -35,7 +35,7 @@ function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMont
 
 function getMonthGrid(year, month) {
   const first = new Date(year, month, 1)
-  let startDay = first.getDay() - 1 // Monday = 0
+  let startDay = first.getDay() - 1
   if (startDay < 0) startDay = 6
   const start = new Date(first)
   start.setDate(start.getDate() - startDay)
@@ -45,7 +45,6 @@ function getMonthGrid(year, month) {
     d.setDate(d.getDate() + i)
     days.push(d)
   }
-  // Trim trailing row if entirely next month
   const lastRow = days.slice(35)
   if (lastRow.every(d => d.getMonth() !== month)) return days.slice(0, 35)
   return days
@@ -54,7 +53,7 @@ function getMonthGrid(year, month) {
 function getWeekStart(date) {
   const d = new Date(date)
   const day = d.getDay()
-  const diff = day === 0 ? -6 : 1 - day // Monday start
+  const diff = day === 0 ? -6 : 1 - day
   d.setDate(d.getDate() + diff)
   d.setHours(0, 0, 0, 0)
   return d
@@ -87,7 +86,7 @@ export default function SchedulePage({ isMobile }) {
     let start, end
     if (view === "calendar") {
       start = new Date(calYear, calMonth, 1)
-      start.setDate(start.getDate() - 7) // buffer
+      start.setDate(start.getDate() - 7)
       end = new Date(calYear, calMonth + 1, 0)
       end.setDate(end.getDate() + 7)
     } else {
@@ -161,12 +160,21 @@ export default function SchedulePage({ isMobile }) {
     catch { toast.show("Failed") }
   }
 
-  // ── Route stop view ──
+  // ── Route stop view — modal renders alongside so it's not hidden ──
   if (viewingRoute) {
-    return <RouteStopManager routeId={viewingRoute.id} routeName={viewingRoute.name} route={viewingRoute}
-      accounts={accounts.data} toast={toast} isMobile={isMobile}
-      onBack={() => { setViewingRoute(null); routes.refresh() }}
-      onEdit={() => setEditingRoute(viewingRoute)} />
+    return (
+      <>
+        <RouteStopManager routeId={viewingRoute.id} routeName={viewingRoute.name} route={viewingRoute}
+          accounts={accounts.data} toast={toast} isMobile={isMobile}
+          onBack={() => { setViewingRoute(null); routes.refresh() }}
+          onEdit={() => setEditingRoute(viewingRoute)} />
+        {editingRoute !== null && (
+          <RouteModal route={editingRoute} crews={crews.data}
+            onClose={() => setEditingRoute(null)} onSave={handleSaveRoute}
+            onDelete={editingRoute.id ? () => handleDeleteRoute(editingRoute.id) : undefined} />
+        )}
+      </>
+    )
   }
 
   return (
@@ -176,7 +184,6 @@ export default function SchedulePage({ isMobile }) {
         display: "flex", justifyContent: "space-between", alignItems: "center",
         marginBottom: 20, flexWrap: "wrap", gap: 10,
       }}>
-        {/* Left: title + nav */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ fontSize: 20, fontWeight: 800, minWidth: 180 }}>
             {view === "calendar" ? monthLabel : (() => {
@@ -191,7 +198,6 @@ export default function SchedulePage({ isMobile }) {
           </div>
         </div>
 
-        {/* Right: view toggle + add */}
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: 2, background: T.card, borderRadius: 8, border: `1px solid ${T.border}`, padding: 3 }}>
             <ViewBtn icon={LayoutGrid} label="Calendar" active={view === "calendar"} onClick={() => setView("calendar")} />
@@ -208,7 +214,6 @@ export default function SchedulePage({ isMobile }) {
           background: T.card, borderRadius: 14, border: `1px solid ${T.border}`,
           overflow: "hidden", boxShadow: T.shadow,
         }}>
-          {/* Day headers */}
           <div style={{
             display: "grid", gridTemplateColumns: "repeat(7, 1fr)",
             borderBottom: `1px solid ${T.border}`,
@@ -221,7 +226,6 @@ export default function SchedulePage({ isMobile }) {
             ))}
           </div>
 
-          {/* Day cells */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
             {calDays.map((date, i) => {
               const inMonth = date.getMonth() === calMonth
@@ -237,7 +241,6 @@ export default function SchedulePage({ isMobile }) {
                   background: !inMonth ? "#FAFBFC" : isToday ? "#F0FDF9" : T.card,
                   opacity: inMonth ? 1 : 0.45,
                 }}>
-                  {/* Date number */}
                   <div style={{
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                     marginBottom: 3, padding: "0 2px",
@@ -265,7 +268,6 @@ export default function SchedulePage({ isMobile }) {
                     )}
                   </div>
 
-                  {/* Items */}
                   {!isMobile && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                       {items.routes.slice(0, 3).map(route => (
@@ -305,7 +307,6 @@ export default function SchedulePage({ isMobile }) {
                     </div>
                   )}
 
-                  {/* Mobile: dot indicators */}
                   {isMobile && hasContent && (
                     <div style={{ display: "flex", gap: 3, padding: "2px 4px", flexWrap: "wrap" }}>
                       {items.routes.map(r => (
@@ -333,7 +334,6 @@ export default function SchedulePage({ isMobile }) {
 
             return (
               <div key={i}>
-                {/* Day header */}
                 <div style={{
                   display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
                   padding: "0 4px",
@@ -360,7 +360,6 @@ export default function SchedulePage({ isMobile }) {
                   )}
                 </div>
 
-                {/* Content */}
                 {!hasItems ? (
                   <div style={{
                     padding: "14px 18px", background: T.card, borderRadius: 12,
@@ -647,7 +646,12 @@ function RouteStopManager({ routeId, routeName, route: routeMeta, accounts, toas
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{stop.account.name}</div>
                 <div style={{ fontSize: 12, color: T.textLight }}>{stop.account.address}{stop.account.city && `, ${stop.account.city}`}</div>
               </div>
-              <div style={{ fontSize: 12, color: T.textLight, flexShrink: 0, display: "flex", alignItems: "center", gap: 4 }}><Clock size={12} />{stop.estimatedMinutes}m</div>
+              <div style={{
+                fontSize: 12, color: T.textLight, flexShrink: 0, display: "flex", alignItems: "center", gap: 4,
+                background: T.bg, borderRadius: 6, padding: "4px 8px", fontWeight: 600,
+              }}>
+                <Clock size={12} />{stop.account.estimatedMinutes || 30}m
+              </div>
               <button onClick={() => handleRemove(stop.id)} style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${T.border}`, background: T.card, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Trash2 size={13} color={T.red} />
               </button>
@@ -665,6 +669,9 @@ function RouteStopManager({ routeId, routeName, route: routeMeta, accounts, toas
   )
 }
 
+// ═══════════════════════════════════════════
+// Stop Search
+// ═══════════════════════════════════════════
 function StopSearch({ accounts, onAdd }) {
   const [q, setQ] = useState("")
   const f = accounts.filter(a => !q || a.name.toLowerCase().includes(q.toLowerCase()) || (a.address || "").toLowerCase().includes(q.toLowerCase()))

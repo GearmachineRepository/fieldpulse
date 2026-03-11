@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════
 // Resources Routes — Library CRUD + file upload
+// + Account linking (reverse direction)
 // ═══════════════════════════════════════════
 
 import { Router } from 'express'
@@ -21,7 +22,7 @@ const storage = multer.diskStorage({
     cb(null, `resource-${crypto.randomBytes(8).toString('hex')}${ext}`)
   },
 })
-const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } }) // 25MB
+const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } })
 
 // ═══════════════════════════════════════════
 // Categories
@@ -152,9 +153,63 @@ router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
   res.json({ success: true })
 }))
 
+// ── Replace file on existing resource ──
+router.put('/:id/file', requireAuth, validateIdParam, upload.single('file'), asyncHandler(async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+
+  await db.query(
+    `UPDATE resources SET filename=$1, original_name=$2, mime_type=$3, file_size=$4 WHERE id=$5`,
+    [req.file.filename, req.file.originalname, req.file.mimetype, req.file.size, req.params.id]
+  )
+
+  const full = await db.query(`
+    SELECT r.*, c.name AS category_name, c.color AS category_color
+    FROM resources r LEFT JOIN resource_categories c ON c.id = r.category_id WHERE r.id = $1
+  `, [req.params.id])
+  res.json(formatResource(full.rows[0]))
+}))
+
 /** @route DELETE /api/resources/:id */
 router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
   await db.query('UPDATE resources SET active = false WHERE id = $1', [req.params.id])
+  res.json({ success: true })
+}))
+
+// ═══════════════════════════════════════════
+// Resource → Account Linking
+// ═══════════════════════════════════════════
+
+/** @route GET /api/resources/:id/accounts — Accounts linked to this resource */
+router.get('/:id/accounts', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const result = await db.query(`
+    SELECT a.* FROM account_resources ar
+    JOIN accounts a ON a.id = ar.account_id AND a.active = true
+    WHERE ar.resource_id = $1 ORDER BY a.name ASC
+  `, [req.params.id])
+  res.json(result.rows.map(row => ({
+    id: row.id, name: row.name, address: row.address,
+    city: row.city, state: row.state, zip: row.zip,
+    latitude: row.latitude, longitude: row.longitude,
+    contactName: row.contact_name, contactPhone: row.contact_phone,
+  })))
+}))
+
+/** @route POST /api/resources/:id/accounts — Link account to this resource */
+router.post('/:id/accounts', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const { accountId } = req.body
+  if (!accountId) return res.status(400).json({ error: 'accountId is required' })
+  await db.query(
+    `INSERT INTO account_resources (account_id, resource_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+    [accountId, req.params.id]
+  )
+  res.json({ success: true })
+}))
+
+/** @route DELETE /api/resources/:id/accounts/:accountId — Unlink account */
+router.delete('/:id/accounts/:accountId', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const accountId = parseInt(req.params.accountId, 10)
+  if (isNaN(accountId) || accountId < 1) return res.status(400).json({ error: 'Invalid account ID' })
+  await db.query('DELETE FROM account_resources WHERE account_id = $1 AND resource_id = $2', [accountId, req.params.id])
   res.json({ success: true })
 }))
 

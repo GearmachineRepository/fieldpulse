@@ -27,3 +27,14 @@ export const uploadResource = async (file, metadata = {}) => {
   if (metadata.tags) fd.append('tags', JSON.stringify(metadata.tags))
   return multipartRequest('/resources/upload', fd)
 }
+
+export const replaceResourceFile = async (id, file) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return multipartRequest(`/resources/${id}/file`, fd, 'PUT')
+}
+
+// Resource → Account linking (reverse direction)
+export const getResourceAccounts      = (resourceId) => request(`/resources/${resourceId}/accounts`)
+export const linkResourceToAccount    = (resourceId, accountId) => request(`/resources/${resourceId}/accounts`, { method: 'POST', body: JSON.stringify({ accountId }) })
+export const unlinkResourceFromAccount = (resourceId, accountId) => request(`/resources/${resourceId}/accounts/${accountId}`, { method: 'DELETE' })

@@ -48,13 +48,7 @@ if (process.env.SENTRY_DSN) {
 // ── Request logging ──
 app.use(pinoHttp({
   logger,
-  autoLogging: {
-    ignore: (req) => req.url === '/api/health',
-  },
-  // Only log requests that result in errors (4xx/5xx)
-  customSuccessMessage: () => undefined,
-  customSuccessObject: () => undefined,
-  quietReqLogger: true,
+  autoLogging: false,
   serializers: {
     req: (req) => ({ method: req.method, url: req.url }),
     res: (res) => ({ statusCode: res.statusCode }),

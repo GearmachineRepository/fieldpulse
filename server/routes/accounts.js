@@ -3,6 +3,7 @@
 // Auto-geocodes using US Census Geocoder (primary)
 // with Nominatim as fallback. Census has near-complete
 // US address coverage from TIGER/Line postal data.
+// + Account-linked resources for field crew access
 // ═══════════════════════════════════════════
 
 import { Router } from 'express'
@@ -114,7 +115,6 @@ async function censusGeocode({ address, city, state, zip }) {
 async function nominatimGeocode({ address, city, state, zip }) {
   const params = new URLSearchParams({ format: 'json', limit: '1' })
 
-  // Structured query
   if (address) params.set('street', address)
   if (city) params.set('city', city)
   if (state) params.set('state', state)
@@ -143,11 +143,9 @@ async function nominatimGeocode({ address, city, state, zip }) {
 async function geocode({ address, city, state, zip }) {
   console.log(`\n  [geocode] Looking up: "${address}", ${city || '?'}, ${state || '?'} ${zip || '?'}`)
 
-  // 1. US Census Geocoder
   const censusResult = await censusGeocode({ address, city, state, zip })
   if (censusResult) return censusResult
 
-  // 2. Nominatim fallback
   const nominatimResult = await nominatimGeocode({ address, city, state, zip })
   if (nominatimResult) return nominatimResult
 
@@ -215,7 +213,7 @@ router.post('/',
   }),
   async (req, res) => {
     try {
-      const { name, address, city, state, zip, contactName, contactPhone, contactEmail, accountType, notes } = req.body
+      const { name, address, city, state, zip, contactName, contactPhone, contactEmail, accountType, notes, groupId, estimatedMinutes } = req.body
       let { latitude, longitude } = req.body
 
       if (!latitude || !longitude) {
@@ -225,12 +223,12 @@ router.post('/',
       }
 
       const result = await db.query(
-        `INSERT INTO accounts (name, address, city, state, zip, latitude, longitude, contact_name, contact_phone, contact_email, account_type, notes)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+        `INSERT INTO accounts (name, address, city, state, zip, latitude, longitude, contact_name, contact_phone, contact_email, account_type, notes, group_id, estimated_minutes)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
         [name, address, city || null, state || 'CA', zip || null,
          latitude || null, longitude || null,
          contactName || null, contactPhone || null, contactEmail || null,
-         accountType || 'residential', notes || null]
+         accountType || 'residential', notes || null, groupId || null, estimatedMinutes || 30]
       )
       res.json(formatAccount(result.rows[0]))
     } catch (e) {
@@ -243,7 +241,7 @@ router.post('/',
 // ── Update account (auto-geocodes) ──
 router.put('/:id', requireAuth, validateIdParam, async (req, res) => {
   try {
-    const { name, address, city, state, zip, contactName, contactPhone, contactEmail, accountType, notes } = req.body
+    const { name, address, city, state, zip, contactName, contactPhone, contactEmail, accountType, notes, groupId, estimatedMinutes } = req.body
     let { latitude, longitude } = req.body
 
     if (!latitude || !longitude) {
@@ -255,11 +253,11 @@ router.put('/:id', requireAuth, validateIdParam, async (req, res) => {
     await db.query(
       `UPDATE accounts SET name=$1, address=$2, city=$3, state=$4, zip=$5,
        latitude=$6, longitude=$7, contact_name=$8, contact_phone=$9, contact_email=$10,
-       account_type=$11, notes=$12 WHERE id=$13`,
+       account_type=$11, notes=$12, group_id=$13, estimated_minutes=$14 WHERE id=$15`,
       [name, address, city || null, state || 'CA', zip || null,
        latitude || null, longitude || null,
        contactName || null, contactPhone || null, contactEmail || null,
-       accountType || 'residential', notes || null,
+       accountType || 'residential', notes || null, groupId || null, estimatedMinutes || 30,
        req.params.id]
     )
 
@@ -292,6 +290,87 @@ router.post('/geocode',
   }
 )
 
+// ── Update estimated service time only ──
+router.patch('/:id/estimated-time', requireAuth, validateIdParam, async (req, res) => {
+  try {
+    const { estimatedMinutes } = req.body
+    if (!estimatedMinutes && estimatedMinutes !== 0) return res.status(400).json({ error: 'estimatedMinutes is required' })
+
+    await db.query('UPDATE accounts SET estimated_minutes = $1 WHERE id = $2', [parseInt(estimatedMinutes) || 30, req.params.id])
+    const updated = await db.query('SELECT * FROM accounts WHERE id = $1', [req.params.id])
+    res.json(formatAccount(updated.rows[0]))
+  } catch (e) {
+    console.error('PATCH /accounts/:id/estimated-time error:', e)
+    res.status(500).json({ error: 'Failed to update' })
+  }
+})
+
+// ═══════════════════════════════════════════
+// Account-linked Resources
+// ═══════════════════════════════════════════
+
+// ── List resources linked to this account ──
+router.get('/:id/resources', requireAuth, validateIdParam, async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT r.*, c.name AS category_name, c.color AS category_color
+      FROM account_resources ar
+      JOIN resources r ON r.id = ar.resource_id AND r.active = true
+      LEFT JOIN resource_categories c ON c.id = r.category_id
+      WHERE ar.account_id = $1
+      ORDER BY r.pinned DESC, r.title ASC
+    `, [req.params.id])
+
+    res.json(result.rows.map(row => ({
+      id: row.id, title: row.title, description: row.description,
+      categoryId: row.category_id, categoryName: row.category_name || null,
+      categoryColor: row.category_color || null,
+      resourceType: row.resource_type, url: row.url,
+      filename: row.filename, originalName: row.original_name,
+      mimeType: row.mime_type, fileSize: row.file_size,
+      tags: row.tags || [], pinned: row.pinned, createdAt: row.created_at,
+    })))
+  } catch (e) {
+    console.error('GET /accounts/:id/resources error:', e)
+    res.status(500).json({ error: 'Failed to fetch account resources' })
+  }
+})
+
+// ── Link a resource to this account ──
+router.post('/:id/resources', requireAuth, validateIdParam, async (req, res) => {
+  try {
+    const { resourceId } = req.body
+    if (!resourceId) return res.status(400).json({ error: 'resourceId is required' })
+
+    await db.query(
+      `INSERT INTO account_resources (account_id, resource_id)
+       VALUES ($1, $2) ON CONFLICT (account_id, resource_id) DO NOTHING`,
+      [req.params.id, resourceId]
+    )
+    res.json({ success: true })
+  } catch (e) {
+    console.error('POST /accounts/:id/resources error:', e)
+    res.status(500).json({ error: 'Failed to link resource' })
+  }
+})
+
+// ── Unlink a resource from this account ──
+router.delete('/:id/resources/:resourceId', requireAuth, validateIdParam, async (req, res) => {
+  try {
+    const resourceId = parseInt(req.params.resourceId, 10)
+    if (isNaN(resourceId) || resourceId < 1) return res.status(400).json({ error: 'Invalid resource ID' })
+
+    await db.query(
+      'DELETE FROM account_resources WHERE account_id = $1 AND resource_id = $2',
+      [req.params.id, resourceId]
+    )
+    res.json({ success: true })
+  } catch (e) {
+    console.error('DELETE /accounts/:id/resources/:resourceId error:', e)
+    res.status(500).json({ error: 'Failed to unlink resource' })
+  }
+})
+
 // ── Format DB row → API response ──
 function formatAccount(row) {
   return {
@@ -310,6 +389,7 @@ function formatAccount(row) {
     notes: row.notes,
     createdAt: row.created_at,
     group_id: row.group_id,
+    estimatedMinutes: row.estimated_minutes || 30,
   }
 }
 

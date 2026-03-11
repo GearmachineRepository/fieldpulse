@@ -207,7 +207,8 @@ export default function routeRoutes(upload) {
       if (routeR.rows.length === 0) return res.status(404).json({ error: 'Route not found' })
       const stopsR = await db.query(`
         SELECT rs.*, a.name AS account_name, a.address, a.city, a.state, a.zip,
-          a.latitude, a.longitude, a.contact_name, a.contact_phone, a.notes AS account_notes
+          a.latitude, a.longitude, a.contact_name, a.contact_phone, a.notes AS account_notes,
+          a.estimated_minutes AS account_estimated_minutes
         FROM route_stops rs JOIN accounts a ON a.id = rs.account_id
         WHERE rs.route_id = $1 AND rs.active = true ORDER BY rs.stop_order ASC
       `, [req.params.id])
@@ -238,6 +239,7 @@ export default function routeRoutes(upload) {
       const stopsR = await db.query(`
         SELECT rs.*, a.name AS account_name, a.address, a.city, a.state, a.zip,
           a.latitude, a.longitude, a.contact_name, a.contact_phone, a.notes AS account_notes,
+          a.estimated_minutes AS account_estimated_minutes,
           rc.id AS completion_id, rc.status AS completion_status, rc.completed_at,
           rc.completed_by_name, rc.notes AS completion_notes, rc.time_spent_minutes,
           (SELECT json_agg(json_build_object('id', fn.id, 'filename', fn.filename, 'originalName', fn.original_name, 'noteText', fn.note_text))
@@ -313,12 +315,15 @@ function formatRoute(row) {
     color: row.color, notes: row.notes, stopCount: row.stop_count ? parseInt(row.stop_count) : 0,
     totalMinutes: row.total_minutes ? parseInt(row.total_minutes) : 0, createdAt: row.created_at }
 }
+
 function formatStop(row) {
   return { id: row.id, routeId: row.route_id, accountId: row.account_id, stopOrder: row.stop_order,
     estimatedMinutes: row.estimated_minutes, notes: row.notes,
-    account: { name: row.account_name, address: row.address, city: row.city, state: row.state, zip: row.zip,
-      latitude: row.latitude, longitude: row.longitude, contactName: row.contact_name, contactPhone: row.contact_phone, notes: row.account_notes } }
+    account: { id: row.account_id, name: row.account_name, address: row.address, city: row.city, state: row.state, zip: row.zip,
+      latitude: row.latitude, longitude: row.longitude, contactName: row.contact_name, contactPhone: row.contact_phone,
+      notes: row.account_notes, estimatedMinutes: row.account_estimated_minutes || 30 } }
 }
+
 function formatCompletion(row) {
   return { id: row.id, routeStopId: row.route_stop_id, routeId: row.route_id, completedById: row.completed_by_id,
     completedByName: row.completed_by_name, workDate: row.work_date, completedAt: row.completed_at,
