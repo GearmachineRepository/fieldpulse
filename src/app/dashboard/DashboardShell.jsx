@@ -109,9 +109,9 @@ export default function DashboardShell() {
             }}>{admin?.name?.charAt(0) || "A"}</button>
           </div>
         </div>
-        <div style={{ flex: 1, padding: isMobile ? 16 : 32, overflowY: "auto" }}>
+        <main style={{ flex: 1, padding: isMobile ? 16 : 32, overflowY: "auto" }}>
           {renderPage()}
-        </div>
+        </main>
       </div>
     </div>
   )

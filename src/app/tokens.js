@@ -13,7 +13,7 @@ export const T = {
   sidebarActive: "#334155",
   text: "#0F172A",
   textMed: "#475569",
-  textLight: "#94A3B8",
+  textLight: "#64748B",
   accent: "#059669",
   accentLight: "#ECFDF5",
   accentBorder: "#A7F3D0",

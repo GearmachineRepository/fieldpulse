@@ -88,13 +88,13 @@ export default function FieldShell() {
       fontFamily: T.font, color: T.text,
     }}>
       <div style={{ height: 44, background: T.sidebar }} />
-
-      <div style={{ paddingBottom: 80 }}>
+      
+      <main style={{ paddingBottom: 80 }}>
         {tab === "home" && <FieldHome onNewDoc={() => setShowNewDoc(true)} onNavigate={setTab} />}
         {tab === "docs" && <FieldDocs />}
         {tab === "schedule" && <FieldSchedule />}
         {tab === "profile" && <FieldProfile />}
-      </div>
+      </main>
 
       {/* New Doc type picker */}
       {showNewDoc && <NewDocModal onClose={() => setShowNewDoc(false)} onSelectType={handleDocTypeSelected} />}
