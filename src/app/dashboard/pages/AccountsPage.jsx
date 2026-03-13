@@ -494,7 +494,7 @@ function FilterPill({ label, count, color, active, onClick }) {
 // ═══════════════════════════════════════════
 // Manage Items Modal — Shared for groups + categories
 // ═══════════════════════════════════════════
-const ITEM_COLORS = ["#059669", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED", "#0891B2", "#DB2777", "#65A30D", "#92400E", "#475569"]
+const ITEM_COLORS = ["#2F6FED", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED", "#0891B2", "#DB2777", "#65A30D", "#92400E", "#475569"]
 
 function ManageItemsModal({ title, items, onSave, onDelete, onClose }) {
   const [editingItem, setEditingItem] = useState(null)

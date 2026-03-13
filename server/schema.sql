@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════
--- FieldPulse — Database Schema (Phase 2.5)
+-- CruPoint — Database Schema (Phase 2.5)
 -- ═══════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS admins (

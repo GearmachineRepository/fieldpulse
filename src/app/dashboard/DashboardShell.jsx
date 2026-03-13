@@ -10,6 +10,7 @@ import { ENABLED_MODULES } from "@/app/modules.js"
 import useAuth from "@/hooks/useAuth.jsx"
 import { useData } from "@/context/DataProvider.jsx"
 import DashboardSidebar, { NAV_ITEMS } from "@/app/dashboard/components/DashboardSidebar.jsx"
+import CompanyQRModal from "@/app/dashboard/components/CompanyQRModal.jsx"
 import s from "./DashboardShell.module.css"
 
 import DashboardHome   from "@/app/dashboard/pages/DashboardHome.jsx"
@@ -31,6 +32,7 @@ export default function DashboardShell() {
 
   const [activePage, setActivePage] = useState("dashboard")
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [qrModalOpen, setQrModalOpen] = useState(false)
 
   useEffect(() => { if (!restoring && !isAdmin) navigate("/login", { replace: true }) }, [isAdmin, restoring, navigate])
   useEffect(() => { if (isAdmin) refreshAll().catch(console.error) }, [isAdmin]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -71,7 +73,10 @@ export default function DashboardShell() {
   return (
     <div className={s.shell}>
       <DashboardSidebar activePage={activePage} onNavigate={setActivePage}
-        open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        open={sidebarOpen} onClose={() => setSidebarOpen(false)}
+        onSettings={() => setQrModalOpen(true)} />
+
+      <CompanyQRModal open={qrModalOpen} onClose={() => setQrModalOpen(false)} />
 
       <div className={s.main}>
         <div className={s.header}>

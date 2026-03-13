@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
           }}>
             <Leaf size={28} color="#fff" />
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: T.text, letterSpacing: "-0.5px" }}>FieldPulse</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: T.text, letterSpacing: "-0.5px" }}>CruPoint</div>
           <div style={{ fontSize: 14, color: T.textLight, marginTop: 4 }}>Sign in to your dashboard</div>
         </div>
 
@@ -149,7 +149,7 @@ export default function AdminLoginPage() {
               background: T.accent, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: T.font,
               opacity: (submitting || !email.trim() || !password) ? 0.5 : 1,
               transition: "opacity 0.15s",
-              boxShadow: "0 4px 14px rgba(5,150,105,0.2)",
+              boxShadow: "0 4px 14px rgba(47,111,237,0.2)",
             }}
           >
             {submitting ? "Signing in..." : "Sign In"}
@@ -181,7 +181,7 @@ export default function AdminLoginPage() {
             border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
             fontSize: 13, color: T.textLight,
           }}>
-            ← Back to FieldPulse.com
+            ← Back to CruPoint.com
           </button>
         </div>
       </div>

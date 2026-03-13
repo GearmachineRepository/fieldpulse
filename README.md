@@ -1,4 +1,4 @@
-# FieldPulse — Field Manager
+# CruPoint — Field Manager
 
 Pesticide application tracking & DPR compliance for landscape crews.
 Built with React + Express + PostgreSQL.
@@ -22,7 +22,7 @@ brew services start postgresql@16
 ### 2. Clone and install dependencies
 
 ```
-cd fieldpulse
+cd crupoint
 npm install
 ```
 
@@ -41,7 +41,7 @@ with a fresh Postgres.app install (user: postgres, no password).
 npm run db:setup
 ```
 
-This creates the `fieldpulse` database, all tables, and seeds it
+This creates the `crupoint` database, all tables, and seeds it
 with default equipment, chemicals, and a test vehicle.
 
 **Default test vehicle:** Truck 1, PIN: `1234`
@@ -70,7 +70,7 @@ Your iPad and computer must be on the same WiFi network.
 ## Project Structure
 
 ```
-fieldpulse/
+crupoint/
 ├── .env                    ← Your environment variables (not in git)
 ├── .env.example            ← Template
 ├── server/
@@ -128,7 +128,7 @@ The app uses GPS + the API to fetch live temp, humidity, wind, and conditions.
 Connect to the database and insert vehicles:
 
 ```sql
--- Connect: psql fieldpulse
+-- Connect: psql crupoint
 
 -- The PIN must be a bcrypt hash. Use the setup script pattern
 -- or this Node one-liner:

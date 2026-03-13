@@ -13,7 +13,7 @@
 
 export const T = {
   // Surface
-  bg: '#F8F9FB',
+  bg: '#F6F7F9',
   card: '#FFFFFF',
   border: '#E5E7EB',
 
@@ -27,10 +27,10 @@ export const T = {
   textMed: '#475569',
   textLight: '#64748B',
 
-  // Accent (Emerald)
-  accent: '#059669',
-  accentLight: '#ECFDF5',
-  accentBorder: '#A7F3D0',
+  // Accent (Blue)
+  accent: '#2F6FED',
+  accentLight: '#EBF1FD',
+  accentBorder: '#B4CCFA',
 
   // Semantic
   blue: '#3B82F6',

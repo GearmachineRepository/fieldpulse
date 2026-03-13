@@ -5,7 +5,7 @@
 import jwt from 'jsonwebtoken'
 import { logger } from '../utils/logger.js'
 
-const DEFAULT_SECRET = 'fieldpulse-change-me-in-production'
+const DEFAULT_SECRET = 'crupoint-change-me-in-production'
 const SECRET = process.env.JWT_SECRET
 
 // ── Production guard: refuse to start with the default secret ──

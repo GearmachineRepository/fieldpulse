@@ -1,5 +1,5 @@
 {
-  "name": "fieldpulse",
+  "name": "crupoint",
   "private": true,
   "version": "3.0.0",
   "type": "module",
@@ -8,6 +8,7 @@
     "dev:client": "vite",
     "dev:server": "node --watch --import ./server/instrument.js server/index.js",
     "build": "vite build",
+    "start": "node server/index.js",
     "db:setup": "node server/setupDb.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -31,6 +32,7 @@
     "pg": "^8.11.3",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
+    "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",

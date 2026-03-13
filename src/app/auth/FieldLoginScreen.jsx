@@ -59,7 +59,7 @@ export default function FieldLoginScreen({ companyName, onUnregister }) {
               <Leaf size={22} color="#fff" />
             </div>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>FieldPulse</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>CruPoint</div>
               <div style={{ fontSize: 12, color: "#64748B" }}>Field App</div>
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function FieldLoginScreen({ companyName, onUnregister }) {
                           width: 32, height: 32, borderRadius: 16, border: "2px solid #fff",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: 11, fontWeight: 700, color: "#fff", marginLeft: i > 0 ? -8 : 0,
-                          background: ["#059669", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED"][i % 5],
+                          background: ["#2F6FED", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED"][i % 5],
                         }}>
                           {emp.first_name[0]}{emp.last_name[0]}
                         </div>

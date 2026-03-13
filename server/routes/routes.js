@@ -269,7 +269,7 @@ export default function routeRoutes(upload) {
   router.post('/', requireAuth, validateBody({ name: { required: true, type: 'string', maxLength: 200 } }), asyncHandler(async (req, res) => {
     const { name, crewId, dayOfWeek, color, notes } = req.body
     const result = await db.query('INSERT INTO routes (name, crew_id, day_of_week, color, notes) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-      [name, crewId || null, dayOfWeek !== undefined ? dayOfWeek : null, color || '#2D7A3A', notes || null])
+      [name, crewId || null, dayOfWeek !== undefined ? dayOfWeek : null, color || '#2F6FED', notes || null])
     res.json(formatRoute(result.rows[0]))
   }))
 
@@ -291,7 +291,7 @@ export default function routeRoutes(upload) {
   router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
     const { name, crewId, dayOfWeek, color, notes } = req.body
     await db.query('UPDATE routes SET name=$1, crew_id=$2, day_of_week=$3, color=$4, notes=$5 WHERE id=$6',
-      [name, crewId || null, dayOfWeek !== undefined ? dayOfWeek : null, color || '#2D7A3A', notes || null, req.params.id])
+      [name, crewId || null, dayOfWeek !== undefined ? dayOfWeek : null, color || '#2F6FED', notes || null, req.params.id])
     res.json({ success: true })
   }))
 

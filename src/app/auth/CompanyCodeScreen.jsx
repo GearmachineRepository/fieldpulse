@@ -6,27 +6,30 @@
 // device. The code is remembered in localStorage
 // so this only shows once per device.
 //
-// Future: QR code scanning replaces manual entry.
-// The screen supports both — QR button is a
-// placeholder that currently does nothing.
+// Supports two registration methods:
+// 1. Manual code entry (type the company code)
+// 2. QR scan (camera reads admin-generated QR)
 // ═══════════════════════════════════════════
 
 import { useState } from "react"
 import { Leaf, ArrowRight, QrCode, Loader2, Building2, AlertCircle } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import { verifyCompanyCode, setDeviceRegistration } from "@/lib/api/device.js"
+import QRScanner from "./QRScanner.jsx"
 
 export default function CompanyCodeScreen({ onRegistered }) {
   const [code, setCode]         = useState("")
   const [error, setError]       = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [scannerOpen, setScannerOpen] = useState(false)
 
-  const handleSubmit = async () => {
-    if (!code.trim()) return
+  const handleSubmit = async (overrideCode) => {
+    const submitCode = (overrideCode || code).trim()
+    if (!submitCode) return
     setError(null)
     setSubmitting(true)
     try {
-      const result = await verifyCompanyCode(code.trim())
+      const result = await verifyCompanyCode(submitCode)
       setDeviceRegistration(result.company)
       onRegistered(result.company)
     } catch (err) {
@@ -34,6 +37,12 @@ export default function CompanyCodeScreen({ onRegistered }) {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleQRScan = (scannedCode) => {
+    setScannerOpen(false)
+    setCode(scannedCode)
+    handleSubmit(scannedCode)
   }
 
   return (
@@ -46,7 +55,7 @@ export default function CompanyCodeScreen({ onRegistered }) {
         }}>
           <Leaf size={30} color="#fff" />
         </div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#fff" }}>FieldPulse</div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: "#fff" }}>CruPoint</div>
         <div style={{ fontSize: 14, color: "#64748B", marginTop: 6 }}>Field App</div>
       </div>
 
@@ -91,7 +100,7 @@ export default function CompanyCodeScreen({ onRegistered }) {
             value={code}
             onChange={e => { setCode(e.target.value.toUpperCase()); setError(null) }}
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            placeholder="e.g. FIELDPULSE-A1B2"
+            placeholder="e.g. CRUPOINT-A1B2"
             autoFocus
             autoCapitalize="characters"
             autoComplete="off"
@@ -115,7 +124,7 @@ export default function CompanyCodeScreen({ onRegistered }) {
             background: T.accent, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: T.font,
             opacity: (submitting || !code.trim()) ? 0.5 : 1,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            boxShadow: "0 4px 14px rgba(5,150,105,0.2)",
+            boxShadow: "0 4px 14px rgba(47,111,237,0.2)",
             transition: "opacity 0.15s",
           }}
         >
@@ -140,9 +149,10 @@ export default function CompanyCodeScreen({ onRegistered }) {
           <div style={{ flex: 1, height: 1, background: T.border }} />
         </div>
 
-        {/* QR Code placeholder */}
+        {/* QR Code scanner */}
+        <QRScanner open={scannerOpen} onClose={() => setScannerOpen(false)} onScan={handleQRScan} />
         <button
-          onClick={() => {/* QR scanning — future feature */}}
+          onClick={() => setScannerOpen(true)}
           style={{
             width: "100%", padding: "16px", borderRadius: 12, cursor: "pointer",
             background: T.card, border: `1.5px solid ${T.border}`,

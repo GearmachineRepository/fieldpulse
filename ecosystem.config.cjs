@@ -3,8 +3,8 @@
 //
 // Usage:
 //   pm2 start ecosystem.config.cjs
-//   pm2 restart fieldpulse
-//   pm2 logs fieldpulse
+//   pm2 restart crupoint
+//   pm2 logs crupoint
 //   pm2 monit
 //
 // Note: .cjs extension because PM2 doesn't
@@ -13,7 +13,7 @@
 
 module.exports = {
   apps: [{
-    name: 'fieldpulse',
+    name: 'crupoint',
     script: 'server/index.js',
 
     // Cluster mode — one process per CPU core

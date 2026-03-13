@@ -33,7 +33,7 @@ export default function LandingPage() {
           <div style={{ width: 36, height: 36, borderRadius: 10, background: T.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Leaf size={20} color="#fff" />
           </div>
-          <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.5px", color: T.text }}>FieldPulse</span>
+          <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.5px", color: T.text }}>CruPoint</span>
         </div>
         {isMobile ? (
           <button onClick={() => setMenuOpen(!menuOpen)} style={{ border: "none", background: "none", cursor: "pointer" }}>
@@ -88,7 +88,7 @@ export default function LandingPage() {
             <button onClick={() => navigate("/login")} style={{
               padding: "14px 28px", borderRadius: 12, border: "none", cursor: "pointer",
               background: T.accent, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: T.font,
-              boxShadow: "0 4px 14px rgba(5,150,105,0.3)",
+              boxShadow: "0 4px 14px rgba(47,111,237,0.3)",
             }}>Start Free Trial</button>
             <button style={{
               padding: "14px 28px", borderRadius: 12, cursor: "pointer",

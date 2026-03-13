@@ -29,7 +29,7 @@ const ICON_MAP = {
   shield: Shield, "book-open": BookOpen, tag: Tag, "graduation-cap": GraduationCap,
   "file-text": FileText, wrench: Wrench, folder: FolderOpen,
 }
-const CAT_COLORS = ["#EF4444", "#F59E0B", "#7C3AED", "#3B82F6", "#059669", "#0891B2", "#DB2777", "#92400E", "#475569"]
+const CAT_COLORS = ["#EF4444", "#F59E0B", "#7C3AED", "#3B82F6", "#2F6FED", "#0891B2", "#DB2777", "#92400E", "#475569"]
 
 function formatFileSize(bytes) {
   if (!bytes) return ""

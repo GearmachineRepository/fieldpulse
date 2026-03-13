@@ -26,8 +26,8 @@ const EVENT_TYPES = [
   { value: "deadline", label: "Deadline", color: "#EF4444" },
   { value: "reminder", label: "Reminder", color: "#0891B2" },
 ]
-const COLORS = ["#3B82F6", "#059669", "#F59E0B", "#EF4444", "#7C3AED", "#0891B2", "#DB2777", "#92400E"]
-const ROUTE_COLORS = ["#059669", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED", "#0891B2", "#DB2777", "#92400E"]
+const COLORS = ["#3B82F6", "#2F6FED", "#F59E0B", "#EF4444", "#7C3AED", "#0891B2", "#DB2777", "#92400E"]
+const ROUTE_COLORS = ["#2F6FED", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED", "#0891B2", "#DB2777", "#92400E"]
 
 // ── Date helpers ──
 function fmtKey(d) { return d.toLocaleDateString("en-CA") }
@@ -511,7 +511,7 @@ function RouteModal({ route, crews, onClose, onSave, onDelete }) {
   const [name, setName]     = useState(route.name || "")
   const [crewId, setCrewId] = useState(route.crewId ? String(route.crewId) : "")
   const [dayOfWeek, setDay] = useState(route.dayOfWeek !== null && route.dayOfWeek !== undefined ? String(route.dayOfWeek) : "")
-  const [color, setColor]   = useState(route.color || "#059669")
+  const [color, setColor]   = useState(route.color || "#2F6FED")
   const [notes, setNotes]   = useState(route.notes || "")
   const [saving, setSaving] = useState(false)
   const [confirmDel, setConfirmDel] = useState(false)

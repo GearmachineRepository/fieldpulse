@@ -11,7 +11,7 @@ import styles from './Avatar.module.css'
  * @param {string} [color]       Background color (hex)
  * @param {'sm'|'md'|'lg'} [size='md']
  */
-export default function Avatar({ name, photoUrl, color = '#2D7A3A', size = 'md', className = '' }) {
+export default function Avatar({ name, photoUrl, color = '#2F6FED', size = 'md', className = '' }) {
   const initials = name
     .split(' ')
     .slice(0, 2)

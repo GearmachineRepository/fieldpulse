@@ -26,7 +26,7 @@ const CORE_TABS = [
 
 const MODULE_TABS = [
   { key: "spray", label: "Spray Logs", icon: Droplets, color: "#7C3AED", module: "spray" },
-  { key: "pur", label: "PUR Report", icon: FileText, color: "#059669", module: "spray" },
+  { key: "pur", label: "PUR Report", icon: FileText, color: "#2F6FED", module: "spray" },
   // Future: { key: "irrigation-log", label: "Irrigation Log", icon: Waves, color: "#0891B2", module: "irrigation" },
 ]
 
@@ -194,7 +194,7 @@ export default function ReportsPage() {
         {/* Print header — only visible when printing */}
         <div className={s.printOnly}>
           <div className={s.printTitle}>
-            FieldPulse — {REPORT_TABS.find(t => t.key === activeTab)?.label}
+            CruPoint — {REPORT_TABS.find(t => t.key === activeTab)?.label}
           </div>
           <div className={s.printSubtitle}>
             {rangeLabel}{crewFilter && ` · ${crewFilter}`}
@@ -248,7 +248,7 @@ function SprayReport({ data, crewFilter }) {
       <div className={s.statsRow}>
         <StatCard label="Total Applications" value={filtered.length} color="#7C3AED" />
         <StatCard label="Products Applied" value={totalProducts} color="#3B82F6" />
-        <StatCard label="Properties Served" value={uniqueProperties} color="#059669" />
+        <StatCard label="Properties Served" value={uniqueProperties} color="#2F6FED" />
       </div>
 
       {/* Table */}
@@ -311,7 +311,7 @@ function PurReport({ data }) {
   return (
     <div>
       <div className={s.statsRow}>
-        <StatCard label="Chemicals Used" value={products.length} color="#059669" />
+        <StatCard label="Chemicals Used" value={products.length} color="#2F6FED" />
         <StatCard label="Total Applications" value={totalApps} color="#7C3AED" />
       </div>
 
@@ -367,7 +367,7 @@ function AttendanceReport({ data }) {
     <div>
       <div className={s.statsRow}>
         <StatCard label="Total Rosters" value={totalRosters} color="#3B82F6" />
-        <StatCard label="Crews Active" value={crewList.length} color="#059669" />
+        <StatCard label="Crews Active" value={crewList.length} color="#2F6FED" />
         <StatCard label="Total Absences" value={crewList.reduce((s, c) => s + c.totalAbsences, 0)} color="#EF4444" />
       </div>
 
@@ -431,7 +431,7 @@ function WorkLogReport({ data }) {
     <div>
       <div className={s.statsRow}>
         <StatCard label="Stops Completed" value={completions.length} color="#F59E0B" />
-        <StatCard label="Routes Active" value={uniqueRoutes} color="#059669" />
+        <StatCard label="Routes Active" value={uniqueRoutes} color="#2F6FED" />
         <StatCard label="Properties Visited" value={uniqueAccounts} color="#3B82F6" />
       </div>
 

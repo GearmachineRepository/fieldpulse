@@ -53,7 +53,7 @@ export function formatRoute(row) {
     crewName: row.crew_name,
     dayOfWeek: row.day_of_week,
     dayName: row.day_of_week != null ? DAY_NAMES[row.day_of_week] : null,
-    color: row.color || '#2D7A3A',
+    color: row.color || '#2F6FED',
     notes: row.notes,
     stopCount: parseInt(row.stop_count || 0),
     active: row.active,

@@ -1,10 +1,10 @@
 {
-  "name": "FieldPulse — Field Manager",
-  "short_name": "FieldPulse",
+  "name": "CruPoint — Field Manager",
+  "short_name": "CruPoint",
   "description": "Pesticide application tracking & compliance for landscape crews",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F4F3EF",
-  "theme_color": "#2D7A3A",
+  "background_color": "#F6F7F9",
+  "theme_color": "#2F6FED",
   "icons": []
 }

@@ -22,7 +22,7 @@ function httpsGet(url, label) {
     logger.info(`  [geocode] [${label}] Requesting...`)
 
     const req = https.get(url, {
-      headers: { 'User-Agent': 'FieldPulse/1.0' },
+      headers: { 'User-Agent': 'CruPoint/1.0' },
     }, (res) => {
       let data = ''
       res.on('data', (chunk) => { data += chunk })

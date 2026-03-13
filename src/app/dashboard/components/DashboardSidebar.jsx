@@ -63,7 +63,7 @@ function buildGroups() {
 const NAV_GROUPS = buildGroups()
 
 /* ── Component ── */
-export default function DashboardSidebar({ activePage, onNavigate, open, onClose }) {
+export default function DashboardSidebar({ activePage, onNavigate, open, onClose, onSettings }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readBool(LS_COLLAPSED, false))
   const [groupStates, setGroupStates] = useState(() =>
     readJSON(LS_GROUPS, { operations: true, manage: true, reports: true, modules: true })
@@ -234,7 +234,7 @@ export default function DashboardSidebar({ activePage, onNavigate, open, onClose
 
         {/* Footer */}
         <div className={s.footer}>
-          <button className={s.footerBtn}>
+          <button className={s.footerBtn} onClick={onSettings}>
             <Settings size={18} />
             <span className={s.footerBtnLabel}>Settings</span>
             <span className={s.tooltip}>Settings</span>

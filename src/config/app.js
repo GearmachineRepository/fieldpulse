@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════
 
 export const APP = {
-  name:    import.meta.env.VITE_APP_NAME    || 'FieldPulse',
+  name:    import.meta.env.VITE_APP_NAME    || 'CruPoint',
   tagline: import.meta.env.VITE_APP_TAGLINE || 'Field Manager',
   version: '1.0.0',
 }

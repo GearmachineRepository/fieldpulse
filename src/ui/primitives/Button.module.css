@@ -56,7 +56,7 @@
 .accent {
   background: var(--color-accent);
   color: var(--color-text-inverse);
-  box-shadow: 0 2px 8px rgba(45, 122, 58, 0.19);
+  box-shadow: 0 2px 8px rgba(47, 111, 237, 0.19);
 }
 
 .blue {

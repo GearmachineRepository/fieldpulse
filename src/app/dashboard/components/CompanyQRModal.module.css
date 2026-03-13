@@ -1,0 +1,169 @@
+/* ═══════════════════════════════════════════
+   Company QR Code Modal
+   ═══════════════════════════════════════════ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--color-card);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--color-text-light);
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.closeBtn:hover {
+  background: var(--color-bg);
+}
+
+.body {
+  padding: 24px 20px;
+}
+
+.instructions {
+  font-size: 14px;
+  color: var(--color-text-med);
+  line-height: 1.5;
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+.qrContainer {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--color-card-border);
+  margin-bottom: 20px;
+}
+
+.qrContainer svg {
+  width: 220px;
+  height: 220px;
+}
+
+.codeSection {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.codeLabel {
+  font-size: 12px;
+  color: var(--color-text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.codeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.codeValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: 1px;
+  background: var(--color-bg);
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-med);
+  transition: background 0.15s, color 0.15s;
+}
+
+.copyBtn:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--color-text-light);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: var(--color-text-light);
+  font-size: 14px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: var(--color-accent);
+}
+
+.errorState {
+  text-align: center;
+  padding: 20px;
+  color: var(--color-red);
+  font-size: 14px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

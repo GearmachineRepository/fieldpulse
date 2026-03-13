@@ -10,10 +10,10 @@
 
 :root {
   /* ── Surface ── */
-  --color-bg:             #F8F9FB;
+  --color-bg:             #F6F7F9;
   --color-card:           #FFFFFF;
   --color-card-border:    #E5E7EB;
-  --color-input-bg:       #F8F9FB;
+  --color-input-bg:       #F6F7F9;
 
   /* ── Text ── */
   --color-text:           #0F172A;
@@ -21,10 +21,10 @@
   --color-text-light:     #64748B;
   --color-text-inverse:   #FFFFFF;
 
-  /* ── Brand / Accent (Emerald) ── */
-  --color-accent:         #059669;
-  --color-accent-light:   #ECFDF5;
-  --color-accent-border:  #A7F3D0;
+  /* ── Brand / Accent (Blue) ── */
+  --color-accent:         #2F6FED;
+  --color-accent-light:   #EBF1FD;
+  --color-accent-border:  #B4CCFA;
 
   /* ── Semantic: Info ── */
   --color-blue:           #3B82F6;

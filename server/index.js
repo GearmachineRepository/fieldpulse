@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// FieldPulse API — Express Server
+// CruPoint API — Express Server
 // ═══════════════════════════════════════════
 
 import * as Sentry from '@sentry/node'
@@ -131,6 +131,17 @@ app.get('/api/health', async (req, res) => {
   }
 })
 
+// ── Production: serve built frontend ──
+if (!isDev) {
+  const distPath = path.join(__dirname, '..', 'dist')
+  app.use(express.static(distPath))
+  // SPA fallback — serve index.html for all non-API routes
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) return next()
+    res.sendFile(path.join(distPath, 'index.html'))
+  })
+}
+
 // ── Error handlers — must be last ──
 app.use(notFound)
 Sentry.setupExpressErrorHandler(app)
@@ -141,7 +152,7 @@ app.use(errorHandler)
 // ═══════════════════════════════════════════
 
 const server = app.listen(PORT, () => {
-  logger.info(`FieldPulse API → http://localhost:${PORT}`)
+  logger.info(`CruPoint API → http://localhost:${PORT}`)
 })
 
 function gracefulShutdown(signal) {

@@ -15,10 +15,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 async function setup() {
   console.log('\n═══════════════════════════════════════')
-  console.log('  FieldPulse — Database Setup (Phase 2)')
+  console.log('  CruPoint — Database Setup (Phase 2)')
   console.log('═══════════════════════════════════════\n')
 
-  const dbName = process.env.DB_NAME || 'fieldpulse'
+  const dbName = process.env.DB_NAME || 'crupoint'
 
   // Validate DB name to prevent SQL injection in CREATE DATABASE
   if (!isSafeDbName(dbName)) {
