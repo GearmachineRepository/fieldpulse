@@ -1,0 +1,247 @@
+/* ═══════════════════════════════════════════
+   Clock-In Page — CSS Module
+   ═══════════════════════════════════════════ */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Refresh button */
+.refreshBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-card-border);
+  cursor: pointer;
+  background: var(--color-card);
+  color: var(--color-text-med);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.refreshBtnDisabled {
+  opacity: 0.5;
+}
+
+.refreshSpin {
+  animation: spin 1s linear infinite;
+}
+
+/* Summary grid */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+/* Summary card */
+.summaryCard {
+  background: var(--color-card);
+  border-radius: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryCardInner {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summaryValue {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 6px;
+}
+
+.summarySub {
+  font-size: 12px;
+  color: var(--color-text-med);
+  margin-top: 4px;
+}
+
+.summaryIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Section header */
+.sectionHeader {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+/* Section wrapper */
+.section {
+  margin-bottom: 24px;
+}
+
+/* Crew list column */
+.crewList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Waiting crew row */
+.waitingRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--color-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-card-border);
+  border-left: 3px solid var(--color-amber);
+  box-shadow: var(--shadow-sm);
+}
+
+.iconShrink {
+  flex-shrink: 0;
+}
+
+.rowBody {
+  flex: 1;
+}
+
+.crewName {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.crewSub {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+/* Submitted crew card */
+.submittedCard {
+  background: var(--color-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-card-border);
+  border-left: 3px solid var(--color-accent);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.submittedBtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+}
+
+.submittedCrewName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.submittedCrewSub {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+/* Expanded members panel */
+.membersPanel {
+  padding: 0 18px 14px;
+  border-top: 1px solid var(--color-card-border);
+}
+
+.membersWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 12px;
+}
+
+.memberBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--color-accent-light);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* Unrostered section */
+.unrosteredCard {
+  background: var(--color-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.unrosteredRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+}
+
+.unrosteredRowBorder {
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-light);
+}
+
+.empName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.empDefaultCrew {
+  font-size: 12px;
+  color: var(--color-text-light);
+}

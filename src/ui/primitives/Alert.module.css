@@ -1,0 +1,77 @@
+/* ═══════════════════════════════════════════
+   Alert — Notification banners / messages
+   ═══════════════════════════════════════════ */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.dismiss {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.dismiss:hover {
+  opacity: 1;
+}
+
+/* ── Variants ── */
+
+.info {
+  background: var(--color-blue-light);
+  border-color: var(--color-blue-border);
+  color: var(--color-text);
+}
+
+.info .icon { color: var(--color-blue); }
+
+.success {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent-border);
+  color: var(--color-text);
+}
+
+.success .icon { color: var(--color-accent); }
+
+.warning {
+  background: var(--color-amber-light);
+  border-color: var(--color-amber-border);
+  color: var(--color-text);
+}
+
+.warning .icon { color: var(--color-amber); }
+
+.error {
+  background: var(--color-red-light);
+  border-color: var(--color-red-border);
+  color: var(--color-text);
+}
+
+.error .icon { color: var(--color-red); }

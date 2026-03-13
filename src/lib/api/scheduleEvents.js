@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Schedule Events API — Calendar event management
+// ═══════════════════════════════════════════
 import { request, buildQuery } from './core.js'
 
 export const getScheduleEvents   = (params = {}) => request(`/schedule-events${buildQuery(params)}`)

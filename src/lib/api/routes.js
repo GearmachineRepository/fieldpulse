@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Routes API — Route and stop management
+// ═══════════════════════════════════════════
 import { request, multipartRequest, buildQuery } from './core.js'
 
 export const getRoutes    = (params = {}) => request(`/routes${buildQuery(params)}`)
@@ -10,6 +13,13 @@ export const addRouteStop      = (routeId, d)          => request(`/routes/${rou
 export const updateRouteStop   = (routeId, stopId, d)  => request(`/routes/${routeId}/stops/${stopId}`,   { method: 'PUT',    body: JSON.stringify(d) })
 export const removeRouteStop   = (routeId, stopId)     => request(`/routes/${routeId}/stops/${stopId}`,   { method: 'DELETE' })
 export const reorderRouteStops = (routeId, stopIds)    => request(`/routes/${routeId}/stops-order`,       { method: 'PUT',    body: JSON.stringify({ stopIds }) })
+
+// Stop exceptions (skip / pause)
+export const addStopException    = (routeId, stopId, d) => request(`/routes/${routeId}/stops/${stopId}/exceptions`, { method: 'POST', body: JSON.stringify(d) })
+export const removeStopException = (routeId, stopId, exId) => request(`/routes/${routeId}/stops/${stopId}/exceptions/${exId}`, { method: 'DELETE' })
+
+// Calculated visits (frequency-aware)
+export const getScheduleVisits = (start, end, params = {}) => request(`/routes/schedule/visits${buildQuery({ start, end, ...params })}`)
 
 export const getWeekSchedule   = ()       => request('/routes/schedule/week')
 export const getDailyProgress  = (date)   => request(`/routes/schedule/daily-progress${buildQuery({ date })}`)

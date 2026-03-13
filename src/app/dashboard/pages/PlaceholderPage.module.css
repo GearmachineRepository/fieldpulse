@@ -1,0 +1,28 @@
+/* ═══════════════════════════════════════════
+   Placeholder Page — "Coming soon" stub
+   ═══════════════════════════════════════════ */
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: var(--color-text-light);
+}
+
+.inner {
+  text-align: center;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-top: 16px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-text-med);
+  margin-top: 6px;
+}

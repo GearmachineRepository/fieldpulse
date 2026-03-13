@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Spray Logs API — Spray log submission and retrieval
+// ═══════════════════════════════════════════
 import { request, multipartRequest, buildQuery } from './core.js'
 
 export const createSprayLog  = (d)           => request('/spray-logs', { method: 'POST', body: JSON.stringify(d) })

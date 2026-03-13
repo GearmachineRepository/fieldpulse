@@ -5,12 +5,12 @@
 import { Router } from 'express'
 import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
+import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
-// ── PUR Report ──
-router.get('/pur', requireAuth, async (req, res) => {
-  try {
+/** @route GET /api/reports/pur — PUR (Pesticide Use Report) summary */
+router.get('/pur', requireAuth, asyncHandler(async (req, res) => {
     const { month, year, start: startParam, end: endParam } = req.query
     let start, end
 
@@ -20,14 +20,15 @@ router.get('/pur', requireAuth, async (req, res) => {
     } else {
       if (!month || !year) return res.status(400).json({ error: 'month and year (or start and end) required' })
       start = `${year}-${String(month).padStart(2, '0')}-01`
-      end = new Date(year, month, 1).toISOString().split('T')[0]
+      end = new Date(year, month, 0).toISOString().split('T')[0] // last day of month
     }
 
+    // Use ::date + 1 to include everything through end of the selected end date
     const result = await db.query(
       `SELECT slp.chemical_name, slp.epa, slp.amount, sl.created_at, sl.crew_name, sl.property
        FROM spray_log_products slp
        JOIN spray_logs sl ON sl.id = slp.spray_log_id
-       WHERE sl.created_at >= $1 AND sl.created_at < $2
+       WHERE sl.created_at >= $1::date AND sl.created_at < ($2::date + interval '1 day')
        ORDER BY slp.chemical_name`,
       [start, end]
     )
@@ -51,19 +52,14 @@ router.get('/pur', requireAuth, async (req, res) => {
     }
 
     res.json({
-      month: parseInt(month), year: parseInt(year),
+      month: month ? parseInt(month) : null, year: year ? parseInt(year) : null,
       products: Object.values(byProduct),
       totalApplications: result.rows.length,
     })
-  } catch (e) {
-    console.error('GET /reports/pur error:', e)
-    res.status(500).json({ error: 'Failed' })
-  }
-})
+}))
 
-// ── Roster Report ──
-router.get('/rosters', requireAuth, async (req, res) => {
-  try {
+/** @route GET /api/reports/rosters — Roster attendance report */
+router.get('/rosters', requireAuth, asyncHandler(async (req, res) => {
     const { start, end } = req.query
     if (!start || !end) return res.status(400).json({ error: 'start and end required' })
 
@@ -72,7 +68,7 @@ router.get('/rosters', requireAuth, async (req, res) => {
         COALESCE((SELECT json_agg(json_build_object('employeeId',m.employee_id,'name',m.employee_name,'present',m.present))
           FROM daily_roster_members m WHERE m.roster_id = r.id), '[]') AS members
       FROM daily_crew_rosters r
-      WHERE r.work_date >= $1 AND r.work_date < $2
+      WHERE r.work_date >= $1 AND r.work_date <= $2
       ORDER BY r.work_date DESC, r.crew_name`, [start, end])
 
     const byCrewDate = {}
@@ -102,10 +98,6 @@ router.get('/rosters', requireAuth, async (req, res) => {
     }))
 
     res.json({ start, end, totalRosters: result.rows.length, crews })
-  } catch (e) {
-    console.error('GET /reports/rosters error:', e)
-    res.status(500).json({ error: 'Failed' })
-  }
-})
+}))
 
 export default router

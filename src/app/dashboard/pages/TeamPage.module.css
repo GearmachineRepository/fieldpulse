@@ -1,0 +1,263 @@
+/* ═══════════════════════════════════════════
+   TeamPage — CSS Modules
+   ═══════════════════════════════════════════ */
+
+/* ── Tab Bar ── */
+
+.tabBar {
+  display: flex;
+  gap: 4px;
+  background: var(--color-card);
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+  padding: 4px;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+
+.tabButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  background: transparent;
+  color: var(--color-text-med);
+}
+
+.tabButtonActive {
+  composes: tabButton;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* ── Lists ── */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Employee Card ── */
+
+.empRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.empPhoto {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.empAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.empInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.empNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.empName {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.leadBadge {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.empSub {
+  font-size: 12px;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+/* ── Employee Modal ── */
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.formGridNoMargin {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── PIN Field ── */
+
+.pinGroup {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.pinInput {
+  width: 100%;
+  padding: 12px 14px;
+  padding-right: 44px;
+  border-radius: 10px;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-card-border);
+  color: var(--color-text);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.pinWrapper {
+  position: relative;
+}
+
+.pinToggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ── Crew Lead Checkbox ── */
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  margin-bottom: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  width: 100%;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkMark {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.checkLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Crew Card ── */
+
+.crewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.crewName {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.crewSub {
+  font-size: 13px;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+.memberChips {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.memberChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--color-bg);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-med);
+}
+
+.memberAvatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGridNoMargin {
+    grid-template-columns: 1fr;
+  }
+}

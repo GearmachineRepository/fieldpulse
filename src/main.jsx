@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// App Entry Point — Mounts React root
+// ═══════════════════════════════════════════
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'

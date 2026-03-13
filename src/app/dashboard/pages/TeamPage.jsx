@@ -4,34 +4,33 @@
 
 import { useState } from "react"
 import { Users, UserPlus, Edit3, Shield, Plus, Eye, EyeOff } from "lucide-react"
-import { T } from "@/app/tokens.js"
 import { useData } from "@/context/DataProvider.jsx"
 import { createEmployee, updateEmployee } from "@/lib/api/employees.js"
 import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField,
   PageHeader, AddButton, SearchBar, ClickableCard, IconButton,
-  LoadingSpinner, EmptyMessage, labelStyle, inputStyle,
+  LoadingSpinner, EmptyMessage,
 } from "@/app/dashboard/components/PageUI.jsx"
+import s from "./TeamPage.module.css"
 
-export default function TeamPage({ isMobile }) {
+export default function TeamPage() {
   const [tab, setTab] = useState("employees")
   return (
     <div>
-      <div style={{ display: "flex", gap: 4, background: T.card, borderRadius: 10, border: `1px solid ${T.border}`, padding: 4, marginBottom: 24, width: "fit-content" }}>
+      <div className={s.tabBar}>
         {[{ k: "employees", l: "Employees", icon: Users }, { k: "crews", l: "Crews", icon: Users }].map(t => (
-          <button key={t.k} onClick={() => setTab(t.k)} style={{
-            display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 8, border: "none", cursor: "pointer",
-            fontSize: 13, fontWeight: 600, fontFamily: T.font, background: tab === t.k ? T.accent : "transparent", color: tab === t.k ? "#fff" : T.textMed,
-          }}><t.icon size={16} /> {t.l}</button>
+          <button key={t.k} onClick={() => setTab(t.k)} className={tab === t.k ? s.tabButtonActive : s.tabButton}>
+            <t.icon size={16} /> {t.l}
+          </button>
         ))}
       </div>
-      {tab === "employees" ? <EmployeesTab isMobile={isMobile} /> : <CrewsTab isMobile={isMobile} />}
+      {tab === "employees" ? <EmployeesTab /> : <CrewsTab />}
     </div>
   )
 }
 
 // ── Employees ──
-function EmployeesTab({ isMobile }) {
+function EmployeesTab() {
   const { employees, crews, toast } = useData()
   const [searchQ, setSearchQ] = useState("")
   const [editing, setEditing] = useState(null)
@@ -49,25 +48,25 @@ function EmployeesTab({ isMobile }) {
 
       {employees.loading && !employees.data.length ? <LoadingSpinner /> :
        filtered.length === 0 ? <EmptyMessage text={searchQ ? "No matches." : "No employees yet."} /> : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className={s.list}>
           {filtered.map(emp => {
             const crew = crews.data.find(c => c.id === emp.default_crew_id)
             return (
               <ClickableCard key={emp.id} onClick={() => setEditing(emp)} style={{ padding: "14px 18px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div className={s.empRow}>
                   {emp.photo_filename ? (
-                    <img src={`/uploads/${emp.photo_filename}`} alt="" style={{ width: 44, height: 44, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} />
+                    <img src={`/uploads/${emp.photo_filename}`} alt="" className={s.empPhoto} />
                   ) : (
-                    <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: emp.is_crew_lead ? T.accent : T.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: "#fff" }}>
+                    <div className={s.empAvatar} style={{ background: emp.is_crew_lead ? "var(--color-accent)" : "var(--color-blue)" }}>
                       {emp.first_name[0]}{emp.last_name[0]}
                     </div>
                   )}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700 }}>{emp.first_name} {emp.last_name}</div>
-                      {emp.is_crew_lead && <span style={{ fontSize: 10, fontWeight: 700, background: T.accentLight, color: T.accent, padding: "2px 6px", borderRadius: 4 }}>LEAD</span>}
+                  <div className={s.empInfo}>
+                    <div className={s.empNameRow}>
+                      <div className={s.empName}>{emp.first_name} {emp.last_name}</div>
+                      {emp.is_crew_lead && <span className={s.leadBadge}>LEAD</span>}
                     </div>
-                    <div style={{ fontSize: 12, color: T.textLight, marginTop: 2 }}>{crew ? crew.name : "Unassigned"}{emp.phone && ` · ${emp.phone}`}</div>
+                    <div className={s.empSub}>{crew ? crew.name : "Unassigned"}{emp.phone && ` · ${emp.phone}`}</div>
                   </div>
                   <IconButton icon={Edit3} onClick={() => setEditing(emp)} title="Edit" />
                 </div>
@@ -130,41 +129,36 @@ function EmployeeModal({ employee, crews, onClose, onSaved, onDeleted, onError }
 
   return (
     <Modal title={isEdit ? "Edit Employee" : "Add Employee"} onClose={onClose}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+      <div className={s.formGrid}>
         <FormField label="First Name *" value={firstName} onChange={setFirstName} autoFocus />
         <FormField label="Last Name *" value={lastName} onChange={setLastName} />
       </div>
       <FormField label="Phone" value={phone} onChange={setPhone} type="tel" />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className={s.formGridNoMargin}>
         <FormField label="License #" value={licenseNum} onChange={setLicenseNum} />
         <FormField label="Cert #" value={certNum} onChange={setCertNum} />
       </div>
       <SelectField label="Crew" value={crewId} onChange={setCrewId} placeholder="Unassigned"
         options={crews.map(c => ({ value: String(c.id), label: c.name }))} />
 
-      <div style={{ marginBottom: 14 }}>
-        <label style={labelStyle}>{isEdit ? "New PIN (blank to keep)" : "PIN *"}</label>
-        <div style={{ position: "relative" }}>
+      <div className={s.pinGroup}>
+        <label className={s.label}>{isEdit ? "New PIN (blank to keep)" : "PIN *"}</label>
+        <div className={s.pinWrapper}>
           <input type={showPin ? "text" : "password"} inputMode="numeric" maxLength={6}
             value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, ""))}
-            placeholder={isEdit ? "••••" : "4-6 digits"} style={{ ...inputStyle, paddingRight: 44 }} />
-          <button onClick={() => setShowPin(!showPin)} style={{
-            position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
-            border: "none", background: "none", cursor: "pointer", padding: 4,
-          }}>{showPin ? <EyeOff size={16} color={T.textLight} /> : <Eye size={16} color={T.textLight} />}</button>
+            placeholder={isEdit ? "••••" : "4-6 digits"} className={s.pinInput} />
+          <button onClick={() => setShowPin(!showPin)} className={s.pinToggle}>
+            {showPin ? <EyeOff size={16} color="var(--color-text-light)" /> : <Eye size={16} color="var(--color-text-light)" />}
+          </button>
         </div>
       </div>
 
-      <button onClick={() => setIsLead(!isLead)} style={{
-        display: "flex", alignItems: "center", gap: 10, padding: "10px 0", marginBottom: 4,
-        border: "none", background: "none", cursor: "pointer", fontFamily: T.font, width: "100%",
-      }}>
-        <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${isLead ? T.accent : T.border}`,
-          background: isLead ? T.accent : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {isLead && <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>✓</span>}
+      <button onClick={() => setIsLead(!isLead)} className={s.checkRow}>
+        <div className={s.checkbox} style={{ border: `2px solid ${isLead ? "var(--color-accent)" : "var(--color-card-border)"}`, background: isLead ? "var(--color-accent)" : "transparent" }}>
+          {isLead && <span className={s.checkMark}>✓</span>}
         </div>
-        <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Crew Lead</span>
-        <Shield size={16} color={isLead ? T.accent : T.textLight} />
+        <span className={s.checkLabel}>Crew Lead</span>
+        <Shield size={16} color={isLead ? "var(--color-accent)" : "var(--color-text-light)"} />
       </button>
 
       <ModalFooter onClose={onClose} onSave={handleSave} saving={saving}
@@ -175,7 +169,7 @@ function EmployeeModal({ employee, crews, onClose, onSaved, onDeleted, onError }
 }
 
 // ── Crews ──
-function CrewsTab({ isMobile }) {
+function CrewsTab() {
   const { crews, employees, toast } = useData()
   const [editing, setEditing] = useState(null)
 
@@ -198,29 +192,29 @@ function CrewsTab({ isMobile }) {
         action={<AddButton label="Add Crew" icon={Plus} onClick={() => setEditing({})} />} />
 
       {crews.data.length === 0 ? <EmptyMessage text="No crews yet." /> : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className={s.list}>
           {crews.data.map(crew => {
             const members = employees.data.filter(e => e.default_crew_id === crew.id)
             return (
               <ClickableCard key={crew.id} onClick={() => setEditing(crew)} style={{ padding: "18px 20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                <div className={s.crewHeader}>
                   <div>
-                    <div style={{ fontSize: 17, fontWeight: 800 }}>{crew.name}</div>
-                    <div style={{ fontSize: 13, color: T.textLight, marginTop: 2 }}>
+                    <div className={s.crewName}>{crew.name}</div>
+                    <div className={s.crewSub}>
                       {members.length} member{members.length !== 1 ? "s" : ""}{crew.lead_name && ` · Lead: ${crew.lead_name}`}
                     </div>
                   </div>
                   <IconButton icon={Edit3} onClick={() => setEditing(crew)} title="Edit" />
                 </div>
                 {members.length > 0 && (
-                  <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
+                  <div className={s.memberChips}>
                     {members.map(emp => (
-                      <div key={emp.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", background: T.bg, borderRadius: 8, fontSize: 12, fontWeight: 600, color: T.textMed }}>
-                        <div style={{ width: 22, height: 22, borderRadius: 6, background: emp.is_crew_lead ? T.accent : T.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>
+                      <div key={emp.id} className={s.memberChip}>
+                        <div className={s.memberAvatar} style={{ background: emp.is_crew_lead ? "var(--color-accent)" : "var(--color-blue)" }}>
                           {emp.first_name[0]}{emp.last_name[0]}
                         </div>
                         {emp.first_name} {emp.last_name}
-                        {emp.is_crew_lead && <Shield size={11} color={T.accent} />}
+                        {emp.is_crew_lead && <Shield size={11} color="var(--color-accent)" />}
                       </div>
                     ))}
                   </div>

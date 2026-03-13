@@ -1,182 +1,264 @@
 // ═══════════════════════════════════════════
 // Dashboard Sidebar — Admin navigation
-// Collapsible modules section for scalability.
+// CSS Module + collapsible groups + icon-only collapsed mode.
 // ═══════════════════════════════════════════
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import {
   LayoutDashboard, Calendar, FileText, Clock, Users,
   MapPinned, Truck, BookOpen, BarChart3, Settings,
-  LogOut, Leaf, ChevronUp, ChevronDown,
+  LogOut, Leaf, ChevronUp, ChevronDown, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react"
-import { T } from "@/app/tokens.js"
 import { ENABLED_MODULES } from "@/app/modules.js"
 import { APP } from "@/config/app.js"
+import s from "./DashboardSidebar.module.css"
 
+/* ── Nav items (exported for DashboardShell page titles) ── */
 export const NAV_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { type: "divider", label: "OPERATIONS" },
-  { key: "schedule", label: "Schedule", icon: Calendar },
-  { key: "field-docs", label: "Field Docs", icon: FileText },
-  { key: "clock-in", label: "Daily Clock-In", icon: Clock },
-  { type: "divider", label: "MANAGE" },
-  { key: "team", label: "Team", icon: Users },
-  { key: "accounts", label: "Accounts", icon: MapPinned },
-  { key: "fleet", label: "Fleet", icon: Truck },
-  { key: "resources", label: "Resources", icon: BookOpen },
-  { type: "divider", label: "REPORTS" },
-  { key: "reports", label: "Reports", icon: BarChart3 },
+  { type: "divider", label: "OPERATIONS", group: "operations" },
+  { key: "schedule", label: "Schedule", icon: Calendar, group: "operations" },
+  { key: "field-docs", label: "Field Docs", icon: FileText, group: "operations" },
+  { key: "clock-in", label: "Daily Clock-In", icon: Clock, group: "operations" },
+  { type: "divider", label: "MANAGE", group: "manage" },
+  { key: "team", label: "Team", icon: Users, group: "manage" },
+  { key: "accounts", label: "Accounts", icon: MapPinned, group: "manage" },
+  { key: "fleet", label: "Fleet", icon: Truck, group: "manage" },
+  { key: "resources", label: "Resources", icon: BookOpen, group: "manage" },
+  { type: "divider", label: "REPORTS", group: "reports" },
+  { key: "reports", label: "Reports", icon: BarChart3, group: "reports" },
 ]
 
-export default function DashboardSidebar({ activePage, onNavigate, open, onClose, isMobile }) {
+/* ── localStorage helpers ── */
+const LS_COLLAPSED = "fp-sidebar-collapsed"
+const LS_GROUPS = "fp-sidebar-groups"
+
+function readBool(key, fallback) {
+  try { const v = localStorage.getItem(key); return v === null ? fallback : v === "true" } catch { return fallback }
+}
+
+function readJSON(key, fallback) {
+  try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v) } catch { return fallback }
+}
+
+/* ── Build grouped structure from flat NAV_ITEMS ── */
+function buildGroups() {
+  const groups = []
+  let current = null
+
+  for (const item of NAV_ITEMS) {
+    if (item.type === "divider") {
+      current = { label: item.label, groupKey: item.group, items: [] }
+      groups.push(current)
+    } else if (!item.group) {
+      // Top-level items (Dashboard) — no group wrapper
+      groups.push({ type: "single", item })
+    } else if (current) {
+      current.items.push(item)
+    }
+  }
+  return groups
+}
+
+const NAV_GROUPS = buildGroups()
+
+/* ── Component ── */
+export default function DashboardSidebar({ activePage, onNavigate, open, onClose }) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readBool(LS_COLLAPSED, false))
+  const [groupStates, setGroupStates] = useState(() =>
+    readJSON(LS_GROUPS, { operations: true, manage: true, reports: true, modules: true })
+  )
   const [modulesExpanded, setModulesExpanded] = useState(true)
   const sidebarRef = useRef(null)
   const showModulesCollapsed = ENABLED_MODULES.length > 4
 
-  const handleNav = (key) => {
+  // Persist collapsed state
+  useEffect(() => {
+    try { localStorage.setItem(LS_COLLAPSED, String(sidebarCollapsed)) } catch { /* noop */ }
+  }, [sidebarCollapsed])
+
+  useEffect(() => {
+    try { localStorage.setItem(LS_GROUPS, JSON.stringify(groupStates)) } catch { /* noop */ }
+  }, [groupStates])
+
+  const toggleGroup = useCallback((groupKey) => {
+    setGroupStates(prev => ({ ...prev, [groupKey]: !prev[groupKey] }))
+  }, [])
+
+  const handleNav = useCallback((key) => {
     onNavigate(key)
-    if (isMobile && onClose) onClose()
+    // On mobile the sidebar is an overlay — close after navigating
+    if (onClose) onClose()
+  }, [onNavigate, onClose])
+
+  // Escape key closes mobile overlay
+  useEffect(() => {
+    if (!open) return
+    const handleKey = (e) => { if (e.key === "Escape") onClose?.() }
+    const el = sidebarRef.current
+    if (!el) return
+    el.addEventListener("keydown", handleKey)
+    return () => el.removeEventListener("keydown", handleKey)
+  }, [open, onClose])
+
+  /* helper: class combiner */
+  const cx = (...classes) => classes.filter(Boolean).join(" ")
+
+  /* ── Render a nav button ── */
+  const renderNavBtn = (item) => {
+    const active = activePage === item.key
+    return (
+      <button
+        key={item.key}
+        onClick={() => handleNav(item.key)}
+        className={cx(s.navBtn, active && s.active)}
+        aria-current={active ? "page" : undefined}
+      >
+        <span className={s.navBtnIcon}><item.icon size={18} /></span>
+        <span className={s.navBtnLabel}>{item.label}</span>
+        <span className={s.tooltip}>{item.label}</span>
+      </button>
+    )
   }
 
-  // Focus trap for mobile
-  useEffect(() => {
-    if (!isMobile || !open) return
-    const sidebar = sidebarRef.current
-    if (!sidebar) return
+  /* ── Render a collapsible group ── */
+  const renderGroup = (group) => {
+    const expanded = groupStates[group.groupKey] !== false
+    return (
+      <div key={group.groupKey}>
+        <button
+          className={s.groupHeader}
+          onClick={() => toggleGroup(group.groupKey)}
+          aria-expanded={expanded}
+        >
+          <span className={s.groupLabel}>{group.label}</span>
+          <ChevronUp
+            size={14}
+            className={cx(s.groupChevron, expanded ? s.groupChevronUp : s.groupChevronDown)}
+          />
+        </button>
+        {expanded && group.items.map(renderNavBtn)}
+      </div>
+    )
+  }
 
-    const handleKey = (e) => {
-      if (e.key === "Escape") onClose()
-    }
-    sidebar.addEventListener("keydown", handleKey)
-    return () => sidebar.removeEventListener("keydown", handleKey)
-  }, [isMobile, open, onClose])
+  /* ── Group modules by category when many ── */
+  const renderModules = () => {
+    if (ENABLED_MODULES.length === 0) return null
+
+    const modsExpanded = modulesExpanded || !showModulesCollapsed
+
+    return (
+      <>
+        <button
+          className={s.groupHeader}
+          onClick={() => showModulesCollapsed && setModulesExpanded(!modulesExpanded)}
+          style={{ cursor: showModulesCollapsed ? "pointer" : "default" }}
+          aria-expanded={modsExpanded}
+        >
+          <span className={s.groupLabel}>MODULES ({ENABLED_MODULES.length})</span>
+          {showModulesCollapsed && (
+            <ChevronUp
+              size={14}
+              className={cx(s.groupChevron, modulesExpanded ? s.groupChevronUp : s.groupChevronDown)}
+            />
+          )}
+        </button>
+
+        {modsExpanded && ENABLED_MODULES.map(mod => {
+          const active = activePage === `mod-${mod.key}`
+          return (
+            <button
+              key={mod.key}
+              onClick={() => handleNav(`mod-${mod.key}`)}
+              className={cx(s.navBtn, active && s.active)}
+              aria-current={active ? "page" : undefined}
+            >
+              <span className={s.navBtnIcon}><mod.icon size={18} /></span>
+              <span className={s.navBtnLabel} style={{ flex: 1, textAlign: "left" }}>{mod.label}</span>
+              <span
+                className={s.modBadge}
+                style={{ background: `${mod.color}20`, color: mod.color }}
+              >MOD</span>
+              <span className={s.tooltip}>{mod.label}</span>
+            </button>
+          )
+        })}
+
+        {!modulesExpanded && showModulesCollapsed && (
+          <div className={s.modulesCollapsedInfo}>
+            {ENABLED_MODULES.length} modules active
+          </div>
+        )}
+      </>
+    )
+  }
+
+  const sidebarCx = cx(
+    s.sidebar,
+    sidebarCollapsed && s.collapsed,
+    open && s.open,
+  )
 
   return (
     <>
-      {isMobile && open && (
-        <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 40 }} />
-      )}
+      {/* Backdrop (mobile only via CSS) */}
+      <div
+        className={cx(s.backdrop, open && s.open)}
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-      <div ref={sidebarRef} style={{
-        width: 240, background: T.sidebar, display: "flex",
-        flexDirection: "column", flexShrink: 0, overflow: "hidden",
-        ...(isMobile ? {
-          position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 50,
-          transform: open ? "translateX(0)" : "translateX(-100%)",
-          transition: "transform 0.25s cubic-bezier(0.4,0,0.2,1)",
-          boxShadow: open ? "4px 0 32px rgba(0,0,0,0.18)" : "none",
-        } : {}),
-      }}>
+      <nav ref={sidebarRef} className={sidebarCx} aria-label="Main navigation">
         {/* Logo */}
-        <div style={{
-          padding: "20px 20px", display: "flex", alignItems: "center", gap: 10,
-          borderBottom: "1px solid #1E293B", minHeight: 64,
-        }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8, background: T.accent, flexShrink: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
+        <div className={s.logo}>
+          <div className={s.logoIcon}>
             <Leaf size={18} color="#fff" />
           </div>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{APP.name}</div>
-            <div style={{ fontSize: 11, color: "#64748B" }}>{APP.tagline}</div>
+          <div className={s.logoText}>
+            <div className={s.logoName}>{APP.name}</div>
+            <div className={s.logoTagline}>{APP.tagline}</div>
           </div>
         </div>
 
         {/* Nav */}
-        <div style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
-          {NAV_ITEMS.map((item, i) => {
-            if (item.type === "divider") {
-              return (
-                <div key={i} style={{
-                  fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase",
-                  letterSpacing: 1.2, padding: "16px 12px 6px",
-                }}>{item.label}</div>
-              )
-            }
-            const active = activePage === item.key
-            return (
-              <button key={item.key} onClick={() => handleNav(item.key)} style={{
-                display: "flex", alignItems: "center", gap: 10, width: "100%",
-                padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer", marginBottom: 2,
-                background: active ? T.sidebarActive : "transparent",
-                color: active ? "#fff" : "#94A3B8", fontFamily: T.font,
-                fontSize: 14, fontWeight: active ? 600 : 500, transition: "all 0.15s",
-              }}>
-                <item.icon size={18} />
-                <span>{item.label}</span>
-              </button>
-            )
+        <div className={s.nav}>
+          {NAV_GROUPS.map(entry => {
+            if (entry.type === "single") return renderNavBtn(entry.item)
+            return renderGroup(entry)
           })}
 
-          {/* Modules section */}
-          {ENABLED_MODULES.length > 0 && (
-            <>
-              <button
-                onClick={() => showModulesCollapsed && setModulesExpanded(!modulesExpanded)}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  width: "100%", padding: "16px 12px 6px", border: "none", background: "none",
-                  cursor: showModulesCollapsed ? "pointer" : "default", fontFamily: T.font,
-                }}
-              >
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: 1.2 }}>
-                  MODULES ({ENABLED_MODULES.length})
-                </span>
-                {showModulesCollapsed && (
-                  modulesExpanded ? <ChevronUp size={14} color="#475569" /> : <ChevronDown size={14} color="#475569" />
-                )}
-              </button>
-
-              {(modulesExpanded || !showModulesCollapsed) && ENABLED_MODULES.map(mod => {
-                const active = activePage === `mod-${mod.key}`
-                return (
-                  <button key={mod.key} onClick={() => handleNav(`mod-${mod.key}`)} style={{
-                    display: "flex", alignItems: "center", gap: 10, width: "100%",
-                    padding: "10px 12px", borderRadius: 8, border: "none", cursor: "pointer", marginBottom: 2,
-                    background: active ? T.sidebarActive : "transparent",
-                    color: active ? "#fff" : "#94A3B8", fontFamily: T.font,
-                    fontSize: 14, fontWeight: active ? 600 : 500, transition: "all 0.15s",
-                  }}>
-                    <mod.icon size={18} />
-                    <span style={{ flex: 1, textAlign: "left" }}>{mod.label}</span>
-                    <span style={{
-                      fontSize: 8, fontWeight: 700, background: `${mod.color}20`,
-                      color: mod.color, padding: "2px 6px", borderRadius: 4,
-                    }}>MOD</span>
-                  </button>
-                )
-              })}
-
-              {!modulesExpanded && showModulesCollapsed && (
-                <div style={{ padding: "4px 12px 8px", fontSize: 12, color: "#475569" }}>
-                  {ENABLED_MODULES.length} modules active
-                </div>
-              )}
-            </>
-          )}
+          {/* Modules */}
+          {renderModules()}
         </div>
 
         {/* Footer */}
-        <div style={{ padding: "12px 8px", borderTop: "1px solid #1E293B" }}>
-          <button style={{
-            display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px",
-            borderRadius: 8, border: "none", cursor: "pointer",
-            background: "transparent", color: "#64748B", fontFamily: T.font, fontSize: 13,
-          }}>
-            <Settings size={18} /><span>Settings</span>
+        <div className={s.footer}>
+          <button className={s.footerBtn}>
+            <Settings size={18} />
+            <span className={s.footerBtnLabel}>Settings</span>
+            <span className={s.tooltip}>Settings</span>
           </button>
-          <button style={{
-            display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px",
-            borderRadius: 8, border: "none", cursor: "pointer",
-            background: "transparent", color: "#64748B", fontFamily: T.font, fontSize: 13,
-          }}>
-            <LogOut size={18} /><span>Log Out</span>
+          <button className={s.footerBtn}>
+            <LogOut size={18} />
+            <span className={s.footerBtnLabel}>Log Out</span>
+            <span className={s.tooltip}>Log Out</span>
           </button>
-          <div style={{ fontSize: 10, color: "#334155", padding: "8px 12px 4px" }}>{APP.name} v{APP.version}</div>
+          <div className={s.version}>{APP.name} v{APP.version}</div>
+
+          {/* Collapse / Expand toggle */}
+          <button
+            className={s.collapseBtn}
+            onClick={() => setSidebarCollapsed(c => !c)}
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+            <span className={s.collapseBtnLabel}>
+              {sidebarCollapsed ? "Expand" : "Collapse"}
+            </span>
+          </button>
         </div>
-      </div>
+      </nav>
     </>
   )
 }

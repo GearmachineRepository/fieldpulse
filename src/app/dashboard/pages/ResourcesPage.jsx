@@ -10,7 +10,6 @@ import {
   FolderOpen, Upload, Link2, X, Loader2, MapPinned,
   Settings, Trash2,
 } from "lucide-react"
-import { T } from "@/app/tokens.js"
 import {
   getResources, getResourceCategories, createResource, updateResource,
   deleteResource, uploadResource, replaceResourceFile, createResourceCategory, updateResourceCategory,
@@ -24,6 +23,7 @@ import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField, TextareaField,
   PageHeader, AddButton, ClickableCard, IconButton, LoadingSpinner, EmptyMessage,
 } from "@/app/dashboard/components/PageUI.jsx"
+import s from "./ResourcesPage.module.css"
 
 const ICON_MAP = {
   shield: Shield, "book-open": BookOpen, tag: Tag, "graduation-cap": GraduationCap,
@@ -45,7 +45,7 @@ function getFileIcon(mimeType) {
   return File
 }
 
-export default function ResourcesPage({ isMobile }) {
+export default function ResourcesPage() {
   const [resources, setResources] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -126,42 +126,34 @@ export default function ResourcesPage({ isMobile }) {
         action={<AddButton label="Add Resource" icon={Plus} onClick={() => setShowAddChoice(true)} />} />
 
       {/* Search + category pills */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ position: "relative", marginBottom: 12 }}>
-          <Search size={16} color={T.textLight} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
+      <div className={s.searchSection}>
+        <div className={s.searchWrap}>
+          <Search size={16} color="var(--color-text-light)" className={s.searchIcon} />
           <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search resources..."
-            style={{
-              width: "100%", padding: "10px 14px 10px 40px", borderRadius: 10,
-              border: `1.5px solid ${T.border}`, background: T.card, fontSize: 14,
-              fontFamily: T.font, outline: "none", boxSizing: "border-box", color: T.text,
-            }}
+            className={s.searchInput}
           />
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-          <CatPill label="All" count={resources.length} color={T.accent}
+        <div className={s.pillBar}>
+          <CatPill label="All" count={resources.length} color="var(--color-accent)"
             active={!activeCategory} onClick={() => setActiveCategory(null)} />
           {categories.map(c => {
             const count = resources.filter(r => r.categoryId === c.id).length
             return <CatPill key={c.id} label={c.name} count={count} color={c.color}
               active={activeCategory === c.id} onClick={() => setActiveCategory(activeCategory === c.id ? null : c.id)} />
           })}
-          <button onClick={() => setManagingCategories(true)} style={{
-            width: 30, height: 30, borderRadius: 8, border: `1.5px solid ${T.border}`,
-            background: T.card, cursor: "pointer", display: "flex",
-            alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }} title="Manage Categories">
-            <Settings size={14} color={T.textLight} />
+          <button onClick={() => setManagingCategories(true)} className={s.settingsBtn} title="Manage Categories">
+            <Settings size={14} color="var(--color-text-light)" />
           </button>
         </div>
       </div>
 
       {/* Pinned */}
       {pinned.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: T.amber, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+        <div className={s.pinnedSection}>
+          <div className={s.pinnedHeader}>
             <Pin size={13} /> Pinned ({pinned.length})
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: 10 }}>
+          <div className={s.cardGrid}>
             {pinned.map(r => <ResourceCard key={r.id} resource={r} onEdit={() => setEditing(r)} onPin={() => handleTogglePin(r)} />)}
           </div>
         </div>
@@ -173,11 +165,11 @@ export default function ResourcesPage({ isMobile }) {
       ) : unpinned.length > 0 && (
         <div>
           {pinned.length > 0 && (
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>
+            <div className={s.sectionHeader}>
               All Resources ({unpinned.length})
             </div>
           )}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: 10 }}>
+          <div className={s.cardGrid}>
             {unpinned.map(r => <ResourceCard key={r.id} resource={r} onEdit={() => setEditing(r)} onPin={() => handleTogglePin(r)} />)}
           </div>
         </div>
@@ -186,39 +178,27 @@ export default function ResourcesPage({ isMobile }) {
       {/* Add choice modal */}
       {showAddChoice && (
         <Modal title="Add Resource" onClose={() => setShowAddChoice(false)} size="sm">
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <button onClick={() => { setShowAddChoice(false); setEditing({ resourceType: "link" }) }} style={{
-              display: "flex", alignItems: "center", gap: 14, padding: "18px 20px",
-              borderRadius: 12, border: `1.5px solid ${T.border}`, background: T.card,
-              cursor: "pointer", fontFamily: T.font, textAlign: "left", width: "100%",
-              transition: "border-color 0.15s",
-            }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = T.accent}
-              onMouseLeave={e => e.currentTarget.style.borderColor = T.border}
+          <div className={s.addChoiceList}>
+            <button onClick={() => { setShowAddChoice(false); setEditing({ resourceType: "link" }) }}
+              className={s.addChoiceBtn}
             >
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: `${T.blue}10`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Link2 size={22} color={T.blue} />
+              <div className={s.addChoiceIconLink}>
+                <Link2 size={22} color="var(--color-blue)" />
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Add a Link</div>
-                <div style={{ fontSize: 13, color: T.textLight }}>Paste a URL to an SDS sheet, manual, or web page</div>
+                <div className={s.addChoiceTitle}>Add a Link</div>
+                <div className={s.addChoiceSub}>Paste a URL to an SDS sheet, manual, or web page</div>
               </div>
             </button>
-            <button onClick={() => { setShowAddChoice(false); setEditing({ resourceType: "file" }) }} style={{
-              display: "flex", alignItems: "center", gap: 14, padding: "18px 20px",
-              borderRadius: 12, border: `1.5px solid ${T.border}`, background: T.card,
-              cursor: "pointer", fontFamily: T.font, textAlign: "left", width: "100%",
-              transition: "border-color 0.15s",
-            }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = T.accent}
-              onMouseLeave={e => e.currentTarget.style.borderColor = T.border}
+            <button onClick={() => { setShowAddChoice(false); setEditing({ resourceType: "file" }) }}
+              className={s.addChoiceBtn}
             >
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: `${T.accent}10`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Upload size={22} color={T.accent} />
+              <div className={s.addChoiceIconFile}>
+                <Upload size={22} color="var(--color-accent)" />
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Upload a File</div>
-                <div style={{ fontSize: 13, color: T.textLight }}>Upload a PDF, image, or document (up to 25MB)</div>
+                <div className={s.addChoiceTitle}>Upload a File</div>
+                <div className={s.addChoiceSub}>Upload a PDF, image, or document (up to 25MB)</div>
               </div>
             </button>
           </div>
@@ -254,16 +234,14 @@ export default function ResourcesPage({ isMobile }) {
 // ═══════════════════════════════════════════
 function CatPill({ label, count, color, active, onClick, icon: Icon }) {
   return (
-    <button onClick={onClick} style={{
-      display: "flex", alignItems: "center", gap: 5, padding: "6px 12px",
-      borderRadius: 8, border: `1.5px solid ${active ? color : T.border}`,
-      background: active ? `${color}10` : T.card, cursor: "pointer",
-      fontSize: 13, fontWeight: 600, fontFamily: T.font, whiteSpace: "nowrap",
-      color: active ? color : T.textMed,
+    <button onClick={onClick} className={s.catPill} style={{
+      borderColor: active ? color : undefined,
+      background: active ? `${color}10` : undefined,
+      color: active ? color : undefined,
     }}>
       {Icon && <Icon size={14} />}
       {label}
-      {count !== undefined && <span style={{ fontSize: 11, opacity: 0.7 }}>({count})</span>}
+      {count !== undefined && <span className={s.catPillCount}>({count})</span>}
     </button>
   )
 }
@@ -278,64 +256,57 @@ function ResourceCard({ resource, onEdit, onPin }) {
 
   return (
     <ClickableCard onClick={onEdit} style={{ padding: "16px 18px" }}>
-      <div style={{ display: "flex", gap: 14 }}>
-        <div style={{
-          width: 42, height: 42, borderRadius: 10, flexShrink: 0,
-          background: isFile ? `${T.accent}10` : `${T.blue}10`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <FileIcon size={20} color={isFile ? T.accent : T.blue} />
+      <div className={s.cardRow}>
+        <div className={isFile ? s.cardIconFile : s.cardIconLink}>
+          <FileIcon size={20} color={isFile ? "var(--color-accent)" : "var(--color-blue)"} />
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div className={s.cardBody}>
+          <div className={s.cardTitleRow}>
+            <div className={s.cardTitle}>
               {resource.title}
             </div>
-            {resource.pinned && <Pin size={12} color={T.amber} />}
+            {resource.pinned && <Pin size={12} color="var(--color-amber)" />}
           </div>
 
           {resource.description && (
-            <div style={{ fontSize: 12, color: T.textMed, lineHeight: 1.4, marginBottom: 4,
-              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <div className={s.cardDesc}>
               {resource.description}
             </div>
           )}
 
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <div className={s.cardMeta}>
             {resource.categoryName && (
-              <span style={{
-                fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 4,
-                background: `${resource.categoryColor || T.textLight}12`,
-                color: resource.categoryColor || T.textLight,
+              <span className={s.categoryBadge} style={{
+                background: `${resource.categoryColor || "var(--color-text-light)"}12`,
+                color: resource.categoryColor || "var(--color-text-light)",
               }}>{resource.categoryName}</span>
             )}
             {isFile && resource.fileSize && (
-              <span style={{ fontSize: 11, color: T.textLight }}>{formatFileSize(resource.fileSize)}</span>
+              <span className={s.fileSizeMeta}>{formatFileSize(resource.fileSize)}</span>
             )}
             {!isFile && resource.url && (
-              <span style={{ fontSize: 11, color: T.textLight, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>
+              <span className={s.urlMeta}>
                 {resource.url.replace(/https?:\/\/(www\.)?/, "").split("/")[0]}
               </span>
             )}
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, alignItems: "center" }}>
-          <button onClick={e => { e.stopPropagation(); onPin() }} style={{
-            border: "none", background: "none", cursor: "pointer", padding: 4,
-          }} title={resource.pinned ? "Unpin" : "Pin"}>
-            <Pin size={14} color={resource.pinned ? T.amber : T.textLight} />
+        <div className={s.cardActions}>
+          <button onClick={e => { e.stopPropagation(); onPin() }} className={s.iconBtn}
+            title={resource.pinned ? "Unpin" : "Pin"}>
+            <Pin size={14} color={resource.pinned ? "var(--color-amber)" : "var(--color-text-light)"} />
           </button>
           {isFile && resource.filename ? (
             <a href={`/uploads/${resource.filename}`} download={resource.originalName}
-              onClick={e => e.stopPropagation()} style={{ padding: 4 }}>
-              <Download size={14} color={T.accent} />
+              onClick={e => e.stopPropagation()} className={s.actionLink}>
+              <Download size={14} color="var(--color-accent)" />
             </a>
           ) : resource.url ? (
             <a href={resource.url} target="_blank" rel="noopener noreferrer"
-              onClick={e => e.stopPropagation()} style={{ padding: 4 }}>
-              <ExternalLink size={14} color={T.blue} />
+              onClick={e => e.stopPropagation()} className={s.actionLink}>
+              <ExternalLink size={14} color="var(--color-blue)" />
             </a>
           ) : null}
         </div>
@@ -393,15 +364,11 @@ function ResourceModal({ resource, categories, onClose, onSave, onDelete }) {
     <Modal title={isEdit ? "Edit Resource" : (isFile ? "Upload File" : "Add Link")} onClose={onClose} size="lg">
       {/* Tabs — only for existing resources */}
       {isEdit && (
-        <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: `1.5px solid ${T.border}`, paddingBottom: 0 }}>
+        <div className={s.modalTabs}>
           {tabs.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)} style={{
-              padding: "10px 18px", border: "none", cursor: "pointer", fontFamily: T.font,
-              fontSize: 14, fontWeight: 700, background: "transparent",
-              color: tab === t.key ? T.accent : T.textLight,
-              borderBottom: tab === t.key ? `2.5px solid ${T.accent}` : "2.5px solid transparent",
-              marginBottom: -1.5, transition: "color 0.15s, border-color 0.15s",
-            }}>{t.label}</button>
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={tab === t.key ? s.modalTabActive : s.modalTabInactive}
+            >{t.label}</button>
           ))}
         </div>
       )}
@@ -411,35 +378,25 @@ function ResourceModal({ resource, categories, onClose, onSave, onDelete }) {
         <>
           {/* File upload / replace zone */}
           {isFile && (
-            <div style={{ marginBottom: 14 }}>
-              <input ref={fileRef} type="file" onChange={handleFileChange} style={{ display: "none" }}
+            <div className={s.fileZoneWrap}>
+              <input ref={fileRef} type="file" onChange={handleFileChange} className={s.hidden}
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp" />
 
               {/* Editing existing file — show current file + replace */}
               {isEdit && !file && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 14, padding: "14px 18px",
-                  borderRadius: 12, border: `1.5px solid ${T.border}`, background: T.bg,
-                }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 10, background: `${T.accent}10`,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <FileText size={20} color={T.accent} />
+                <div className={s.existingFile}>
+                  <div className={s.existingFileIcon}>
+                    <FileText size={20} color="var(--color-accent)" />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div className={s.existingFileInfo}>
+                    <div className={s.existingFileName}>
                       {resource.originalName || resource.title}
                     </div>
-                    <div style={{ fontSize: 12, color: T.textLight }}>
+                    <div className={s.existingFileSize}>
                       {formatFileSize(resource.fileSize)}
                     </div>
                   </div>
-                  <button onClick={() => fileRef.current?.click()} style={{
-                    padding: "6px 14px", borderRadius: 8, border: `1.5px solid ${T.accent}`,
-                    background: T.accentLight, color: T.accent, fontSize: 13, fontWeight: 700,
-                    cursor: "pointer", fontFamily: T.font, whiteSpace: "nowrap",
-                  }}>
+                  <button onClick={() => fileRef.current?.click()} className={s.replaceFileBtn}>
                     Replace File
                   </button>
                 </div>
@@ -447,27 +404,19 @@ function ResourceModal({ resource, categories, onClose, onSave, onDelete }) {
 
               {/* New file selected (creating or replacing) */}
               {file && (
-                <button onClick={() => fileRef.current?.click()} style={{
-                  width: "100%", padding: "18px 20px", borderRadius: 12,
-                  border: `2px dashed ${T.accent}`, background: T.accentLight,
-                  cursor: "pointer", fontFamily: T.font, textAlign: "center",
-                }}>
-                  <FileText size={24} color={T.accent} style={{ margin: "0 auto 8px" }} />
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.accent }}>{file.name}</div>
-                  <div style={{ fontSize: 12, color: T.textLight }}>{formatFileSize(file.size)} · Click to change</div>
+                <button onClick={() => fileRef.current?.click()} className={s.fileSelectedBtn}>
+                  <FileText size={24} color="var(--color-accent)" className={s.iconCenter} />
+                  <div className={s.fileSelectedName}>{file.name}</div>
+                  <div className={s.fileSelectedHint}>{formatFileSize(file.size)} · Click to change</div>
                 </button>
               )}
 
               {/* New resource — no file selected yet */}
               {!isEdit && !file && (
-                <button onClick={() => fileRef.current?.click()} style={{
-                  width: "100%", padding: "28px 20px", borderRadius: 12,
-                  border: `2px dashed ${T.border}`, background: T.bg,
-                  cursor: "pointer", fontFamily: T.font, textAlign: "center",
-                }}>
-                  <Upload size={24} color={T.textLight} style={{ margin: "0 auto 8px" }} />
-                  <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Click to select a file</div>
-                  <div style={{ fontSize: 12, color: T.textLight }}>PDF, Word, Excel, images — up to 25MB</div>
+                <button onClick={() => fileRef.current?.click()} className={s.fileEmptyBtn}>
+                  <Upload size={24} color="var(--color-text-light)" className={s.iconCenter} />
+                  <div className={s.fileEmptyTitle}>Click to select a file</div>
+                  <div className={s.fileEmptyHint}>PDF, Word, Excel, images — up to 25MB</div>
                 </button>
               )}
             </div>
@@ -486,16 +435,12 @@ function ResourceModal({ resource, categories, onClose, onSave, onDelete }) {
           <SelectField label="Category" value={categoryId} onChange={setCategoryId} placeholder="Uncategorized"
             options={categories.map(c => ({ value: String(c.id), label: c.name }))} />
 
-          <button onClick={() => setPinned(!pinned)} style={{
-            display: "flex", alignItems: "center", gap: 10, padding: "10px 0", marginBottom: 4,
-            border: "none", background: "none", cursor: "pointer", fontFamily: T.font, width: "100%",
-          }}>
-            <div style={{
-              width: 20, height: 20, borderRadius: 6, border: `2px solid ${pinned ? T.amber : T.border}`,
-              background: pinned ? T.amber : "transparent", display: "flex", alignItems: "center", justifyContent: "center",
-            }}>{pinned && <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>✓</span>}</div>
-            <Pin size={16} color={pinned ? T.amber : T.textLight} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Pin to top</span>
+          <button onClick={() => setPinned(!pinned)} className={s.pinToggle}>
+            <div className={pinned ? s.pinCheckboxChecked : s.pinCheckboxUnchecked}>
+              {pinned && <span className={s.pinCheckmark}>✓</span>}
+            </div>
+            <Pin size={16} color={pinned ? "var(--color-amber)" : "var(--color-text-light)"} />
+            <span className={s.pinLabel}>Pin to top</span>
           </button>
 
           <ModalFooter onClose={onClose} onSave={handleSubmit} saving={saving}
@@ -562,61 +507,46 @@ function ResourceAccountsTab({ resourceId, onClose }) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div className={s.accountsHeader}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>
+          <div className={s.accountsCount}>
             {linkedAccounts.length} account{linkedAccounts.length !== 1 ? "s" : ""} linked
           </div>
-          <div style={{ fontSize: 12, color: T.textLight }}>
+          <div className={s.accountsSub}>
             Crews at these sites can access this resource
           </div>
         </div>
-        <button onClick={() => setShowPicker(true)} style={{
-          display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
-          borderRadius: 8, border: `1.5px dashed ${T.accent}`, background: T.accentLight,
-          color: T.accent, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: T.font,
-        }}>
+        <button onClick={() => setShowPicker(true)} className={s.attachBtn}>
           <MapPinned size={14} /> Attach to Account
         </button>
       </div>
 
       {/* Linked accounts list */}
       {linkedAccounts.length === 0 ? (
-        <div style={{
-          padding: 30, textAlign: "center", color: T.textLight, fontSize: 14,
-          background: T.bg, borderRadius: 12, border: `1.5px dashed ${T.border}`,
-        }}>
-          <MapPinned size={28} color={T.textLight} style={{ marginBottom: 8 }} />
+        <div className={s.emptyAccounts}>
+          <MapPinned size={28} color="var(--color-text-light)" style={{ marginBottom: 8 }} />
           <div>Not attached to any accounts</div>
-          <div style={{ fontSize: 12, marginTop: 4 }}>
+          <div className={s.emptyAccountsSub}>
             Attach to accounts so crews can access this resource at specific jobsites
           </div>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <div className={s.linkedList}>
           {linkedAccounts.map(a => (
-            <div key={a.id} style={{
-              display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
-              background: T.bg, borderRadius: 10, border: `1px solid ${T.border}`,
-            }}>
-              <div style={{
-                width: 34, height: 34, borderRadius: 8, background: `${T.accent}10`,
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
-                <MapPinned size={16} color={T.accent} />
+            <div key={a.id} className={s.linkedRow}>
+              <div className={s.linkedIcon}>
+                <MapPinned size={16} color="var(--color-accent)" />
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div className={s.linkedInfo}>
+                <div className={s.linkedName}>
                   {a.name}
                 </div>
-                <div style={{ fontSize: 11, color: T.textLight }}>
+                <div className={s.linkedAddr}>
                   {a.address}{a.city ? `, ${a.city}` : ""}
                 </div>
               </div>
-              <button onClick={() => handleUnlink(a.id)} style={{
-                border: "none", background: "none", cursor: "pointer", padding: 4,
-              }} title="Unlink">
-                <X size={16} color={T.textLight} />
+              <button onClick={() => handleUnlink(a.id)} className={s.iconBtn} title="Unlink">
+                <X size={16} color="var(--color-text-light)" />
               </button>
             </div>
           ))}
@@ -624,76 +554,50 @@ function ResourceAccountsTab({ resourceId, onClose }) {
       )}
 
       {/* Footer */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
-        <button onClick={onClose} style={{
-          padding: "10px 24px", borderRadius: 10, border: `1.5px solid ${T.border}`,
-          background: "transparent", color: T.textMed, fontSize: 14, fontWeight: 600,
-          cursor: "pointer", fontFamily: T.font,
-        }}>Done</button>
+      <div className={s.tabFooter}>
+        <button onClick={onClose} className={s.doneBtn}>Done</button>
       </div>
 
       {/* Account Picker */}
       {showPicker && (
-        <div onClick={e => e.target === e.currentTarget && setShowPicker(false)} style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 120,
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
-        }}>
-          <div style={{
-            background: T.card, borderRadius: 16, width: "100%", maxWidth: 440,
-            maxHeight: "70vh", display: "flex", flexDirection: "column",
-            boxShadow: T.shadowLg, animation: "modalIn 0.15s ease",
-          }}>
-            <div style={{ padding: "18px 20px 0", flexShrink: 0 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>Attach to Account</div>
-                <button onClick={() => setShowPicker(false)} style={{ border: "none", background: "none", cursor: "pointer", padding: 4 }}>
-                  <X size={18} color={T.textLight} />
+        <div onClick={e => e.target === e.currentTarget && setShowPicker(false)} className={s.pickerOverlay}>
+          <div className={s.pickerCard}>
+            <div className={s.pickerHeader}>
+              <div className={s.pickerTitleRow}>
+                <div className={s.pickerTitle}>Attach to Account</div>
+                <button onClick={() => setShowPicker(false)} className={s.iconBtn}>
+                  <X size={18} color="var(--color-text-light)" />
                 </button>
               </div>
-              <div style={{ position: "relative", marginBottom: 12 }}>
-                <Search size={16} color={T.textLight} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+              <div className={s.pickerSearchWrap}>
+                <Search size={16} color="var(--color-text-light)" className={s.pickerSearchIcon} />
                 <input
                   value={pickerSearch} onChange={e => setPickerSearch(e.target.value)}
                   placeholder="Search accounts..."
-                  style={{
-                    width: "100%", padding: "10px 12px 10px 36px", borderRadius: 10,
-                    border: `1.5px solid ${T.border}`, background: T.bg, fontSize: 14,
-                    fontFamily: T.font, outline: "none", boxSizing: "border-box", color: T.text,
-                  }}
+                  className={s.pickerSearchInput}
                 />
               </div>
             </div>
-            <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 20px" }}>
+            <div className={s.pickerList}>
               {filteredAvailable.length === 0 ? (
-                <div style={{ textAlign: "center", padding: 24, color: T.textLight, fontSize: 14 }}>
+                <div className={s.pickerEmpty}>
                   {pickerSearch ? "No matching accounts" : allAccounts.length === 0 ? "No accounts created yet — add some from the Accounts page first" : "All accounts are already linked"}
                 </div>
               ) : (
                 filteredAvailable.map(a => (
-                  <button key={a.id} onClick={() => handleLink(a.id)} style={{
-                    display: "flex", alignItems: "center", gap: 12, width: "100%",
-                    padding: "10px 12px", borderRadius: 10, border: "none",
-                    background: "transparent", cursor: "pointer", fontFamily: T.font,
-                    textAlign: "left", marginBottom: 2, transition: "background 0.1s",
-                  }}
-                    onMouseEnter={e => e.currentTarget.style.background = T.accentLight}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >
-                    <div style={{
-                      width: 34, height: 34, borderRadius: 8, background: `${T.accent}10`,
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      <MapPinned size={16} color={T.accent} />
+                  <button key={a.id} onClick={() => handleLink(a.id)} className={s.pickerItem}>
+                    <div className={s.pickerItemIcon}>
+                      <MapPinned size={16} color="var(--color-accent)" />
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div className={s.pickerItemInfo}>
+                      <div className={s.pickerItemName}>
                         {a.name}
                       </div>
-                      <div style={{ fontSize: 11, color: T.textLight }}>
+                      <div className={s.pickerItemAddr}>
                         {a.address}{a.city ? `, ${a.city}` : ""}
                       </div>
                     </div>
-                    <Plus size={16} color={T.accent} />
+                    <Plus size={16} color="var(--color-accent)" />
                   </button>
                 ))
               )}
@@ -717,51 +621,35 @@ function ManageCategoriesModal({ categories, onSave, onDelete, onClose }) {
   return (
     <Modal title="Manage Categories" onClose={onClose} size="sm">
       {categories.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 20, color: T.textLight, fontSize: 14 }}>
+        <div className={s.catEmptyMsg}>
           No categories created yet
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
+        <div className={s.catList}>
           {categories.map(item => (
-            <div key={item.id} style={{
-              display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
-              background: T.bg, borderRadius: 10, border: `1px solid ${T.border}`,
-            }}>
-              <div style={{ width: 12, height: 12, borderRadius: 6, background: item.color, flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{item.name}</div>
-                <div style={{ fontSize: 11, color: T.textLight }}>{item.count} resource{item.count !== 1 ? "s" : ""}</div>
+            <div key={item.id} className={s.catRow}>
+              <div className={s.catDot} style={{ background: item.color }} />
+              <div className={s.catInfo}>
+                <div className={s.catName}>{item.name}</div>
+                <div className={s.catCount}>{item.count} resource{item.count !== 1 ? "s" : ""}</div>
               </div>
-              <button onClick={() => setEditingItem(item)} style={{
-                border: "none", background: "none", cursor: "pointer", padding: 4,
-              }} title="Edit">
-                <Edit3 size={14} color={T.textMed} />
+              <button onClick={() => setEditingItem(item)} className={s.iconBtn} title="Edit">
+                <Edit3 size={14} color="var(--color-text-med)" />
               </button>
-              <button onClick={() => setConfirmDel(item)} style={{
-                border: "none", background: "none", cursor: "pointer", padding: 4,
-              }} title="Delete">
-                <Trash2 size={14} color={T.red} />
+              <button onClick={() => setConfirmDel(item)} className={s.iconBtn} title="Delete">
+                <Trash2 size={14} color="var(--color-red)" />
               </button>
             </div>
           ))}
         </div>
       )}
 
-      <button onClick={() => setCreating(true)} style={{
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%",
-        padding: "10px", borderRadius: 10, border: `1.5px dashed ${T.accent}`,
-        background: T.accentLight, color: T.accent, fontSize: 13, fontWeight: 700,
-        cursor: "pointer", fontFamily: T.font,
-      }}>
+      <button onClick={() => setCreating(true)} className={s.addCatBtn}>
         <Plus size={14} /> Add Category
       </button>
 
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
-        <button onClick={onClose} style={{
-          padding: "10px 24px", borderRadius: 10, border: `1.5px solid ${T.border}`,
-          background: "transparent", color: T.textMed, fontSize: 14, fontWeight: 600,
-          cursor: "pointer", fontFamily: T.font,
-        }}>Done</button>
+      <div className={s.catFooter}>
+        <button onClick={onClose} className={s.doneBtn}>Done</button>
       </div>
 
       {(editingItem || creating) && (
@@ -796,40 +684,28 @@ function CatItemEditModal({ item, onSave, onClose }) {
   }
 
   return (
-    <div onClick={e => e.target === e.currentTarget && onClose()} style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 130,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
-    }}>
-      <div style={{
-        background: T.card, borderRadius: 16, width: "100%", maxWidth: 360,
-        padding: 24, boxShadow: T.shadowLg, animation: "modalIn 0.15s ease",
-      }}>
-        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 16 }}>
+    <div onClick={e => e.target === e.currentTarget && onClose()} className={s.catEditOverlay}>
+      <div className={s.catEditCard}>
+        <div className={s.catEditTitle}>
           {isEdit ? "Edit Category" : "New Category"}
         </div>
         <FormField label="Name *" value={name} onChange={setName} autoFocus placeholder="e.g. SDS Sheets" />
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Color</label>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div className={s.colorFieldWrap}>
+          <label className={s.colorLabel}>Color</label>
+          <div className={s.colorSwatches}>
             {CAT_COLORS.map(c => (
-              <button key={c} onClick={() => setColor(c)} style={{
-                width: 28, height: 28, borderRadius: 7, background: c, border: "none", cursor: "pointer",
-                boxShadow: color === c ? `0 0 0 2px ${T.bg}, 0 0 0 4px ${c}` : "none",
+              <button key={c} onClick={() => setColor(c)} className={s.colorSwatch} style={{
+                background: c,
+                boxShadow: color === c ? `0 0 0 2px var(--color-bg), 0 0 0 4px ${c}` : "none",
               }} />
             ))}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{
-            padding: "10px 18px", borderRadius: 10, border: `1.5px solid ${T.border}`,
-            background: "transparent", color: T.textMed, fontSize: 14, fontWeight: 600,
-            cursor: "pointer", fontFamily: T.font,
-          }}>Cancel</button>
-          <button onClick={handleSubmit} disabled={!name.trim() || saving} style={{
-            padding: "10px 18px", borderRadius: 10, border: "none",
-            background: T.accent, color: "#fff", fontSize: 14, fontWeight: 600,
-            cursor: "pointer", fontFamily: T.font, opacity: !name.trim() || saving ? 0.5 : 1,
-          }}>{saving ? "Saving..." : "Save"}</button>
+        <div className={s.catEditActions}>
+          <button onClick={onClose} className={s.cancelBtn}>Cancel</button>
+          <button onClick={handleSubmit} disabled={!name.trim() || saving} className={s.saveBtn}>
+            {saving ? "Saving..." : "Save"}
+          </button>
         </div>
       </div>
     </div>

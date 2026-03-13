@@ -4,15 +4,15 @@
 
 import { useState } from "react"
 import { Truck, Plus, Edit3 } from "lucide-react"
-import { T } from "@/app/tokens.js"
 import { useData } from "@/context/DataProvider.jsx"
 import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField,
   PageHeader, AddButton, SearchBar, ClickableCard, IconButton,
   LoadingSpinner, EmptyMessage,
 } from "@/app/dashboard/components/PageUI.jsx"
+import s from "./FleetPage.module.css"
 
-export default function FleetPage({ isMobile }) {
+export default function FleetPage() {
   const { vehicles, crews, toast } = useData()
   const [editing, setEditing] = useState(null)
   const [searchQ, setSearchQ] = useState("")
@@ -46,22 +46,22 @@ export default function FleetPage({ isMobile }) {
 
       {vehicles.loading && !vehicles.data.length ? <LoadingSpinner /> :
        filtered.length === 0 ? <EmptyMessage text={searchQ ? "No matches." : "No vehicles yet."} /> : (
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+        <div className={s.grid}>
           {filtered.map(v => (
             <ClickableCard key={v.id} onClick={() => setEditing(v)} style={{ padding: "18px 20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: `${T.accent}10`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Truck size={20} color={T.accent} />
+              <div className={s.cardTop}>
+                <div className={s.cardInfo}>
+                  <div className={s.cardIcon}>
+                    <Truck size={20} color="var(--color-accent)" />
                   </div>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 800 }}>{v.name}</div>
-                    {v.crew_name && <div style={{ fontSize: 12, color: T.accent, fontWeight: 600 }}>{v.crew_name}</div>}
+                    <div className={s.cardName}>{v.name}</div>
+                    {v.crew_name && <div className={s.cardCrew}>{v.crew_name}</div>}
                   </div>
                 </div>
                 <IconButton icon={Edit3} onClick={() => setEditing(v)} title="Edit" />
               </div>
-              <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: T.textLight }}>
+              <div className={s.cardMeta}>
                 {v.make_model && <span>{v.make_model}{v.year ? ` · ${v.year}` : ""}</span>}
                 {v.license_plate && <span>Plate: {v.license_plate}</span>}
                 {v.truck_number && <span>#{v.truck_number}</span>}
@@ -107,11 +107,11 @@ function VehicleModal({ vehicle, crews, onClose, onSave, onDelete }) {
       <FormField label="Vehicle Name *" value={name} onChange={setName} autoFocus placeholder="e.g. Truck 1" />
       <SelectField label="Assigned Crew" value={crewName} onChange={setCrewName} placeholder="Unassigned"
         options={crews.map(c => ({ value: c.name, label: c.name }))} />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className={s.formRow}>
         <FormField label="Make / Model" value={makeModel} onChange={setMakeModel} placeholder="e.g. Ford F-150" />
         <FormField label="Year" value={year} onChange={setYear} placeholder="e.g. 2022" />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className={s.formRow}>
         <FormField label="License Plate" value={plate} onChange={setPlate} />
         <FormField label="Truck #" value={truckNum} onChange={setTruckNum} />
       </div>

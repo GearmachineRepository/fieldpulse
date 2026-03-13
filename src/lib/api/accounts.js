@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Accounts API — CRUD operations for customer accounts
+// ═══════════════════════════════════════════
 import { request, buildQuery } from './core.js'
 
 export const getAccounts     = (params = {}) => request(`/accounts${buildQuery(params)}`)

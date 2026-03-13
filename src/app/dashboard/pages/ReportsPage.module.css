@@ -1,0 +1,473 @@
+/* ═══════════════════════════════════════════
+   Reports Page — CSS Module
+   ═══════════════════════════════════════════ */
+
+/* ── Header actions ── */
+.headerActions {
+  display: flex;
+  gap: 8px;
+}
+
+.csvBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-card);
+  color: var(--color-text-med);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.csvBtn:disabled {
+  opacity: 0.5;
+}
+
+.printBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.printBtn:disabled {
+  opacity: 0.5;
+}
+
+/* ── Report type tabs ── */
+.tabBar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-card);
+  color: var(--color-text-med);
+}
+
+/* ── Filters bar ── */
+.filterBar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: var(--color-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-card-border);
+  align-items: flex-end;
+}
+
+.filterField {
+  flex: 1;
+  min-width: 140px;
+}
+
+.filterLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.filterInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-bg);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  outline: none;
+  box-sizing: border-box;
+  color: var(--color-text);
+}
+
+.presetGroup {
+  display: flex;
+  gap: 6px;
+}
+
+.presetBtn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card);
+  color: var(--color-text-med);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+
+/* ── Print header ── */
+.printOnly {
+  display: none;
+}
+
+.printTitle {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.printSubtitle {
+  font-size: 13px;
+  color: var(--color-text-light);
+  margin-bottom: 16px;
+}
+
+/* ── Summary cards row ── */
+.statsRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.statCard {
+  background: var(--color-card);
+  border-radius: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-card-border);
+  border-top: 3px solid var(--color-accent);
+  flex: 1;
+  min-width: 120px;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+/* ── Tables ── */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: var(--font-sans);
+}
+
+.tableHeadRow {
+  border-bottom: 2px solid var(--color-card-border);
+}
+
+.th {
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--color-text-med);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.cell {
+  padding: 10px 12px;
+  vertical-align: top;
+}
+
+.cellBold {
+  font-weight: 600;
+}
+
+.cellSub {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+.cellSmall {
+  font-size: 12px;
+}
+
+.cellMuted {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+/* ── Product row in spray table ── */
+.productLine {
+  font-size: 12px;
+}
+
+.productName {
+  font-weight: 600;
+}
+
+.productDetail {
+  color: var(--color-text-light);
+}
+
+/* ── Card list (PUR, Attendance) ── */
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  background: var(--color-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-card-border);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cardSubtitle {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.cardBody {
+  padding: 0 18px;
+}
+
+/* ── PUR report ── */
+.purAmount {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.purAppCount {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.purAppRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 12px;
+}
+
+.purAppRowBorder {
+  composes: purAppRow;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.purAppDate {
+  color: var(--color-text-med);
+}
+
+.purAppProperty {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.purAppCrew {
+  color: var(--color-text-light);
+}
+
+.purAppAmount {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* ── Attendance report ── */
+.attendanceStats {
+  display: flex;
+  gap: 16px;
+  text-align: center;
+}
+
+.attendanceBigNum {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.attendanceBigNumRed {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-red);
+}
+
+.attendanceSmallLabel {
+  font-size: 10px;
+  color: var(--color-text-light);
+}
+
+.rosterRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 12px;
+}
+
+.rosterRowBorder {
+  composes: rosterRow;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.rosterDate {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.rosterLead {
+  color: var(--color-text-light);
+}
+
+.rosterPresent {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.rosterAbsent {
+  color: var(--color-red);
+  font-weight: 600;
+}
+
+/* ── Work log route color indicator ── */
+.routeIndicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.routeColorDot {
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+
+.routeName {
+  font-weight: 600;
+}
+
+/* ── Status badge ── */
+.statusBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.statusComplete {
+  composes: statusBadge;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.statusPending {
+  composes: statusBadge;
+  background: var(--color-amber-light);
+  color: var(--color-amber);
+}
+
+.cellTextMed {
+  color: var(--color-text-med);
+}
+
+.textRight {
+  text-align: right;
+}
+
+/* ── Print styles ── */
+@media print {
+  :global(body) * {
+    visibility: hidden;
+  }
+  :global(#report-printable),
+  :global(#report-printable) * {
+    visibility: visible;
+  }
+  :global(#report-printable) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+  }
+  .printOnly {
+    display: block !important;
+  }
+  :global(.no-print) {
+    display: none !important;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .filterBar {
+    flex-direction: column;
+  }
+
+  .filterField {
+    min-width: unset;
+  }
+
+  .statsRow {
+    flex-direction: column;
+  }
+
+  .statCard {
+    min-width: unset;
+  }
+
+  .headerActions {
+    flex-direction: column;
+  }
+}

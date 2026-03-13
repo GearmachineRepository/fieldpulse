@@ -1,3 +1,7 @@
+// ═══════════════════════════════════════════
+// Database — PostgreSQL connection pool
+// ═══════════════════════════════════════════
+
 import pg from 'pg'
 import dotenv from 'dotenv'
 

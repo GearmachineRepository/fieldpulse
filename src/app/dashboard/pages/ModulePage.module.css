@@ -1,0 +1,175 @@
+/* ModulePage — CSS Module */
+
+.notFoundWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: var(--color-text-light);
+}
+
+.notFoundInner {
+  text-align: center;
+}
+
+.notFoundTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-top: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.iconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modLabel {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.modCategory {
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+.tabBar {
+  display: flex;
+  gap: 4px;
+  background: var(--color-card);
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+  padding: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.tabButton {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  color: var(--color-text-med);
+}
+
+.card {
+  background: var(--color-card);
+  border-radius: 14px;
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.newLogButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeadRow {
+  background: var(--color-bg);
+}
+
+.tableHeadCell {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: left;
+  padding: 10px 16px;
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--color-card-border);
+  cursor: pointer;
+}
+
+.tableCell {
+  padding: 14px 16px;
+  font-size: 13px;
+}
+
+.tableCellDate {
+  composes: tableCell;
+  font-weight: 600;
+}
+
+.tableCellCrew {
+  composes: tableCell;
+  color: var(--color-text-med);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.emptyCard {
+  background: var(--color-card);
+  border-radius: 14px;
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-sm);
+  padding: 40px;
+  text-align: center;
+  color: var(--color-text-light);
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: 12px;
+}
+
+.emptySubtitle {
+  font-size: 13px;
+  margin-top: 4px;
+}

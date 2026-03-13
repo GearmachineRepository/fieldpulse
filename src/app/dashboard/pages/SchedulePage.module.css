@@ -1,0 +1,797 @@
+/* ═══════════════════════════════════════════
+   Schedule Page — CSS Module
+   ═══════════════════════════════════════════ */
+
+/* ── Header bar ── */
+.headerBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.monthLabel {
+  font-size: 20px;
+  font-weight: 800;
+  min-width: 180px;
+}
+
+.navGroup {
+  display: flex;
+  gap: 3px;
+}
+
+.headerRight {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 2px;
+  background: var(--color-card);
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  padding: 3px;
+}
+
+/* ── Nav + View buttons ── */
+.navBtn {
+  border-radius: 7px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  color: var(--color-text-med);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navBtnIcon {
+  composes: navBtn;
+  padding: 5px 8px;
+}
+
+.navBtnLabel {
+  composes: navBtn;
+  padding: 5px 14px;
+}
+
+.viewBtn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.viewBtnActive {
+  composes: viewBtn;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.viewBtnInactive {
+  composes: viewBtn;
+  background: transparent;
+  color: var(--color-text-light);
+}
+
+/* ═══ CALENDAR VIEW ═══ */
+.calendarContainer {
+  background: var(--color-card);
+  border-radius: 14px;
+  border: 1px solid var(--color-card-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendarHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.calendarDayHeader {
+  padding: 10px 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendarCell {
+  min-height: 110px;
+  padding: 4px 5px;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+@media (max-width: 768px) {
+  .calendarCell {
+    min-height: 60px;
+  }
+}
+
+.calendarCellBorder {
+  border-right: 1px solid var(--color-card-border);
+}
+
+.calendarCellOutOfMonth {
+  background: #FAFBFC;
+  opacity: 0.45;
+}
+
+.calendarCellInMonth {
+  background: var(--color-card);
+  opacity: 1;
+}
+
+.calendarCellToday {
+  background: #F0FDF9;
+  opacity: 1;
+}
+
+.cellHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+  padding: 0 2px;
+}
+
+.dayNumber {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayNumberToday {
+  composes: dayNumber;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.dayNumberDefault {
+  composes: dayNumber;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.dayNumberOutOfMonth {
+  composes: dayNumber;
+  background: transparent;
+  color: var(--color-text-light);
+}
+
+.calAddBtn {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.calAddBtn:hover {
+  opacity: 1 !important;
+}
+
+.cellContent {
+  flex-direction: column;
+  gap: 2px;
+}
+
+.calRouteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow: hidden;
+}
+
+.calRouteName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calRouteCount {
+  font-size: 10px;
+  opacity: 0.7;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.calEventBtn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+  background: transparent;
+  font-size: 11px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eventDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.eventTime {
+  color: var(--color-text-light);
+  margin-right: 2px;
+}
+
+.moreItems {
+  font-size: 10px;
+  color: var(--color-text-light);
+  padding: 1px 5px;
+}
+
+/* Desktop content / Mobile dots responsive visibility */
+.cellContent {
+  display: flex;
+}
+
+.mobileDots {
+  display: none;
+  gap: 3px;
+  padding: 2px 4px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .cellContent {
+    display: none;
+  }
+
+  .mobileDots {
+    display: flex;
+  }
+}
+
+.mobileDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* ═══ LIST VIEW ═══ */
+.listView {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.listDayHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.listDayNumber {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.listDayNumberToday {
+  composes: listDayNumber;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.listDayNumberDefault {
+  composes: listDayNumber;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.listDayName {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.listDayNameToday {
+  color: var(--color-accent);
+}
+
+.listDayNameDefault {
+  color: var(--color-text);
+}
+
+.listDateLabel {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.todayBadge {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.emptyDay {
+  padding: 14px 18px;
+  background: var(--color-card);
+  border-radius: 12px;
+  border: 1px dashed var(--color-card-border);
+  color: var(--color-text-light);
+  font-size: 13px;
+}
+
+.listItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.routeCardContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.routeBar {
+  width: 4px;
+  height: 36px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.routeTitle {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.routeSubtext {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.routeVisitTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  padding-left: 36px;
+}
+
+.visitTag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text-med);
+  border: 1px solid var(--color-card-border);
+}
+
+.eventCardContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggleCompleteBtn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.eventInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.eventTitle {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.eventSubtext {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.eventTypeBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ═══ MODALS ═══ */
+.modalGrid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.modalGrid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.modalGrid2Wide {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.colorPickerGroup {
+  margin-bottom: 14px;
+}
+
+.colorPickerLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.colorSwatches {
+  display: flex;
+  gap: 6px;
+}
+
+.colorSwatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+/* ═══ ROUTE STOP MANAGER ═══ */
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-text-light);
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.routeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.routeHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.routeColorBar {
+  width: 6px;
+  height: 36px;
+  border-radius: 3px;
+}
+
+.routeHeaderTitle {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.routeHeaderSubtext {
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+.routeActions {
+  display: flex;
+  gap: 8px;
+}
+
+.stopList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stopItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.stopItemDragOver {
+  border-color: var(--color-accent);
+}
+
+.stopDragHandle {
+  cursor: grab;
+  color: var(--color-text-light);
+  flex-shrink: 0;
+}
+
+.stopNumber {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.stopInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.stopNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stopName {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.stopBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.stopAddress {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.stopEditBtn {
+  font-size: 12px;
+  color: var(--color-text-light);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-bg);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 600;
+  border: 1px solid var(--color-card-border);
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.stopRemoveBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ═══ STOP FREQUENCY MODAL ═══ */
+.freqGroup {
+  margin-bottom: 14px;
+}
+
+.freqLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.freqOptions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.freqBtn {
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.freqBtnActive {
+  composes: freqBtn;
+  border: 1.5px solid var(--color-accent);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.freqBtnInactive {
+  composes: freqBtn;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-card);
+  color: var(--color-text-med);
+}
+
+.seasonalSection {
+  border-top: 1px solid var(--color-card-border);
+  padding-top: 12px;
+  margin-top: 8px;
+  margin-bottom: 14px;
+}
+
+.seasonalTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+
+.seasonalHint {
+  font-size: 11px;
+  color: var(--color-text-light);
+  margin-top: 4px;
+}
+
+/* ═══ STOP SEARCH ═══ */
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-bg);
+  border-radius: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-card-border);
+  margin-bottom: 14px;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.searchResults {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.searchEmpty {
+  padding: 20px;
+  text-align: center;
+  color: var(--color-text-light);
+  font-size: 14px;
+}
+
+.searchItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.searchItem:hover {
+  background: var(--color-bg);
+}
+
+.searchItemInfo {
+  flex: 1;
+}
+
+.searchItemName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.searchItemAddress {
+  font-size: 12px;
+  color: var(--color-text-light);
+}

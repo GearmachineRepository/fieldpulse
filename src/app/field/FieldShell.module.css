@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════
+   Field Shell — Mobile crew app layout
+
+   Fixed 430px container with status bar,
+   bottom tab navigation, and content area.
+   ═══════════════════════════════════════════ */
+
+.wrapper {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--color-bg);
+  position: relative;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.08);
+  font-family: var(--font-sans);
+  color: var(--color-text);
+}
+
+.loading {
+  composes: wrapper;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingText {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.statusBar {
+  height: 44px;
+  background: var(--color-sidebar);
+}
+
+.content {
+  padding-bottom: 80px;
+}
+
+/* ── Bottom Tab Bar ── */
+
+.tabBar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: var(--color-card);
+  border-top: 1px solid var(--color-card-border);
+  display: flex;
+  padding: 8px 16px 24px;
+  z-index: 50;
+}
+
+.tabBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  color: var(--color-text-light);
+  padding: 6px 0;
+  min-height: 44px;
+}
+
+.tabBtn[data-active="true"] {
+  color: var(--color-accent);
+}
+
+.tabLabel {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.tabBtn[data-active="true"] .tabLabel {
+  font-weight: 700;
+}

@@ -1,5 +1,7 @@
 /* ═══════════════════════════════════════════
    Global Styles — Base resets + focus handling
+
+   Uses CSS custom properties from tokens.
    ═══════════════════════════════════════════ */
 
 * {
@@ -10,8 +12,8 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, system-ui, sans-serif;
-  background: #F8F9FB;
+  font-family: var(--font-sans);
+  background: var(--color-bg);
 }
 
 /* ── Focus ring fix ──
@@ -25,7 +27,7 @@ body {
 
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px #F8F9FB, 0 0 0 4px #059669;
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
   border-radius: inherit;
 }
 
@@ -35,11 +37,11 @@ select:focus,
 textarea:focus {
   outline: none;
   box-shadow: none;
-  border-color: #059669 !important;
+  border-color: var(--color-accent) !important;
 }
 
 button:focus-visible {
-  box-shadow: 0 0 0 2px #F8F9FB, 0 0 0 4px #059669;
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
 }
 
 /* ── Smooth scrolling ── */
@@ -49,6 +51,14 @@ html {
 
 /* ── Selection color ── */
 ::selection {
-  background: #A7F3D0;
-  color: #0F172A;
+  background: var(--color-accent-border);
+  color: var(--color-text);
 }
+
+/* ── Responsive breakpoints (documented, not usable in media queries) ──
+   Use these values directly in @media rules:
+   --breakpoint-sm:  640px
+   --breakpoint-md:  768px
+   --breakpoint-lg:  1024px
+   --breakpoint-xl:  1280px
+*/

@@ -20,6 +20,10 @@ export { default as Badge }         from './primitives/Badge.jsx'
 export { default as EmptyState }    from './primitives/EmptyState.jsx'
 export { default as SectionHeader } from './primitives/SectionHeader.jsx'
 export { default as Avatar }        from './primitives/Avatar.jsx'
+export { default as DataTable }     from './primitives/DataTable.jsx'
+export { default as Skeleton }      from './primitives/Skeleton.jsx'
+export { default as Alert }         from './primitives/Alert.jsx'
+export { default as Tooltip }       from './primitives/Tooltip.jsx'
 
 // ── Layouts ──
 export { default as ShellLayout }   from './layouts/ShellLayout.jsx'

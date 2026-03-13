@@ -82,13 +82,15 @@ export default function sprayLogRoutes(upload) {
 
   /** @route GET /api/spray-logs — List spray logs with optional filters */
   router.get('/', requireAuth, asyncHandler(async (req, res) => {
-    const { vehicleId, crewName } = req.query
+    const { vehicleId, crewName, start, end } = req.query
     const limit = sanitizeQueryInt(req.query.limit, SPRAY_LOG_DEFAULT_LIMIT, 1, SPRAY_LOG_MAX_LIMIT)
     const where = []
     const params = []
 
     if (vehicleId) { params.push(vehicleId); where.push(`sl.vehicle_id = $${params.length}`) }
     if (crewName) { params.push(crewName); where.push(`sl.crew_name = $${params.length}`) }
+    if (start) { params.push(start); where.push(`sl.created_at >= $${params.length}::date`) }
+    if (end) { params.push(end); where.push(`sl.created_at < ($${params.length}::date + interval '1 day')`) }
 
     const whereStr = where.length > 0 ? 'WHERE ' + where.join(' AND ') : ''
     params.push(limit)

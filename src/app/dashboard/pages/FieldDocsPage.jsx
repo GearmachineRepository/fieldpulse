@@ -12,13 +12,13 @@ import {
   Thermometer, ChevronDown, ChevronUp, Download, Users,
   Eye, Calendar, Filter,
 } from "lucide-react"
-import { T } from "@/app/tokens.js"
 import { useData } from "@/context/DataProvider.jsx"
 import {
   Modal, PageHeader, SearchBar, LoadingSpinner, EmptyMessage,
 } from "@/app/dashboard/components/PageUI.jsx"
+import s from "./FieldDocsPage.module.css"
 
-export default function FieldDocsPage({ isMobile }) {
+export default function FieldDocsPage() {
   const { sprayLogs, crews } = useData()
   const [searchQ, setSearchQ] = useState("")
   const [filterCrew, setFilterCrew] = useState("")
@@ -40,17 +40,18 @@ export default function FieldDocsPage({ isMobile }) {
       <PageHeader title="Field Docs" count={sprayLogs.data.length} countLabel="spray logs" />
 
       {/* Filters */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ flex: 1, minWidth: 200 }}>
+      <div className={s.filters}>
+        <div className={s.searchWrap}>
           <SearchBar value={searchQ} onChange={setSearchQ} placeholder="Search by property, crew..." />
         </div>
         {crewNames.length > 1 && (
-          <div style={{ marginBottom: 16 }}>
-            <select value={filterCrew} onChange={e => setFilterCrew(e.target.value)} style={{
-              padding: "10px 14px", borderRadius: 10, border: `1px solid ${T.border}`,
-              background: T.card, color: filterCrew ? T.text : T.textLight, fontSize: 13,
-              fontWeight: 600, fontFamily: T.font, cursor: "pointer", outline: "none",
-            }}>
+          <div className={s.selectWrap}>
+            <select
+              value={filterCrew}
+              onChange={e => setFilterCrew(e.target.value)}
+              className={s.crewSelect}
+              style={{ color: filterCrew ? "var(--color-text)" : undefined }}
+            >
               <option value="">All Crews</option>
               {crewNames.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
@@ -63,83 +64,62 @@ export default function FieldDocsPage({ isMobile }) {
        filtered.length === 0 ? (
         <EmptyMessage text={searchQ || filterCrew ? "No logs match your filters." : "No spray logs yet. Crews submit them from the field app."} />
       ) : (
-        <div style={{
-          background: T.card, borderRadius: 14, border: `1px solid ${T.border}`,
-          boxShadow: T.shadow, overflow: "hidden",
-        }}>
+        <div className={s.logList}>
           {/* Table header */}
-          {!isMobile && (
-            <div style={{
-              display: "grid", gridTemplateColumns: "120px 1fr 140px 100px 80px 60px",
-              padding: "10px 18px", background: T.bg, gap: 12,
-            }}>
-              {["Date", "Property", "Crew", "Products", "Photos", ""].map(h => (
-                <div key={h} style={{ fontSize: 11, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</div>
-              ))}
-            </div>
-          )}
+          <div className={s.tableHeader}>
+            {["Date", "Property", "Crew", "Products", "Photos", ""].map(h => (
+              <div key={h} className={s.colLabel}>{h}</div>
+            ))}
+          </div>
 
           {filtered.map((log, i) => (
             <div key={log.id}>
               {/* Desktop row */}
-              {!isMobile ? (
-                <button onClick={() => setViewing(log)} style={{
-                  display: "grid", gridTemplateColumns: "120px 1fr 140px 100px 80px 60px",
-                  padding: "14px 18px", width: "100%", border: "none", background: "none",
-                  cursor: "pointer", fontFamily: T.font, textAlign: "left", gap: 12,
-                  borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none",
-                  transition: "background 0.1s",
-                }}
-                  onMouseEnter={e => e.currentTarget.style.background = T.bg}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                >
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{log.date}</div>
-                    <div style={{ fontSize: 12, color: T.textLight }}>{log.time}</div>
+              <button
+                onClick={() => setViewing(log)}
+                className={`${s.desktopRow} ${i < filtered.length - 1 ? s.rowBorder : ""}`}
+              >
+                <div>
+                  <div className={s.dateText}>{log.date}</div>
+                  <div className={s.timeText}>{log.time}</div>
+                </div>
+                <div className={s.propertyText}>
+                  {log.property}
+                </div>
+                <div>
+                  <div className={s.crewName}>{log.crewName}</div>
+                  <div className={s.crewLead}>{log.crewLead}</div>
+                </div>
+                <div className={s.cellMed}>
+                  {log.products.length} product{log.products.length !== 1 ? "s" : ""}
+                </div>
+                <div className={s.cellMed}>
+                  {(log.photos || []).length > 0 ? `${log.photos.length}` : "—"}
+                </div>
+                <div>
+                  <Eye size={16} color="var(--color-accent)" />
+                </div>
+              </button>
+
+              {/* Mobile card */}
+              <button
+                onClick={() => setViewing(log)}
+                className={`${s.mobileRow} ${i < filtered.length - 1 ? s.rowBorder : ""}`}
+              >
+                <div className={s.mobileIcon}>
+                  <Droplets size={18} color="var(--color-purple)" />
+                </div>
+                <div className={s.mobileContent}>
+                  <div className={s.mobileProperty}>{log.property}</div>
+                  <div className={s.mobileMeta}>
+                    {log.crewName} · {log.products.length} product{log.products.length !== 1 ? "s" : ""}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {log.property}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{log.crewName}</div>
-                    <div style={{ fontSize: 12, color: T.textLight }}>{log.crewLead}</div>
-                  </div>
-                  <div style={{ fontSize: 13, color: T.textMed }}>
-                    {log.products.length} product{log.products.length !== 1 ? "s" : ""}
-                  </div>
-                  <div style={{ fontSize: 13, color: T.textMed }}>
-                    {(log.photos || []).length > 0 ? `${log.photos.length}` : "—"}
-                  </div>
-                  <div>
-                    <Eye size={16} color={T.accent} />
-                  </div>
-                </button>
-              ) : (
-                /* Mobile card */
-                <button onClick={() => setViewing(log)} style={{
-                  display: "flex", gap: 12, padding: "14px 18px", width: "100%",
-                  border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
-                  textAlign: "left", alignItems: "center",
-                  borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none",
-                }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 10, background: `${T.purple}10`,
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
-                    <Droplets size={18} color={T.purple} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{log.property}</div>
-                    <div style={{ fontSize: 12, color: T.textLight }}>
-                      {log.crewName} · {log.products.length} product{log.products.length !== 1 ? "s" : ""}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <div style={{ fontSize: 12, color: T.textLight }}>{log.date}</div>
-                    <div style={{ fontSize: 11, color: T.textLight }}>{log.time}</div>
-                  </div>
-                </button>
-              )}
+                </div>
+                <div className={s.mobileDate}>
+                  <div className={s.mobileDateText}>{log.date}</div>
+                  <div className={s.mobileTimeText}>{log.time}</div>
+                </div>
+              </button>
             </div>
           ))}
         </div>
@@ -158,26 +138,20 @@ function LogDetailModal({ log, onClose }) {
   return (
     <Modal title="Spray Log Detail" onClose={onClose} size="lg">
       {/* Header info */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+      <div className={s.modalHeader}>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>{log.property}</div>
-          <div style={{ fontSize: 13, color: T.textLight }}>
+          <div className={s.modalTitle}>{log.property}</div>
+          <div className={s.modalSubtitle}>
             {log.date} at {log.time}
           </div>
         </div>
-        <div style={{
-          padding: "6px 12px", borderRadius: 8, background: T.accentLight,
-          fontSize: 12, fontWeight: 700, color: T.accent,
-        }}>
+        <div className={s.statusBadge}>
           {log.status || "Synced"}
         </div>
       </div>
 
       {/* Info grid */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr",
-        gap: 1, background: T.border, borderRadius: 12, overflow: "hidden", marginBottom: 20,
-      }}>
+      <div className={s.infoGrid}>
         <InfoCell icon={Users} label="Crew" value={log.crewName} />
         <InfoCell icon={Users} label="Lead" value={log.crewLead} />
         <InfoCell icon={FileText} label="License" value={log.license || "—"} />
@@ -186,33 +160,30 @@ function LogDetailModal({ log, onClose }) {
 
       {/* Weather */}
       {log.weather && (log.weather.temp || log.weather.windSpeed) && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: T.text }}>Weather at Time of Application</div>
-          <div style={{
-            display: "flex", gap: 16, padding: "12px 16px", background: T.bg,
-            borderRadius: 10, flexWrap: "wrap",
-          }}>
+        <div className={s.section}>
+          <div className={s.sectionTitle}>Weather at Time of Application</div>
+          <div className={s.weatherBar}>
             {log.weather.temp && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                <Thermometer size={14} color={T.textLight} />
-                <span style={{ fontWeight: 700 }}>{log.weather.temp}°F</span>
+              <div className={s.weatherItem}>
+                <Thermometer size={14} color="var(--color-text-light)" />
+                <span className={s.weatherBold}>{log.weather.temp}°F</span>
               </div>
             )}
             {log.weather.humidity && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                <Droplets size={14} color={T.textLight} />
+              <div className={s.weatherItem}>
+                <Droplets size={14} color="var(--color-text-light)" />
                 <span>{log.weather.humidity}%</span>
               </div>
             )}
             {log.weather.windSpeed && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                <Wind size={14} color={T.textLight} />
+              <div className={s.weatherItem}>
+                <Wind size={14} color="var(--color-text-light)" />
                 <span>{log.weather.windSpeed} mph {log.weather.windDir || ""}</span>
               </div>
             )}
             {log.weather.conditions && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                <Cloud size={14} color={T.textLight} />
+              <div className={s.weatherItem}>
+                <Cloud size={14} color="var(--color-text-light)" />
                 <span>{log.weather.conditions}</span>
               </div>
             )}
@@ -221,28 +192,24 @@ function LogDetailModal({ log, onClose }) {
       )}
 
       {/* Products */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: T.text }}>
+      <div className={s.section}>
+        <div className={s.sectionTitle}>
           Products Applied ({log.products.length})
         </div>
         {log.products.length === 0 ? (
-          <div style={{ fontSize: 13, color: T.textLight }}>No products recorded</div>
+          <div className={s.noProducts}>No products recorded</div>
         ) : (
-          <div style={{
-            background: T.bg, borderRadius: 10, overflow: "hidden",
-          }}>
+          <div className={s.productList}>
             {log.products.map((p, i) => (
-              <div key={i} style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "10px 16px",
-                borderBottom: i < log.products.length - 1 ? `1px solid ${T.border}` : "none",
-              }}>
+              <div key={i} className={s.productRow}
+                style={i < log.products.length - 1 ? { borderBottom: "1px solid var(--color-card-border)" } : undefined}
+              >
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{p.name}</div>
-                  {p.epa && <div style={{ fontSize: 12, color: T.textLight }}>EPA: {p.epa}</div>}
+                  <div className={s.productName}>{p.name}</div>
+                  {p.epa && <div className={s.productEpa}>EPA: {p.epa}</div>}
                 </div>
                 {p.ozConcentrate && (
-                  <div style={{ fontSize: 13, fontWeight: 600, color: T.accent }}>{p.ozConcentrate}</div>
+                  <div className={s.productConc}>{p.ozConcentrate}</div>
                 )}
               </div>
             ))}
@@ -252,26 +219,20 @@ function LogDetailModal({ log, onClose }) {
 
       {/* Equipment & mix */}
       {(log.equipment || log.totalMixVol) && (
-        <div style={{
-          display: "flex", gap: 16, marginBottom: 20, padding: "12px 16px",
-          background: T.bg, borderRadius: 10, flexWrap: "wrap", fontSize: 13,
-        }}>
-          {log.equipment && <div><span style={{ color: T.textLight }}>Equipment:</span> <span style={{ fontWeight: 600 }}>{log.equipment}</span></div>}
-          {log.totalMixVol && <div><span style={{ color: T.textLight }}>Total Mix:</span> <span style={{ fontWeight: 600 }}>{log.totalMixVol}</span></div>}
-          {log.targetPest && <div><span style={{ color: T.textLight }}>Target:</span> <span style={{ fontWeight: 600 }}>{log.targetPest}</span></div>}
+        <div className={s.equipBar}>
+          {log.equipment && <div><span className={s.equipLabel}>Equipment:</span> <span className={s.equipValue}>{log.equipment}</span></div>}
+          {log.totalMixVol && <div><span className={s.equipLabel}>Total Mix:</span> <span className={s.equipValue}>{log.totalMixVol}</span></div>}
+          {log.targetPest && <div><span className={s.equipLabel}>Target:</span> <span className={s.equipValue}>{log.targetPest}</span></div>}
         </div>
       )}
 
       {/* Crew members */}
       {log.members && log.members.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: T.text }}>Crew Members Present</div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div className={s.section}>
+          <div className={s.sectionTitle}>Crew Members Present</div>
+          <div className={s.memberList}>
             {log.members.map((m, i) => (
-              <div key={i} style={{
-                padding: "6px 12px", background: T.bg, borderRadius: 8,
-                fontSize: 13, fontWeight: 600, color: T.textMed,
-              }}>
+              <div key={i} className={s.memberChip}>
                 {m.employee_name || m.name}
               </div>
             ))}
@@ -281,16 +242,13 @@ function LogDetailModal({ log, onClose }) {
 
       {/* Photos */}
       {log.photos && log.photos.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: T.text }}>Photos ({log.photos.length})</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 8 }}>
+        <div className={s.section}>
+          <div className={s.sectionTitle}>Photos ({log.photos.length})</div>
+          <div className={s.photoGrid}>
             {log.photos.map((photo, i) => (
-              <a key={i} href={`/uploads/${photo.filename}`} target="_blank" rel="noopener noreferrer" style={{
-                display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1",
-                background: T.bg, border: `1px solid ${T.border}`,
-              }}>
+              <a key={i} href={`/uploads/${photo.filename}`} target="_blank" rel="noopener noreferrer" className={s.photoLink}>
                 <img src={`/uploads/${photo.filename}`} alt={photo.original_name || `Photo ${i + 1}`}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  className={s.photoImg} />
               </a>
             ))}
           </div>
@@ -299,9 +257,9 @@ function LogDetailModal({ log, onClose }) {
 
       {/* Notes */}
       {log.notes && (
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, color: T.text }}>Notes</div>
-          <div style={{ fontSize: 14, color: T.textMed, lineHeight: 1.6, background: T.bg, borderRadius: 10, padding: "12px 16px" }}>
+        <div className={s.notesSection}>
+          <div className={s.notesTitle}>Notes</div>
+          <div className={s.notesBody}>
             {log.notes}
           </div>
         </div>
@@ -312,12 +270,12 @@ function LogDetailModal({ log, onClose }) {
 
 function InfoCell({ icon: Icon, label, value }) {
   return (
-    <div style={{ background: T.card, padding: "12px 16px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-        <Icon size={13} color={T.textLight} />
-        <span style={{ fontSize: 11, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: "0.3px" }}>{label}</span>
+    <div className={s.infoCell}>
+      <div className={s.infoCellHeader}>
+        <Icon size={13} color="var(--color-text-light)" />
+        <span className={s.infoCellLabel}>{label}</span>
       </div>
-      <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{value}</div>
+      <div className={s.infoCellValue}>{value}</div>
     </div>
   )
 }

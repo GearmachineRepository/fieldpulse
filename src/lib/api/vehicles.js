@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Vehicles API — Fleet vehicle management
+// ═══════════════════════════════════════════
 import { request } from './core.js'
 
 export const getVehicles    = ()        => request('/vehicles')

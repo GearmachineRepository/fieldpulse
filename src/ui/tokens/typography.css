@@ -4,8 +4,8 @@
 
 :root {
   /* ── Font stacks ── */
-  --font-sans: 'Nunito Sans', 'Avenir', 'Segoe UI', sans-serif;
-  --font-mono: 'DM Mono', 'SF Mono', monospace;
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'DM Mono', monospace;
 
   /* ── Scale (rem-based for accessibility) ── */
   --text-xs:   0.6875rem;  /* 11px */

@@ -1,0 +1,427 @@
+/* ═══════════════════════════════════════════
+   Field Docs Page — Spray log viewer
+   ═══════════════════════════════════════════ */
+
+/* ── Filters ── */
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchWrap {
+  flex: 1;
+  min-width: 200px;
+}
+
+.selectWrap {
+  margin-bottom: 16px;
+}
+
+.crewSelect {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  outline: none;
+}
+
+.crewSelect:not([data-has-value]) {
+  color: var(--color-text-light);
+}
+
+/* ── Log list card ── */
+
+.logList {
+  background: var(--color-card);
+  border-radius: 14px;
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+/* ── Table header (desktop) ── */
+
+.tableHeader {
+  display: none;
+  grid-template-columns: 120px 1fr 140px 100px 80px 60px;
+  padding: 10px 18px;
+  background: var(--color-bg);
+  gap: 12px;
+}
+
+@media (min-width: 769px) {
+  .tableHeader {
+    display: grid;
+  }
+}
+
+.colLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Desktop row ── */
+
+.desktopRow {
+  display: none;
+  grid-template-columns: 120px 1fr 140px 100px 80px 60px;
+  padding: 14px 18px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+  gap: 12px;
+  transition: background 0.1s;
+}
+
+@media (min-width: 769px) {
+  .desktopRow {
+    display: grid;
+  }
+}
+
+.desktopRow:hover {
+  background: var(--color-bg);
+}
+
+.rowBorder {
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.dateText {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.timeText {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.propertyText {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crewName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.crewLead {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.cellMed {
+  font-size: 13px;
+  color: var(--color-text-med);
+}
+
+/* ── Mobile card ── */
+
+.mobileRow {
+  display: flex;
+  gap: 12px;
+  padding: 14px 18px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+  align-items: center;
+}
+
+@media (min-width: 769px) {
+  .mobileRow {
+    display: none;
+  }
+}
+
+.mobileIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-purple) 6%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mobileContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobileProperty {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.mobileMeta {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.mobileDate {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.mobileDateText {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.mobileTimeText {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+/* ═══════════════════════════════════════════
+   Log Detail Modal
+   ═══════════════════════════════════════════ */
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.modalSubtitle {
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+.statusBadge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--color-accent-light);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+/* ── Info grid ── */
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--color-card-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.infoCell {
+  background: var(--color-card);
+  padding: 12px 16px;
+}
+
+.infoCellHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.infoCellLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.infoCellValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Sections ── */
+
+.section {
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--color-text);
+}
+
+/* ── Weather ── */
+
+.weatherBar {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.weatherItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.weatherBold {
+  font-weight: 700;
+}
+
+/* ── Products ── */
+
+.noProducts {
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+.productList {
+  background: var(--color-bg);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.productRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+}
+
+.productName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.productEpa {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.productConc {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* ── Equipment / mix ── */
+
+.equipBar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  border-radius: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.equipLabel {
+  color: var(--color-text-light);
+}
+
+.equipValue {
+  font-weight: 600;
+}
+
+/* ── Crew members ── */
+
+.memberList {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.memberChip {
+  padding: 6px 12px;
+  background: var(--color-bg);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-med);
+}
+
+/* ── Photos ── */
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.photoLink {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--color-bg);
+  border: 1px solid var(--color-card-border);
+}
+
+.photoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Notes ── */
+
+.notesSection {
+  margin-bottom: 12px;
+}
+
+.notesTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+
+.notesBody {
+  font-size: 14px;
+  color: var(--color-text-med);
+  line-height: 1.6;
+  background: var(--color-bg);
+  border-radius: 10px;
+  padding: 12px 16px;
+}

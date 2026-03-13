@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Employees API — Employee CRUD operations
+// ═══════════════════════════════════════════
 import { request, multipartRequest } from './core.js'
 
 export const getEmployees = () => request('/employees')

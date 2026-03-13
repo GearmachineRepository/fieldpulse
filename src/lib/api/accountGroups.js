@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Account Groups API — Group management for accounts
+// ═══════════════════════════════════════════
 import { request } from './core.js'
 
 export const getAccountGroups    = ()        => request('/account-groups')

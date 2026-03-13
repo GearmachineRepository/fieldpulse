@@ -4,7 +4,6 @@
 
 import { useState } from "react"
 import { Home, FileText, Calendar, User } from "lucide-react"
-import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
 import { getDeviceRegistration, clearDeviceRegistration } from "@/lib/api/device.js"
 import CompanyCodeScreen from "@/app/auth/CompanyCodeScreen.jsx"
@@ -15,6 +14,7 @@ import FieldSchedule from "@/app/field/pages/FieldSchedule.jsx"
 import FieldProfile from "@/app/field/pages/FieldProfile.jsx"
 import NewDocModal from "@/app/field/components/NewDocModal.jsx"
 import SprayLogForm from "@/app/field/pages/SprayLogForm.jsx"
+import s from "./FieldShell.module.css"
 
 const TABS = [
   { key: "home", icon: Home, label: "Home" },
@@ -56,11 +56,8 @@ export default function FieldShell() {
   // Loading
   if (restoring) {
     return (
-      <div style={{
-        maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: T.bg,
-        display: "flex", alignItems: "center", justifyContent: "center", fontFamily: T.font,
-      }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: T.text }}>Loading…</div>
+      <div className={s.loading}>
+        <div className={s.loadingText}>Loading…</div>
       </div>
     )
   }
@@ -82,14 +79,10 @@ export default function FieldShell() {
 
   // Logged in — full field app
   return (
-    <div style={{
-      maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: T.bg,
-      position: "relative", boxShadow: "0 0 60px rgba(0,0,0,0.08)",
-      fontFamily: T.font, color: T.text,
-    }}>
-      <div style={{ height: 44, background: T.sidebar }} />
-      
-      <main style={{ paddingBottom: 80 }}>
+    <div className={s.wrapper}>
+      <div className={s.statusBar} />
+
+      <main className={s.content}>
         {tab === "home" && <FieldHome onNewDoc={() => setShowNewDoc(true)} onNavigate={setTab} />}
         {tab === "docs" && <FieldDocs />}
         {tab === "schedule" && <FieldSchedule />}
@@ -100,20 +93,12 @@ export default function FieldShell() {
       {showNewDoc && <NewDocModal onClose={() => setShowNewDoc(false)} onSelectType={handleDocTypeSelected} />}
 
       {/* Bottom tab bar */}
-      <div style={{
-        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-        width: "100%", maxWidth: 430, background: T.card,
-        borderTop: `1px solid ${T.border}`, display: "flex",
-        padding: "8px 16px 24px", zIndex: 50,
-      }}>
+      <div className={s.tabBar}>
         {TABS.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)} style={{
-            flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-            border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
-            color: tab === t.key ? T.accent : T.textLight, padding: "6px 0",
-          }}>
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={s.tabBtn} data-active={tab === t.key}>
             <t.icon size={22} strokeWidth={tab === t.key ? 2.5 : 1.5} />
-            <span style={{ fontSize: 11, fontWeight: tab === t.key ? 700 : 500 }}>{t.label}</span>
+            <span className={s.tabLabel}>{t.label}</span>
           </button>
         ))}
       </div>

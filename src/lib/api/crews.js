@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Crews API — Crew management operations
+// ═══════════════════════════════════════════
 import { request } from './core.js'
 
 export const getCrewLoginTiles = ()        => request('/crews/login-tiles')

@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Equipment API — Equipment management
+// ═══════════════════════════════════════════
 import { request } from './core.js'
 
 export const getEquipment    = ()        => request('/equipment')

@@ -1,0 +1,440 @@
+/* ═══════════════════════════════════════════
+   DashboardSidebar — CSS Module
+   Uses design-token CSS variables from
+   src/ui/tokens/colors.css + typography.css.
+   ═══════════════════════════════════════════ */
+
+/* ── Backdrop overlay (mobile only) ── */
+.backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  z-index: 40;
+}
+
+/* ── Sidebar container ── */
+.sidebar {
+  width: 240px;
+  background: var(--color-sidebar);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.2s ease;
+  font-family: var(--font-sans);
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+/* ── Logo ── */
+.logo {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--color-sidebar-hover);
+  min-height: 64px;
+  overflow: hidden;
+}
+
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--color-accent);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoText {
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.collapsed .logoText {
+  opacity: 0;
+  width: 0;
+}
+
+.logoName {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.logoTagline {
+  font-size: 11px;
+  color: #64748B;
+}
+
+/* ── Nav area ── */
+.nav {
+  flex: 1;
+  padding: 12px 8px;
+  overflow-y: auto;
+}
+
+/* ── Group header (OPERATIONS, MANAGE, REPORTS, MODULES) ── */
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 12px 6px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  color: #475569;
+}
+
+.groupHeader:hover {
+  color: #64748B;
+}
+
+.groupLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.collapsed .groupLabel {
+  opacity: 0;
+  width: 0;
+}
+
+.collapsed .groupHeader {
+  justify-content: center;
+  padding: 16px 0 6px;
+}
+
+.groupChevron {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.collapsed .groupChevron {
+  display: none;
+}
+
+.groupChevronUp {
+  transform: rotate(0deg);
+}
+
+.groupChevronDown {
+  transform: rotate(180deg);
+}
+
+/* ── Nav button ── */
+.navBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 2px;
+  background: transparent;
+  color: #94A3B8;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.navBtn:hover {
+  background: var(--color-sidebar-hover);
+}
+
+.navBtn.active {
+  background: var(--color-sidebar-active);
+  color: #fff;
+  font-weight: 600;
+}
+
+.navBtnIcon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navBtnLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.15s ease;
+}
+
+.collapsed .navBtnLabel {
+  opacity: 0;
+  width: 0;
+}
+
+.collapsed .navBtn {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+/* ── Tooltip (collapsed mode only) ── */
+.navBtn .tooltip {
+  display: none;
+}
+
+.collapsed .navBtn .tooltip {
+  display: none;
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1E293B;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+.collapsed .navBtn:hover .tooltip {
+  display: block;
+}
+
+/* ── Module badge ── */
+.modBadge {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.collapsed .modBadge {
+  display: none;
+}
+
+/* ── Modules collapsed count ── */
+.modulesCollapsedInfo {
+  padding: 4px 12px 8px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.collapsed .modulesCollapsedInfo {
+  display: none;
+}
+
+/* ── Footer ── */
+.footer {
+  padding: 12px 8px;
+  border-top: 1px solid var(--color-sidebar-hover);
+}
+
+.footerBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: #64748B;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  transition: background 0.15s ease, color 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.footerBtn:hover {
+  background: var(--color-sidebar-hover);
+  color: #94A3B8;
+}
+
+.footerBtnLabel {
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.collapsed .footerBtnLabel {
+  opacity: 0;
+  width: 0;
+}
+
+.collapsed .footerBtn {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.footerBtn .tooltip {
+  display: none;
+}
+
+.collapsed .footerBtn .tooltip {
+  display: none;
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1E293B;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+.collapsed .footerBtn:hover .tooltip {
+  display: block;
+}
+
+.version {
+  font-size: 10px;
+  color: var(--color-sidebar-active);
+  padding: 8px 12px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.collapsed .version {
+  opacity: 0;
+}
+
+/* ── Collapse toggle button ── */
+.collapseBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: #475569;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  transition: background 0.15s ease, color 0.15s ease;
+  margin-top: 4px;
+}
+
+.collapseBtn:hover {
+  background: var(--color-sidebar-hover);
+  color: #64748B;
+}
+
+.collapseBtnLabel {
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.collapsed .collapseBtnLabel {
+  opacity: 0;
+  width: 0;
+  position: absolute;
+}
+
+/* ── Divider (non-collapsible group label) ── */
+.dividerLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 16px 12px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.collapsed .dividerLabel {
+  opacity: 0;
+}
+
+/* ═══════════════════════════════════════════
+   Mobile: overlay mode
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .backdrop.open {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    width: 240px !important;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.18);
+  }
+
+  /* On mobile, never show collapsed state */
+  .sidebar.collapsed {
+    width: 240px !important;
+  }
+
+  .collapsed .logoText,
+  .collapsed .groupLabel,
+  .collapsed .navBtnLabel,
+  .collapsed .footerBtnLabel,
+  .collapsed .modBadge,
+  .collapsed .version,
+  .collapsed .collapseBtnLabel,
+  .collapsed .modulesCollapsedInfo {
+    opacity: 1;
+    width: auto;
+  }
+
+  .collapsed .navBtn,
+  .collapsed .footerBtn {
+    justify-content: flex-start;
+    padding: 10px 12px;
+  }
+
+  .collapsed .groupHeader {
+    justify-content: space-between;
+    padding: 16px 12px 6px;
+  }
+
+  .collapsed .groupChevron {
+    display: block;
+  }
+
+  .collapseBtn {
+    display: none;
+  }
+}

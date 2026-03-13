@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Resources API — Resource library CRUD + file uploads
+// ═══════════════════════════════════════════
 import { request, multipartRequest } from './core.js'
 
 // Categories

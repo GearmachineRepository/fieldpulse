@@ -30,6 +30,7 @@ import deviceRoutes from './routes/device.js'
 import accountGroupRoutes from './routes/accountGroups.js'
 import scheduleEventRoutes from './routes/scheduleEvents.js'
 import resourceRoutes from './routes/resources.js'
+import servicePlanRoutes from './routes/servicePlans.js'
 
 import { createUpload }           from './middleware/upload.js'
 import { notFound, errorHandler } from './middleware/error.js'
@@ -99,12 +100,12 @@ app.use('/uploads', express.static(uploadsDir, {
   },
 }))
 
-// ── Routes — public (no auth) ──
+// ── Routes — public (no auth required for some endpoints) ──
 app.use('/api/auth',   authRoutes)
 app.use('/api/admins', adminsRoutes)
-app.use('/api/crews',  crewRoutes)
 
 // ── Routes — protected (auth applied inside each router) ──
+app.use('/api/crews',  crewRoutes)
 app.use('/api/vehicles',   vehicleRoutes)
 app.use('/api/employees',  employeeRoutes(upload))
 app.use('/api/equipment',  equipmentRoutes)
@@ -118,6 +119,7 @@ app.use('/api/device', deviceRoutes)
 app.use('/api/account-groups', accountGroupRoutes)
 app.use('/api/schedule-events', scheduleEventRoutes)
 app.use('/api/resources', resourceRoutes)
+app.use('/api/service-plans', servicePlanRoutes)
 
 // ── Health check ──
 app.get('/api/health', async (req, res) => {

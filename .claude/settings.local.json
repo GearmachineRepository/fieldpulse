@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse -maxdepth 2 -type f \\\\\\(-name *.config.* -o -name .env* -o -name *.md -o -name .gitignore -o -name Dockerfile* -o -name docker-compose* \\\\\\))",
+      "Bash(wc -l /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse/server/routes/*.js)",
+      "Bash(grep -r \"export\" /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse/src/lib/api/*.js)",
+      "Bash(find /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse -maxdepth 2 -name Dockerfile* -o -name docker-compose*)",
+      "Bash(pandoc \"C:\\\\Users\\\\Owen\\\\Downloads\\\\FieldPulse-Product-Overview-Architecture-Schematic.docx\" -o /tmp/fieldpulse-doc.md)",
+      "Read(//tmp/**)",
+      "Bash(python3 -c \":*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx vite:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

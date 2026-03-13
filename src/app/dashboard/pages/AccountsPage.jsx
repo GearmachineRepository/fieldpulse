@@ -9,7 +9,7 @@ import {
   BookOpen, Link2, X, Search, ExternalLink, Download, FileText, Loader2,
   Settings, Trash2,
 } from "lucide-react"
-import { T } from "@/app/tokens.js"
+import s from "./AccountsPage.module.css"
 import { useData } from "@/context/DataProvider.jsx"
 import {
   getAccountResources, linkAccountResource, unlinkAccountResource,
@@ -42,7 +42,7 @@ function abbreviateState(input) {
   return STATE_MAP[trimmed.toLowerCase()] || trimmed
 }
 
-export default function AccountsPage({ isMobile }) {
+export default function AccountsPage() {
   const { accounts, accountGroups, toast } = useData()
   const [editing, setEditing] = useState(null)
   const [searchQ, setSearchQ] = useState("")
@@ -88,60 +88,56 @@ export default function AccountsPage({ isMobile }) {
         action={<AddButton label="Add Account" icon={Plus} onClick={() => setEditing({})} />} />
 
       {/* Filters */}
-      <div style={{ marginBottom: 16 }}>
+      <div className={s.filterBar}>
         <SearchBar value={searchQ} onChange={setSearchQ} placeholder="Search accounts..." />
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10, alignItems: "center" }}>
-          <FilterPill label="All" count={accounts.data.length} color={T.accent}
+        <div className={s.filterRow}>
+          <FilterPill label="All" count={accounts.data.length} color="var(--color-accent)"
             active={!filterGroup} onClick={() => setFilterGroup("")} />
           {accountGroups.data.map(g => {
             const count = accounts.data.filter(a => a.group_id === g.id).length
             return <FilterPill key={g.id} label={g.name} count={count} color={g.color}
               active={filterGroup === g.id} onClick={() => setFilterGroup(filterGroup === g.id ? "" : g.id)} />
           })}
-          <button onClick={() => setManagingGroups(true)} style={{
-            width: 30, height: 30, borderRadius: 8, border: `1.5px solid ${T.border}`,
-            background: T.card, cursor: "pointer", display: "flex",
-            alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }} title="Manage Groups">
-            <Settings size={14} color={T.textLight} />
+          <button onClick={() => setManagingGroups(true)} className={s.manageGroupsBtn} title="Manage Groups">
+            <Settings size={14} color="var(--color-text-light)" />
           </button>
         </div>
       </div>
 
-      {/* Cards — original sizing preserved */}
+      {/* Cards */}
       {accounts.loading && !accounts.data.length ? <LoadingSpinner /> :
        filtered.length === 0 ? <EmptyMessage text={searchQ || filterGroup ? "No matches." : "No accounts yet."} /> : (
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2, 1fr)", gap: 12 }}>
+        <div className={s.cardGrid}>
           {filtered.map(acct => {
             const group = accountGroups.data.find(g => g.id === acct.group_id)
             return (
-              <ClickableCard key={acct.id} onClick={() => setEditing(acct)} style={{ padding: "18px 20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 8 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 }}>
-                      <div style={{ fontSize: 16, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{acct.name}</div>
-                      {group && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: `${group.color}15`, color: group.color, flexShrink: 0 }}>{group.name}</span>}
+              <ClickableCard key={acct.id} onClick={() => setEditing(acct)} className={s.cardInner}>
+                <div className={s.cardHeader}>
+                  <div className={s.cardHeaderLeft}>
+                    <div className={s.cardTitleRow}>
+                      <div className={s.cardName}>{acct.name}</div>
+                      {group && <span className={s.groupBadge} style={{ background: `${group.color}15`, color: group.color }}>{group.name}</span>}
                     </div>
                   </div>
                   <IconButton icon={Edit3} onClick={() => setEditing(acct)} title="Edit" />
                 </div>
 
-                <div style={{ display: "flex", alignItems: "start", gap: 6, marginBottom: 4 }}>
-                  <MapPin size={14} color={T.textLight} style={{ marginTop: 1, flexShrink: 0 }} />
-                  <div style={{ fontSize: 13, color: T.textMed, lineHeight: 1.4 }}>
+                <div className={s.addressRow}>
+                  <MapPin size={14} color="var(--color-text-light)" className={s.addressIcon} />
+                  <div className={s.addressText}>
                     {acct.address}{acct.city && <>, {acct.city}</>}{acct.state && <>, {acct.state}</>}{acct.zip && <> {acct.zip}</>}
                   </div>
                 </div>
 
                 {(acct.contactName || acct.contactPhone) && (
-                  <div style={{ display: "flex", gap: 12, fontSize: 12, color: T.textLight, marginTop: 4 }}>
+                  <div className={s.contactRow}>
                     {acct.contactName && <span>{acct.contactName}</span>}
-                    {acct.contactPhone && <span style={{ display: "flex", alignItems: "center", gap: 3 }}><PhoneIcon size={11} /> {acct.contactPhone}</span>}
+                    {acct.contactPhone && <span className={s.contactPhone}><PhoneIcon size={11} /> {acct.contactPhone}</span>}
                   </div>
                 )}
 
                 {acct.latitude && acct.longitude && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6, fontSize: 11, color: T.accent, fontWeight: 600 }}>
+                  <div className={s.gpsRow}>
                     <Navigation size={11} /> GPS saved
                   </div>
                 )}
@@ -228,15 +224,11 @@ function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
     <Modal title={isEdit ? "Edit Account" : "Add Account"} onClose={onClose} size="lg">
       {/* Tabs — only for existing accounts */}
       {isEdit && (
-        <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: `1.5px solid ${T.border}`, paddingBottom: 0 }}>
+        <div className={s.tabBar}>
           {tabs.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)} style={{
-              padding: "10px 18px", border: "none", cursor: "pointer", fontFamily: T.font,
-              fontSize: 14, fontWeight: 700, background: "transparent",
-              color: tab === t.key ? T.accent : T.textLight,
-              borderBottom: tab === t.key ? `2.5px solid ${T.accent}` : "2.5px solid transparent",
-              marginBottom: -1.5, transition: "color 0.15s, border-color 0.15s",
-            }}>{t.label}</button>
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`${s.tabBtn} ${tab === t.key ? s.tabBtnActive : ""}`}
+            >{t.label}</button>
           ))}
         </div>
       )}
@@ -246,7 +238,7 @@ function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
         <>
           <FormField label="Property Name *" value={name} onChange={setName} autoFocus placeholder="e.g. Oak Ridge Estates" />
           <FormField label="Address *" value={address} onChange={setAddress} placeholder="Street address" />
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10 }}>
+          <div className={s.formRow3}>
             <FormField label="City" value={city} onChange={setCity} />
             <FormField label="State" value={state} onChange={setState} />
             <FormField label="ZIP" value={zip} onChange={setZip} />
@@ -256,34 +248,26 @@ function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
             options={groups.map(g => ({ value: String(g.id), label: g.name }))} />
 
           {/* Estimated service time */}
-          <div style={{ marginTop: 8, marginBottom: 8 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+          <div className={s.estTimeSection}>
+            <label className={s.estTimeLabel}>
               Estimated Service Time
             </label>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <div className={s.estTimeBtnRow}>
               {[15, 30, 45, 60, 90, 120].map(m => (
-                <button key={m} onClick={() => setEstMinutes(String(m))} style={{
-                  padding: "7px 12px", borderRadius: 8, cursor: "pointer", fontFamily: T.font,
-                  fontSize: 13, fontWeight: 700,
-                  border: `1.5px solid ${parseInt(estimatedMinutes) === m ? T.accent : T.border}`,
-                  background: parseInt(estimatedMinutes) === m ? T.accentLight : T.card,
-                  color: parseInt(estimatedMinutes) === m ? T.accent : T.textMed,
-                }}>{m < 60 ? `${m}m` : `${m / 60}h`}</button>
+                <button key={m} onClick={() => setEstMinutes(String(m))}
+                  className={`${s.estTimeBtn} ${parseInt(estimatedMinutes) === m ? s.estTimeBtnActive : ""}`}
+                >{m < 60 ? `${m}m` : `${m / 60}h`}</button>
               ))}
             </div>
             <input value={estimatedMinutes} onChange={e => setEstMinutes(e.target.value.replace(/\D/g, ""))}
-              placeholder="Custom minutes" style={{
-                marginTop: 6, width: 120, padding: "8px 12px", borderRadius: 8,
-                border: `1.5px solid ${T.border}`, background: T.bg, fontSize: 13,
-                fontFamily: T.font, outline: "none", boxSizing: "border-box", color: T.text,
-              }} />
-            <span style={{ fontSize: 12, color: T.textLight, marginLeft: 8 }}>minutes</span>
+              placeholder="Custom minutes" className={s.estTimeInput} />
+            <span className={s.estTimeHint}>minutes</span>
           </div>
 
-          <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 14, marginTop: 8, marginBottom: 14 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: T.text }}>Contact</div>
+          <div className={s.contactSection}>
+            <div className={s.contactSectionTitle}>Contact</div>
             <FormField label="Name" value={contactName} onChange={setContactName} />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className={s.formRow2}>
               <FormField label="Phone" value={contactPhone} onChange={setContactPhone} type="tel" />
               <FormField label="Email" value={contactEmail} onChange={setContactEmail} type="email" />
             </div>
@@ -358,65 +342,50 @@ export function AccountResourcesTab({ accountId, toast, onClose }) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div className={s.resourcesHeader}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>
+          <div className={s.resourcesCount}>
             {linked.length} resource{linked.length !== 1 ? "s" : ""} linked
           </div>
-          <div style={{ fontSize: 12, color: T.textLight }}>
+          <div className={s.resourcesSub}>
             Crews see these when visiting this jobsite
           </div>
         </div>
-        <button onClick={() => setShowPicker(true)} style={{
-          display: "flex", alignItems: "center", gap: 6, padding: "8px 14px",
-          borderRadius: 8, border: `1.5px dashed ${T.accent}`, background: T.accentLight,
-          color: T.accent, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: T.font,
-        }}>
+        <button onClick={() => setShowPicker(true)} className={s.attachBtn}>
           <Link2 size={14} /> Attach Resource
         </button>
       </div>
 
       {/* Linked list */}
       {linked.length === 0 ? (
-        <div style={{
-          padding: 30, textAlign: "center", color: T.textLight, fontSize: 14,
-          background: T.bg, borderRadius: 12, border: `1.5px dashed ${T.border}`,
-        }}>
-          <BookOpen size={28} color={T.textLight} style={{ marginBottom: 8 }} />
+        <div className={s.emptyResources}>
+          <BookOpen size={28} color="var(--color-text-light)" className={s.emptyResourcesIcon} />
           <div>No resources attached yet</div>
-          <div style={{ fontSize: 12, marginTop: 4 }}>
+          <div className={s.emptyResourcesSub}>
             Attach SDS sheets, site plans, or manuals for crews to access on-site
           </div>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <div className={s.linkedList}>
           {linked.map(r => (
-            <div key={r.id} style={{
-              display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
-              background: T.bg, borderRadius: 10, border: `1px solid ${T.border}`,
-            }}>
-              <div style={{
-                width: 34, height: 34, borderRadius: 8,
-                background: r.categoryColor ? `${r.categoryColor}15` : `${T.blue}10`,
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
+            <div key={r.id} className={s.linkedRow}>
+              <div className={s.resourceIcon}
+                style={{ background: r.categoryColor ? `${r.categoryColor}15` : "var(--color-blue-light)" }}>
                 {r.resourceType === "link"
-                  ? <ExternalLink size={16} color={r.categoryColor || T.blue} />
-                  : <FileText size={16} color={r.categoryColor || T.blue} />
+                  ? <ExternalLink size={16} color={r.categoryColor || "var(--color-blue)"} />
+                  : <FileText size={16} color={r.categoryColor || "var(--color-blue)"} />
                 }
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div className={s.resourceInfo}>
+                <div className={s.resourceTitle}>
                   {r.title}
                 </div>
-                <div style={{ fontSize: 11, color: T.textLight }}>
+                <div className={s.resourceCategory}>
                   {r.categoryName || "Uncategorized"}
                 </div>
               </div>
-              <button onClick={() => handleUnlink(r.id)} style={{
-                border: "none", background: "none", cursor: "pointer", padding: 4,
-              }} title="Unlink">
-                <X size={16} color={T.textLight} />
+              <button onClick={() => handleUnlink(r.id)} className={s.unlinkBtn} title="Unlink">
+                <X size={16} color="var(--color-text-light)" />
               </button>
             </div>
           ))}
@@ -424,12 +393,8 @@ export function AccountResourcesTab({ accountId, toast, onClose }) {
       )}
 
       {/* Footer */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
-        <button onClick={onClose} style={{
-          padding: "10px 24px", borderRadius: 10, border: `1.5px solid ${T.border}`,
-          background: "transparent", color: T.textMed, fontSize: 14, fontWeight: 600,
-          cursor: "pointer", fontFamily: T.font,
-        }}>Done</button>
+      <div className={s.resourcesFooter}>
+        <button onClick={onClose} className={s.doneBtn}>Done</button>
       </div>
 
       {/* Resource Picker */}
@@ -459,70 +424,48 @@ export function ResourcePickerOverlay({ available, search, onSearch, onSelect, o
       : "All resources are already linked"
 
   return (
-    <div onClick={e => e.target === e.currentTarget && onClose()} style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 120,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
-    }}>
-      <div style={{
-        background: T.card, borderRadius: 16, width: "100%", maxWidth: 440,
-        maxHeight: "70vh", display: "flex", flexDirection: "column",
-        boxShadow: T.shadowLg, animation: "modalIn 0.15s ease",
-      }}>
-        <div style={{ padding: "18px 20px 0", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>Attach Resource</div>
-            <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", padding: 4 }}>
-              <X size={18} color={T.textLight} />
+    <div onClick={e => e.target === e.currentTarget && onClose()} className={s.pickerOverlay}>
+      <div className={s.pickerPanel}>
+        <div className={s.pickerHeader}>
+          <div className={s.pickerTitleRow}>
+            <div className={s.pickerTitle}>Attach Resource</div>
+            <button onClick={onClose} className={s.pickerCloseBtn}>
+              <X size={18} color="var(--color-text-light)" />
             </button>
           </div>
-          <div style={{ position: "relative", marginBottom: 12 }}>
-            <Search size={16} color={T.textLight} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" }} />
+          <div className={s.pickerSearchWrap}>
+            <Search size={16} color="var(--color-text-light)" className={s.pickerSearchIcon} />
             <input
               value={search} onChange={e => onSearch(e.target.value)}
               placeholder="Search resources..."
-              style={{
-                width: "100%", padding: "10px 12px 10px 36px", borderRadius: 10,
-                border: `1.5px solid ${T.border}`, background: T.bg, fontSize: 14,
-                fontFamily: T.font, outline: "none", boxSizing: "border-box", color: T.text,
-              }}
+              className={s.pickerSearchInput}
             />
           </div>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 20px" }}>
+        <div className={s.pickerList}>
           {available.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 24, color: T.textLight, fontSize: 14, lineHeight: 1.5 }}>
+            <div className={s.pickerEmpty}>
               {emptyMessage}
             </div>
           ) : (
             available.map(r => (
-              <button key={r.id} onClick={() => onSelect(r.id)} style={{
-                display: "flex", alignItems: "center", gap: 12, width: "100%",
-                padding: "10px 12px", borderRadius: 10, border: "none",
-                background: "transparent", cursor: "pointer", fontFamily: T.font,
-                textAlign: "left", marginBottom: 2, transition: "background 0.1s",
-              }}
-                onMouseEnter={e => e.currentTarget.style.background = T.accentLight}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-              >
-                <div style={{
-                  width: 34, height: 34, borderRadius: 8,
-                  background: r.categoryColor ? `${r.categoryColor}15` : `${T.blue}10`,
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
+              <button key={r.id} onClick={() => onSelect(r.id)} className={s.pickerItem}>
+                <div className={s.resourceIcon}
+                  style={{ background: r.categoryColor ? `${r.categoryColor}15` : "var(--color-blue-light)" }}>
                   {r.resourceType === "link"
-                    ? <ExternalLink size={16} color={r.categoryColor || T.blue} />
-                    : <FileText size={16} color={r.categoryColor || T.blue} />
+                    ? <ExternalLink size={16} color={r.categoryColor || "var(--color-blue)"} />
+                    : <FileText size={16} color={r.categoryColor || "var(--color-blue)"} />
                   }
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div className={s.resourceInfo}>
+                  <div className={s.resourceTitle}>
                     {r.title}
                   </div>
-                  <div style={{ fontSize: 11, color: T.textLight }}>
+                  <div className={s.resourceCategory}>
                     {r.categoryName || "Uncategorized"}
                   </div>
                 </div>
-                <Plus size={16} color={T.accent} />
+                <Plus size={16} color="var(--color-accent)" />
               </button>
             ))
           )}
@@ -538,15 +481,12 @@ export function ResourcePickerOverlay({ available, search, onSearch, onSelect, o
 // ═══════════════════════════════════════════
 function FilterPill({ label, count, color, active, onClick }) {
   return (
-    <button onClick={onClick} style={{
-      display: "flex", alignItems: "center", gap: 5, padding: "6px 12px",
-      borderRadius: 8, border: `1.5px solid ${active ? color : T.border}`,
-      background: active ? `${color}10` : T.card, cursor: "pointer",
-      fontSize: 13, fontWeight: 600, fontFamily: T.font, whiteSpace: "nowrap",
-      color: active ? color : T.textMed,
-    }}>
+    <button onClick={onClick}
+      className={`${s.filterPill} ${active ? s.filterPillActive : ""}`}
+      style={active ? { borderColor: color, background: `${color}10`, color } : undefined}
+    >
       {label}
-      {count !== undefined && <span style={{ fontSize: 11, opacity: 0.7 }}>({count})</span>}
+      {count !== undefined && <span className={s.filterPillCount}>({count})</span>}
     </button>
   )
 }
@@ -565,30 +505,23 @@ function ManageItemsModal({ title, items, onSave, onDelete, onClose }) {
     <Modal title={title} onClose={onClose} size="sm">
       {/* Existing items */}
       {items.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 20, color: T.textLight, fontSize: 14 }}>
+        <div className={s.manageEmpty}>
           None created yet
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16 }}>
+        <div className={s.manageList}>
           {items.map(item => (
-            <div key={item.id} style={{
-              display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
-              background: T.bg, borderRadius: 10, border: `1px solid ${T.border}`,
-            }}>
-              <div style={{ width: 12, height: 12, borderRadius: 6, background: item.color, flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{item.name}</div>
-                <div style={{ fontSize: 11, color: T.textLight }}>{item.count} item{item.count !== 1 ? "s" : ""}</div>
+            <div key={item.id} className={s.manageRow}>
+              <div className={s.manageColorDot} style={{ background: item.color }} />
+              <div className={s.manageInfo}>
+                <div className={s.manageName}>{item.name}</div>
+                <div className={s.manageCount}>{item.count} item{item.count !== 1 ? "s" : ""}</div>
               </div>
-              <button onClick={() => setEditingItem(item)} style={{
-                border: "none", background: "none", cursor: "pointer", padding: 4,
-              }} title="Edit">
-                <Edit3 size={14} color={T.textMed} />
+              <button onClick={() => setEditingItem(item)} className={s.manageActionBtn} title="Edit">
+                <Edit3 size={14} color="var(--color-text-med)" />
               </button>
-              <button onClick={() => setConfirmDel(item)} style={{
-                border: "none", background: "none", cursor: "pointer", padding: 4,
-              }} title="Delete">
-                <Trash2 size={14} color={T.red} />
+              <button onClick={() => setConfirmDel(item)} className={s.manageActionBtn} title="Delete">
+                <Trash2 size={14} color="var(--color-red)" />
               </button>
             </div>
           ))}
@@ -596,22 +529,13 @@ function ManageItemsModal({ title, items, onSave, onDelete, onClose }) {
       )}
 
       {/* Add new button */}
-      <button onClick={() => setCreating(true)} style={{
-        display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%",
-        padding: "10px", borderRadius: 10, border: `1.5px dashed ${T.accent}`,
-        background: T.accentLight, color: T.accent, fontSize: 13, fontWeight: 700,
-        cursor: "pointer", fontFamily: T.font,
-      }}>
+      <button onClick={() => setCreating(true)} className={s.addNewBtn}>
         <Plus size={14} /> Add New
       </button>
 
       {/* Close */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
-        <button onClick={onClose} style={{
-          padding: "10px 24px", borderRadius: 10, border: `1.5px solid ${T.border}`,
-          background: "transparent", color: T.textMed, fontSize: 14, fontWeight: 600,
-          cursor: "pointer", fontFamily: T.font,
-        }}>Done</button>
+      <div className={s.manageFooter}>
+        <button onClick={onClose} className={s.doneBtn}>Done</button>
       </div>
 
       {/* Edit / Create sub-modal */}
@@ -651,40 +575,29 @@ function ItemEditModal({ item, onSave, onClose }) {
   }
 
   return (
-    <div onClick={e => e.target === e.currentTarget && onClose()} style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 130,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
-    }}>
-      <div style={{
-        background: T.card, borderRadius: 16, width: "100%", maxWidth: 360,
-        padding: 24, boxShadow: T.shadowLg, animation: "modalIn 0.15s ease",
-      }}>
-        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 16 }}>
+    <div onClick={e => e.target === e.currentTarget && onClose()} className={s.itemEditOverlay}>
+      <div className={s.itemEditPanel}>
+        <div className={s.itemEditTitle}>
           {isEdit ? "Edit" : "Create New"}
         </div>
         <FormField label="Name *" value={name} onChange={setName} autoFocus placeholder="e.g. Zone A" />
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Color</label>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div className={s.colorPickerSection}>
+          <label className={s.colorPickerLabel}>Color</label>
+          <div className={s.colorPickerRow}>
             {ITEM_COLORS.map(c => (
-              <button key={c} onClick={() => setColor(c)} style={{
-                width: 28, height: 28, borderRadius: 7, background: c, border: "none", cursor: "pointer",
-                boxShadow: color === c ? `0 0 0 2px ${T.bg}, 0 0 0 4px ${c}` : "none",
-              }} />
+              <button key={c} onClick={() => setColor(c)} className={s.colorSwatch}
+                style={{
+                  background: c,
+                  boxShadow: color === c ? `0 0 0 2px var(--color-bg), 0 0 0 4px ${c}` : "none",
+                }} />
             ))}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <button onClick={onClose} style={{
-            padding: "10px 18px", borderRadius: 10, border: `1.5px solid ${T.border}`,
-            background: "transparent", color: T.textMed, fontSize: 14, fontWeight: 600,
-            cursor: "pointer", fontFamily: T.font,
-          }}>Cancel</button>
-          <button onClick={handleSubmit} disabled={!name.trim() || saving} style={{
-            padding: "10px 18px", borderRadius: 10, border: "none",
-            background: T.accent, color: "#fff", fontSize: 14, fontWeight: 600,
-            cursor: "pointer", fontFamily: T.font, opacity: !name.trim() || saving ? 0.5 : 1,
-          }}>{saving ? "Saving..." : "Save"}</button>
+        <div className={s.itemEditActions}>
+          <button onClick={onClose} className={s.cancelBtn}>Cancel</button>
+          <button onClick={handleSubmit} disabled={!name.trim() || saving} className={s.saveBtn}>
+            {saving ? "Saving..." : "Save"}
+          </button>
         </div>
       </div>
     </div>

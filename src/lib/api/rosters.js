@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Rosters API — Daily crew roster management
+// ═══════════════════════════════════════════
 import { request, buildQuery } from './core.js'
 
 export const submitRoster      = (d)           => request('/rosters', { method: 'POST', body: JSON.stringify(d) })

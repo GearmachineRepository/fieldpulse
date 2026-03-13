@@ -1,3 +1,6 @@
+// ═══════════════════════════════════════════
+// Chemicals API — Chemical product management
+// ═══════════════════════════════════════════
 import { request } from './core.js'
 
 export const getChemicals    = ()        => request('/chemicals')

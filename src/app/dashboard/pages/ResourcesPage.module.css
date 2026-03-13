@@ -1,0 +1,875 @@
+/* ═══════════════════════════════════════════
+   Resources Page — CSS Module
+   ═══════════════════════════════════════════ */
+
+/* ── Search + filter bar ── */
+.searchSection {
+  margin-bottom: 16px;
+}
+
+.searchWrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 14px 10px 40px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-card);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  outline: none;
+  box-sizing: border-box;
+  color: var(--color-text);
+}
+
+.pillBar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.settingsBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Pinned / All section headers ── */
+.pinnedSection {
+  margin-bottom: 16px;
+}
+
+.pinnedHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-amber);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.sectionHeader {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Category Pill ── */
+.catPill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-card);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  color: var(--color-text-med);
+}
+
+.catPillCount {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* ── Add choice modal ── */
+.addChoiceList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.addChoiceBtn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-card);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.addChoiceBtn:hover {
+  border-color: var(--color-accent);
+}
+
+.addChoiceIconLink {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-blue) 6%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addChoiceIconFile {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addChoiceTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.addChoiceSub {
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+/* ── Resource Card ── */
+.cardRow {
+  display: flex;
+  gap: 14px;
+}
+
+.cardIconFile {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardIconLink {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--color-blue) 6%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardDesc {
+  font-size: 12px;
+  color: var(--color-text-med);
+  line-height: 1.4;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardMeta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.categoryBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.fileSizeMeta {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+.urlMeta {
+  font-size: 11px;
+  color: var(--color-text-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.cardActions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.iconBtn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.actionLink {
+  padding: 4px;
+}
+
+/* ── Resource Modal — tabs ── */
+.modalTabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1.5px solid var(--color-card-border);
+  padding-bottom: 0;
+}
+
+.modalTab {
+  padding: 10px 18px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  background: transparent;
+  margin-bottom: -1.5px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.modalTabActive {
+  composes: modalTab;
+  color: var(--color-accent);
+  border-bottom: 2.5px solid var(--color-accent);
+}
+
+.modalTabInactive {
+  composes: modalTab;
+  color: var(--color-text-light);
+  border-bottom: 2.5px solid transparent;
+}
+
+/* ── File upload zone ── */
+.fileZoneWrap {
+  margin-bottom: 14px;
+}
+
+.existingFile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-bg);
+}
+
+.existingFileIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.existingFileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.existingFileName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.existingFileSize {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.replaceFileBtn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-accent);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+
+.fileSelectedBtn {
+  width: 100%;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 2px dashed var(--color-accent);
+  background: var(--color-accent-light);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
+.fileSelectedName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.fileSelectedHint {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.fileEmptyBtn {
+  width: 100%;
+  padding: 28px 20px;
+  border-radius: 12px;
+  border: 2px dashed var(--color-card-border);
+  background: var(--color-bg);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
+.fileEmptyTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.fileEmptyHint {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+/* ── Pin toggle ── */
+.pinToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  margin-bottom: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  width: 100%;
+}
+
+.pinCheckbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pinCheckboxChecked {
+  composes: pinCheckbox;
+  border: 2px solid var(--color-amber);
+  background: var(--color-amber);
+}
+
+.pinCheckboxUnchecked {
+  composes: pinCheckbox;
+  border: 2px solid var(--color-card-border);
+  background: transparent;
+}
+
+.pinCheckmark {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pinLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Accounts Tab ── */
+.accountsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.accountsCount {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.accountsSub {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.attachBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1.5px dashed var(--color-accent);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.emptyAccounts {
+  padding: 30px;
+  text-align: center;
+  color: var(--color-text-light);
+  font-size: 14px;
+  background: var(--color-bg);
+  border-radius: 12px;
+  border: 1.5px dashed var(--color-card-border);
+}
+
+.emptyAccountsSub {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.linkedList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.linkedRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--color-bg);
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+}
+
+.linkedIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.linkedInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.linkedName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linkedAddr {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+/* ── Tab footer ── */
+.tabFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-card-border);
+}
+
+.doneBtn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-card-border);
+  background: transparent;
+  color: var(--color-text-med);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+/* ── Account picker overlay ── */
+.pickerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.pickerCard {
+  background: var(--color-card);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.15s ease;
+}
+
+.pickerHeader {
+  padding: 18px 20px 0;
+  flex-shrink: 0;
+}
+
+.pickerTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.pickerTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.pickerSearchWrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.pickerSearchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pickerSearchInput {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-card-border);
+  background: var(--color-bg);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  outline: none;
+  box-sizing: border-box;
+  color: var(--color-text);
+}
+
+.pickerList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 20px;
+}
+
+.pickerEmpty {
+  text-align: center;
+  padding: 24px;
+  color: var(--color-text-light);
+  font-size: 14px;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: left;
+  margin-bottom: 2px;
+  transition: background 0.1s;
+}
+
+.pickerItem:hover {
+  background: var(--color-accent-light);
+}
+
+.pickerItemIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pickerItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.pickerItemName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerItemAddr {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+/* ── Manage Categories modal ── */
+.catEmptyMsg {
+  text-align: center;
+  padding: 20px;
+  color: var(--color-text-light);
+  font-size: 14px;
+}
+
+.catList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.catRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--color-bg);
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+}
+
+.catDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.catInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.catName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.catCount {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+.addCatBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--color-accent);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.catFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-card-border);
+}
+
+/* ── Category Edit Modal ── */
+.catEditOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 130;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.catEditCard {
+  background: var(--color-card);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.15s ease;
+}
+
+.catEditTitle {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.colorFieldWrap {
+  margin-bottom: 14px;
+}
+
+.colorLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.colorSwatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.colorSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+}
+
+.catEditActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancelBtn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-card-border);
+  background: transparent;
+  color: var(--color-text-med);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.saveBtn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+}
+
+/* ── Utility ── */
+.hidden {
+  display: none;
+}
+
+.iconCenter {
+  margin: 0 auto 8px;
+}
