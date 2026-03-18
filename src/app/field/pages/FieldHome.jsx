@@ -63,21 +63,20 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
                     isDone: !!s.completion,
                   }))
                 }
-              } catch {}
+              } catch (e) { console.error('Failed to load route day:', e.message) }
             }
             setTodayStops(stops)
-          } catch {}
+          } catch (e) { console.error('Failed to load routes:', e.message) }
 
-          // Today's roster
-          try { setTodayRoster(await getTodayRoster(crew.id)) } catch {}
+          try { setTodayRoster(await getTodayRoster(crew.id)) }
+          catch (e) { console.error('Failed to load roster:', e.message) }
 
-          // Recent logs
           try {
             const logs = await getSprayLogs({ crewName: crew.name, limit: 5 })
             setRecentLogs(logs)
-          } catch {}
+          } catch (e) { console.error('Failed to load spray logs:', e.message) }
         }
-      } catch (err) { console.error(err) }
+      } catch (err) { console.error('FieldHome load error:', err) }
       finally { setLoading(false) }
     }
     loadAll()

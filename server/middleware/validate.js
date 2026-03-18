@@ -90,6 +90,9 @@ export function sanitizeQueryInt(raw, defaultVal, min = 1, max = 500) {
  * // values = ['Carlos', 'Martinez']
  * // nextIndex = 3
  */
+// Only allow known column names — prevents dynamic key injection
+const SAFE_COLUMN_RE = /^[a-z][a-z0-9_]*$/
+
 export function buildSetClause(fields, startIndex = 1) {
   const parts = []
   const values = []
@@ -97,6 +100,9 @@ export function buildSetClause(fields, startIndex = 1) {
 
   for (const [col, val] of Object.entries(fields)) {
     if (val === undefined) continue // skip undefined, allow null
+    if (!SAFE_COLUMN_RE.test(col)) {
+      throw new Error(`Invalid column name: ${col}`)
+    }
     parts.push(`${col} = $${idx}`)
     values.push(val)
     idx++

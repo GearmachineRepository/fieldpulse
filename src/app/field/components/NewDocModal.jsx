@@ -45,8 +45,8 @@ export default function NewDocModal({ onClose, onSelectType }) {
         <div style={{ overflowY: "auto", padding: "16px 20px 32px" }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>Documents</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
-            {CORE_TYPES.map((d, i) => (
-              <button key={i} onClick={() => handleSelect(d.key)} style={{
+            {CORE_TYPES.map((d) => (
+              <button key={d.key} onClick={() => handleSelect(d.key)} style={{
                 padding: 16, borderRadius: 14, border: `1.5px solid ${T.border}`,
                 background: T.card, cursor: "pointer", textAlign: "left", fontFamily: T.font,
               }}>
@@ -66,8 +66,8 @@ export default function NewDocModal({ onClose, onSelectType }) {
                 <Package size={12} /> {category} Modules
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
-                {mods.map((mod, i) => (
-                  <button key={i} onClick={() => handleSelect(mod.key === "spray" ? "spray-log" : mod.key)} style={{
+                {mods.map((mod) => (
+                  <button key={mod.key} onClick={() => handleSelect(mod.key === "spray" ? "spray-log" : mod.key)} style={{
                     padding: 16, borderRadius: 14, border: `1.5px solid ${T.border}`,
                     background: T.card, cursor: "pointer", textAlign: "left", fontFamily: T.font,
                     position: "relative",

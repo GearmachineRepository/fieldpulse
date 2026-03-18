@@ -66,7 +66,7 @@ export default function FieldSchedule() {
             ...s, routeId: route.id, routeName: route.name, routeColor: route.color,
           }))
         }
-      } catch {}
+      } catch (e) { console.error('Failed to load route stops:', e.message) }
     }
     setDayStops(stops)
     setLoadingStops(false)
@@ -87,7 +87,7 @@ export default function FieldSchedule() {
       try {
         await undoCompletion(stop.completion.id)
         loadDayStops()
-      } catch {}
+      } catch (e) { console.error('Failed to undo completion:', e.message) }
       return
     }
     try {
@@ -97,7 +97,7 @@ export default function FieldSchedule() {
         workDate: selectedDate, status: "complete",
       })
       loadDayStops()
-    } catch {}
+    } catch (e) { console.error('Failed to complete stop:', e.message) }
   }
 
   const daysWithRoutes = new Set(allRoutes.filter(r => r.dayOfWeek !== null && r.stopCount > 0).map(r => r.dayOfWeek))

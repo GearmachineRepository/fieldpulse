@@ -118,7 +118,8 @@ export default function SprayLogForm({ onClose, onSubmitted }) {
       const result = await createSprayLog(logData)
 
       if (photos.length > 0 && result?.id) {
-        try { await uploadPhotos(result.id, photos) } catch {}
+        try { await uploadPhotos(result.id, photos) }
+        catch (e) { console.error('Photo upload failed:', e.message) }
       }
 
       onSubmitted?.()
@@ -142,7 +143,7 @@ export default function SprayLogForm({ onClose, onSubmitted }) {
       {/* Progress */}
       <div style={{ display: "flex", gap: 4, padding: "0 20px 16px" }}>
         {STEPS.map((s, i) => (
-          <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+          <div key={s} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
             <div style={{
               height: 4, borderRadius: 2, width: "100%",
               background: i <= step ? T.accent : T.border,
@@ -416,7 +417,7 @@ function StepProducts({ products, setProducts, chemicals, equipmentList, selecte
       {/* Products */}
       <label style={lbl}>Products Applied *</label>
       {products.map((p, i) => (
-        <div key={i} style={{
+        <div key={p.id || p.name} style={{
           padding: "12px 14px", background: T.card, borderRadius: 12,
           border: `1px solid ${T.border}`, marginBottom: 8,
         }}>
@@ -577,7 +578,7 @@ function StepConditions({ weather, setWeather, notes, setNotes, photos, setPhoto
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
         {photoPreviews.map((p, i) => (
-          <div key={i} style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "1", background: T.bg }}>
+          <div key={p.name} style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "1", background: T.bg }}>
             <img src={p.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <button onClick={() => removePhoto(i)} style={{
               position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: 11,
@@ -625,7 +626,7 @@ function StepReview({ property, crewLead, crewName, license, equipmentName, tota
 
       <ReviewSection title={`Products (${products.length})`}>
         {products.map((p, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: i < products.length - 1 ? `1px solid ${T.border}` : "none" }}>
+          <div key={p.id || p.name} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: i < products.length - 1 ? `1px solid ${T.border}` : "none" }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 700 }}>{p.name}</div>
               <div style={{ fontSize: 11, color: T.textLight }}>EPA: {p.epa}</div>

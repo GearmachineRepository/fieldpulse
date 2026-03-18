@@ -155,8 +155,8 @@ function DocDetail({ log, onClose }) {
         {/* Products */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, color: T.text }}>Products ({log.products?.length || 0})</div>
-          {(log.products || []).map((p, i) => (
-            <div key={i} style={{
+          {(log.products || []).map((p) => (
+            <div key={p.id || p.name} style={{
               display: "flex", justifyContent: "space-between", padding: "12px 16px",
               background: T.card, borderRadius: 10, border: `1px solid ${T.border}`, marginBottom: 6,
             }}>
@@ -174,8 +174,8 @@ function DocDetail({ log, onClose }) {
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, color: T.text }}>Photos ({log.photos.length})</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-              {log.photos.map((p, i) => (
-                <a key={i} href={`/uploads/${p.filename}`} target="_blank" rel="noopener noreferrer"
+              {log.photos.map((p) => (
+                <a key={p.id || p.filename} href={`/uploads/${p.filename}`} target="_blank" rel="noopener noreferrer"
                   style={{ display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1", background: T.bg }}>
                   <img src={`/uploads/${p.filename}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </a>

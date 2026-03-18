@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/node'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
 import path from 'path'
 import fs from 'fs'
@@ -42,6 +43,17 @@ const app  = express()
 const PORT = process.env.PORT || 3001
 const isDev = process.env.NODE_ENV !== 'production'
 
+// ── Validate required env vars ──
+const REQUIRED_ENV = ['DB_HOST', 'DB_NAME', 'DB_USER']
+if (!isDev) REQUIRED_ENV.push('JWT_SECRET', 'ALLOWED_ORIGINS')
+
+const missing = REQUIRED_ENV.filter(k => !process.env[k])
+if (missing.length > 0) {
+  logger.fatal(`Missing required environment variables: ${missing.join(', ')}`)
+  logger.fatal('Copy .env.example to .env and fill in the values.')
+  process.exit(1)
+}
+
 if (process.env.SENTRY_DSN) {
   logger.info('Sentry error tracking enabled')
 }
@@ -61,7 +73,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", ...(isDev ? ["'unsafe-eval'"] : []), "'unsafe-inline'"],
+      scriptSrc: ["'self'", ...(isDev ? ["'unsafe-eval'", "'unsafe-inline'"] : [])],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'blob:', 'https://tile.openstreetmap.org', 'https://*.tile.openstreetmap.org', 'https://cdnjs.cloudflare.com'],
       connectSrc: ["'self'", 'https://api.openweathermap.org', 'https://geocoding.geo.census.gov', 'https://nominatim.openstreetmap.org'],
@@ -84,6 +96,15 @@ app.use(cors({
     cb(new Error(`CORS: Origin ${origin} not allowed`))
   },
   credentials: true,
+}))
+
+// ── Global rate limiter — prevent resource exhaustion ──
+app.use('/api/', rateLimit({
+  windowMs: 60_000,
+  max: isDev ? 1000 : 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — slow down' },
 }))
 
 // ── Body parsing ──

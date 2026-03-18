@@ -4,6 +4,7 @@
 
 import pg from 'pg'
 import dotenv from 'dotenv'
+import { logger } from './utils/logger.js'
 
 dotenv.config()
 
@@ -22,15 +23,13 @@ const pool = new pg.Pool({
 })
 
 pool.on('error', (err) => {
-  console.error('  ✗ Unexpected PostgreSQL pool error:', err.message)
+  logger.error({ err }, 'Unexpected PostgreSQL pool error')
 })
 
 pool.query('SELECT NOW()')
-  .then(() => console.log('  ✓ Connected to PostgreSQL'))
+  .then(() => logger.info('Connected to PostgreSQL'))
   .catch(err => {
-    console.error('  ✗ PostgreSQL connection failed:', err.message)
-    console.error('    Make sure PostgreSQL is running and the "crupoint" database exists.')
-    console.error('    See README.md for setup instructions.')
+    logger.error({ err }, 'PostgreSQL connection failed — ensure the database exists and is running')
   })
 
 export default pool
