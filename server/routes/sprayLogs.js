@@ -10,7 +10,7 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 import { withTransaction } from '../utils/db.js'
 import { SPRAY_LOG_DEFAULT_LIMIT, SPRAY_LOG_MAX_LIMIT } from '../constants/index.js'
 
-export default function sprayLogRoutes(upload) {
+export default function sprayLogRoutes(upload, uploadToStorage) {
   const router = Router()
 
   /**
@@ -67,7 +67,7 @@ export default function sprayLogRoutes(upload) {
   )
 
   /** @route POST /api/spray-logs/:id/photos — Upload photos to a spray log */
-  router.post('/:id/photos', requireAuth, validateIdParam, upload.array('photos', 10), asyncHandler(async (req, res) => {
+  router.post('/:id/photos', requireAuth, validateIdParam, upload.array('photos', 10), uploadToStorage, asyncHandler(async (req, res) => {
     const saved = []
     for (const f of req.files) {
       const r = await db.query(

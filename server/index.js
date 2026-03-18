@@ -33,7 +33,7 @@ import scheduleEventRoutes from './routes/scheduleEvents.js'
 import resourceRoutes from './routes/resources.js'
 import servicePlanRoutes from './routes/servicePlans.js'
 
-import { createUpload }           from './middleware/upload.js'
+import { createUpload, uploadToStorage } from './middleware/upload.js'
 import { notFound, errorHandler } from './middleware/error.js'
 
 dotenv.config()
@@ -115,11 +115,19 @@ const uploadsDir = path.join(__dirname, '..', 'uploads')
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true })
 const upload = createUpload(uploadsDir)
 
-app.use('/uploads', express.static(uploadsDir, {
-  setHeaders: (res) => {
-    res.setHeader('Content-Disposition', 'attachment')
-  },
-}))
+// Serve uploaded files — Supabase Storage redirect or local disk fallback
+if (process.env.SUPABASE_URL) {
+  app.get('/uploads/:filename', (req, res) => {
+    const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/uploads/${req.params.filename}`
+    res.redirect(publicUrl)
+  })
+} else {
+  app.use('/uploads', express.static(uploadsDir, {
+    setHeaders: (res) => {
+      res.setHeader('Content-Disposition', 'attachment')
+    },
+  }))
+}
 
 // ── Routes — public (no auth required for some endpoints) ──
 app.use('/api/auth',   authRoutes)
@@ -128,14 +136,14 @@ app.use('/api/admins', adminsRoutes)
 // ── Routes — protected (auth applied inside each router) ──
 app.use('/api/crews',  crewRoutes)
 app.use('/api/vehicles',   vehicleRoutes)
-app.use('/api/employees',  employeeRoutes(upload))
+app.use('/api/employees',  employeeRoutes(upload, uploadToStorage))
 app.use('/api/equipment',  equipmentRoutes)
 app.use('/api/chemicals',  chemicalRoutes)
-app.use('/api/spray-logs', sprayLogRoutes(upload))
+app.use('/api/spray-logs', sprayLogRoutes(upload, uploadToStorage))
 app.use('/api/rosters',    rosterRoutes)
 app.use('/api/reports',    reportRoutes)
 app.use('/api/accounts',   accountRoutes)
-app.use('/api/routes',     routeRoutes(upload))
+app.use('/api/routes',     routeRoutes(upload, uploadToStorage))
 app.use('/api/device', deviceRoutes)
 app.use('/api/account-groups', accountGroupRoutes)
 app.use('/api/schedule-events', scheduleEventRoutes)

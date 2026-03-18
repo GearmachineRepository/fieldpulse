@@ -10,7 +10,7 @@ import { validateIdParam, buildSetClause } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { AppError } from '../utils/AppError.js'
 
-export default function employeeRoutes(upload) {
+export default function employeeRoutes(upload, uploadToStorage) {
   const router = Router()
 
   /** @route GET /api/employees — List all active employees with crew names */
@@ -25,7 +25,7 @@ export default function employeeRoutes(upload) {
   }))
 
   /** @route POST /api/employees — Create employee (multipart for photo) */
-  router.post('/', requireAuth, upload.single('photo'), asyncHandler(async (req, res) => {
+  router.post('/', requireAuth, upload.single('photo'), uploadToStorage, asyncHandler(async (req, res) => {
     const { firstName, lastName, phone, licenseNumber, certNumber, defaultCrewId, pin, isCrewLead } = req.body
 
     if (!firstName || !lastName) {
@@ -51,7 +51,7 @@ export default function employeeRoutes(upload) {
    * collapsing the previous four-branch if/else into one query.
    * Only columns with non-undefined values are updated.
    */
-  router.put('/:id', requireAuth, validateIdParam, upload.single('photo'), asyncHandler(async (req, res) => {
+  router.put('/:id', requireAuth, validateIdParam, upload.single('photo'), uploadToStorage, asyncHandler(async (req, res) => {
     const { firstName, lastName, phone, licenseNumber, certNumber, defaultCrewId, pin, isCrewLead } = req.body
 
     // Build the column → value map, skipping fields that weren't sent

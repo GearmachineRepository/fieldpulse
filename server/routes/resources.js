@@ -4,25 +4,16 @@
 // ═══════════════════════════════════════════
 
 import { Router } from 'express'
-import multer from 'multer'
-import path from 'path'
-import crypto from 'crypto'
 import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
+import { createUpload, uploadToStorage } from '../middleware/upload.js'
 import { validateBody, validateIdParam } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 
 const router = Router()
 
-// File upload config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(process.cwd(), 'uploads')),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname)
-    cb(null, `resource-${crypto.randomBytes(8).toString('hex')}${ext}`)
-  },
-})
-const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } })
+// Use shared upload middleware (Supabase Storage or disk fallback)
+const upload = createUpload('uploads')
 
 // ═══════════════════════════════════════════
 // Categories
@@ -126,7 +117,7 @@ router.post('/',
 )
 
 /** @route POST /api/resources/upload — Create (file upload) */
-router.post('/upload', requireAuth, upload.single('file'), asyncHandler(async (req, res) => {
+router.post('/upload', requireAuth, upload.single('file'), uploadToStorage, asyncHandler(async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   const { title, description, categoryId, tags, pinned } = req.body
   const result = await db.query(
@@ -154,7 +145,7 @@ router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
 }))
 
 // ── Replace file on existing resource ──
-router.put('/:id/file', requireAuth, validateIdParam, upload.single('file'), asyncHandler(async (req, res) => {
+router.put('/:id/file', requireAuth, validateIdParam, upload.single('file'), uploadToStorage, asyncHandler(async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
 
   await db.query(

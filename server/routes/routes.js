@@ -12,7 +12,7 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-export default function routeRoutes(upload) {
+export default function routeRoutes(upload, uploadToStorage) {
   const router = Router()
 
   // ═══════════════════════════════════════════
@@ -233,7 +233,7 @@ export default function routeRoutes(upload) {
     res.json({ success: true })
   }))
 
-  router.post('/completions/:completionId/photos', requireAuth, upload.array('photos', 10), asyncHandler(async (req, res) => {
+  router.post('/completions/:completionId/photos', requireAuth, upload.array('photos', 10), uploadToStorage, asyncHandler(async (req, res) => {
     const completionId = parseInt(req.params.completionId, 10)
     if (isNaN(completionId) || completionId < 1) return res.status(400).json({ error: 'Invalid ID' })
     const saved = []
