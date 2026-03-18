@@ -139,10 +139,11 @@ export default function PricingPage() {
       </div>
 
       {/* Cards */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300, 1fr))",
+      <div className="pricing-grid" style={{
+        display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
         gap: 24, maxWidth: 1100, margin: "0 auto", padding: "0 20px 80px",
       }}>
+        <style>{`@media (max-width: 900px) { .pricing-grid { grid-template-columns: 1fr !important; max-width: 440px !important; } }`}</style>
         {PLANS.map(plan => (
           <div key={plan.name} style={{
             background: T.card, borderRadius: 20, padding: 36,

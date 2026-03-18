@@ -42,7 +42,8 @@ export default function LandingPage() {
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
             {["Features", "Modules", "Pricing", "About"].map(item => (
-              <a key={item} href="#" style={{ color: T.textMed, textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{item}</a>
+              <a key={item} href={item === "Pricing" ? "/pricing" : "#"} onClick={item === "Pricing" ? (e) => { e.preventDefault(); navigate("/pricing") } : undefined}
+                style={{ color: T.textMed, textDecoration: "none", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>{item}</a>
             ))}
             <button onClick={() => navigate("/login")} style={{
               padding: "10px 22px", borderRadius: 10, border: "none", cursor: "pointer",
@@ -55,7 +56,8 @@ export default function LandingPage() {
       {isMobile && menuOpen && (
         <div style={{ padding: "8px 16px 16px", display: "flex", flexDirection: "column", gap: 4, background: "#fff", borderBottom: `1px solid ${T.border}` }}>
           {["Features", "Modules", "Pricing", "About"].map(item => (
-            <a key={item} href="#" style={{ color: T.textMed, textDecoration: "none", fontSize: 15, fontWeight: 500, padding: "10px 0" }}>{item}</a>
+            <a key={item} href={item === "Pricing" ? "/pricing" : "#"} onClick={item === "Pricing" ? (e) => { e.preventDefault(); navigate("/pricing") } : undefined}
+              style={{ color: T.textMed, textDecoration: "none", fontSize: 15, fontWeight: 500, padding: "10px 0", cursor: "pointer" }}>{item}</a>
           ))}
           <button onClick={() => navigate("/login")} style={{
             padding: "12px", borderRadius: 10, border: "none", cursor: "pointer", marginTop: 8,
