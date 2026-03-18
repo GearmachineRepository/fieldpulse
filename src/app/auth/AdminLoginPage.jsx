@@ -5,9 +5,10 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Leaf, Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react"
+import { Leaf, Eye, EyeOff, Loader2, Mail, Lock, ArrowLeft, Check } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
+import { forgotPassword } from "@/lib/api/auth.js"
 
 export default function AdminLoginPage() {
   const navigate = useNavigate()
@@ -18,6 +19,10 @@ export default function AdminLoginPage() {
   const [error, setError]       = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState("")
+  const [forgotSent, setForgotSent] = useState(false)
+  const [forgotSubmitting, setForgotSubmitting] = useState(false)
 
   // Redirect if already logged in
   useEffect(() => {
@@ -37,6 +42,19 @@ export default function AdminLoginPage() {
       setPassword("")
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleForgot = async () => {
+    if (!forgotEmail.trim()) return
+    setForgotSubmitting(true)
+    try {
+      await forgotPassword(forgotEmail.trim())
+      setForgotSent(true)
+    } catch (err) {
+      setForgotSent(true) // always show success to prevent email enumeration
+    } finally {
+      setForgotSubmitting(false)
     }
   }
 
@@ -156,7 +174,7 @@ export default function AdminLoginPage() {
           </button>
 
           <div style={{ textAlign: "center", marginTop: 16 }}>
-            <button style={{
+            <button onClick={() => { setShowForgot(true); setForgotEmail(email); setForgotSent(false) }} style={{
               border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
               fontSize: 13, color: T.accent, fontWeight: 600,
             }}>
@@ -164,6 +182,82 @@ export default function AdminLoginPage() {
             </button>
           </div>
         </div>
+
+        {/* Forgot password overlay */}
+        {showForgot && (
+          <div style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+          }}>
+            <div style={{
+              width: "100%", maxWidth: 400, background: T.card, borderRadius: 16, padding: 32,
+              border: `1px solid ${T.border}`, boxShadow: T.shadowMd,
+            }}>
+              {forgotSent ? (
+                <>
+                  <div style={{ textAlign: "center", marginBottom: 20 }}>
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 12, background: T.accentLight, margin: "0 auto 12px",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Check size={24} color={T.accent} />
+                    </div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: T.text, marginBottom: 6 }}>Check your email</div>
+                    <div style={{ fontSize: 14, color: T.textLight, lineHeight: 1.5 }}>
+                      If an account exists for <strong style={{ color: T.text }}>{forgotEmail}</strong>, we sent a password reset link.
+                    </div>
+                  </div>
+                  <button onClick={() => setShowForgot(false)} style={{
+                    width: "100%", padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
+                    background: T.accent, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: T.font,
+                  }}>
+                    Back to Sign In
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: T.text, marginBottom: 6 }}>Reset your password</div>
+                    <div style={{ fontSize: 14, color: T.textLight }}>Enter your email and we'll send a reset link.</div>
+                  </div>
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 10, padding: "0 14px",
+                      background: T.bg, borderRadius: 12, border: `1.5px solid ${T.border}`,
+                    }}>
+                      <Mail size={18} color={T.textLight} />
+                      <input
+                        type="email" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
+                        placeholder="you@company.com" autoFocus
+                        onKeyDown={e => { if (e.key === "Enter" && forgotEmail.trim()) handleForgot() }}
+                        style={{
+                          flex: 1, padding: "14px 0", border: "none", outline: "none",
+                          background: "transparent", fontSize: 15, fontFamily: T.font, color: T.text,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button onClick={() => setShowForgot(false)} style={{
+                      flex: 1, padding: "14px", borderRadius: 12, cursor: "pointer",
+                      background: "transparent", border: `1.5px solid ${T.border}`,
+                      color: T.textMed, fontSize: 15, fontWeight: 600, fontFamily: T.font,
+                    }}>
+                      Cancel
+                    </button>
+                    <button onClick={handleForgot} disabled={forgotSubmitting || !forgotEmail.trim()} style={{
+                      flex: 2, padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
+                      background: T.accent, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: T.font,
+                      opacity: (forgotSubmitting || !forgotEmail.trim()) ? 0.5 : 1,
+                    }}>
+                      {forgotSubmitting ? "Sending..." : "Send Reset Link"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Field app link */}
         <div style={{ textAlign: "center", marginTop: 24 }}>

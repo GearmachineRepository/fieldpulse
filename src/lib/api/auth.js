@@ -44,6 +44,19 @@ export const restoreSession = async () => {
   }
 }
 
+// ── Forgot / Reset password ──
+export const forgotPassword = (email) =>
+  request('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+
+export const resetPassword = (accessToken, password) =>
+  request('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ accessToken, password }),
+  })
+
 // ── Legacy (kept for backward compat) ──
 export const getAdminsList = () => request('/admins/list')
 

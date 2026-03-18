@@ -2,9 +2,11 @@
 // Auth Routes — login + token issuance
 //
 // Endpoints:
-//   POST /api/auth/login       — Email + password (admin dashboard)
-//   POST /api/auth/crew-login  — Employee PIN (field app)
-//   GET  /api/auth/me          — Session restore
+//   POST /api/auth/login          — Email + password via Supabase Auth
+//   POST /api/auth/crew-login     — Employee PIN (field app)
+//   GET  /api/auth/me             — Session restore
+//   POST /api/auth/forgot-password — Send password reset email
+//   POST /api/auth/reset-password  — Set new password with token
 //
 // Legacy (kept for backward compat):
 //   POST /api/auth/admin-pin   — Admin PIN login
@@ -15,9 +17,11 @@ import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import rateLimit from 'express-rate-limit'
 import db from '../db.js'
+import supabase from '../lib/supabase.js'
 import { signToken, requireAuth } from '../middleware/auth.js'
 import { validateBody } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { logger } from '../utils/logger.js'
 
 const router = Router()
 
@@ -32,7 +36,7 @@ const authLimiter = rateLimit({
 })
 
 // ═══════════════════════════════════════════
-// NEW: Email + Password Login (Admin Dashboard)
+// Admin Login — via Supabase Auth
 // ═══════════════════════════════════════════
 
 /** @route POST /api/auth/login — Email + password login */
@@ -45,29 +49,129 @@ router.post('/login',
   asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
+    // Verify admin exists in our database first
     const r = await db.query(
-      'SELECT id, name, email, role, password_hash FROM admins WHERE LOWER(email) = LOWER($1) AND active = true',
+      'SELECT id, name, email, role, supabase_uid FROM admins WHERE LOWER(email) = LOWER($1) AND active = true',
       [email.trim()]
     )
 
-    if (!r.rows.length || !r.rows[0].password_hash) {
+    if (!r.rows.length) {
       return res.status(401).json(INVALID_CREDS)
     }
 
     const admin = r.rows[0]
-    const valid = await bcrypt.compare(password, admin.password_hash)
-    if (!valid) {
-      return res.status(401).json(INVALID_CREDS)
+
+    // Authenticate via Supabase Auth
+    if (supabase && admin.supabase_uid) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+
+      if (error) {
+        logger.debug({ err: error }, 'Supabase auth failed')
+        return res.status(401).json(INVALID_CREDS)
+      }
+
+      return res.json({
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        token: data.session.access_token,
+      })
     }
 
-    const token = signToken({ type: 'admin', adminId: admin.id, role: admin.role })
-    res.json({
-      id: admin.id,
-      name: admin.name,
-      email: admin.email,
-      role: admin.role,
-      token,
-    })
+    // Fallback: legacy bcrypt login (for admins not yet migrated to Supabase Auth)
+    if (!admin.supabase_uid) {
+      const adminWithHash = await db.query(
+        'SELECT password_hash FROM admins WHERE id = $1',
+        [admin.id]
+      )
+      const hash = adminWithHash.rows[0]?.password_hash
+      if (!hash || !(await bcrypt.compare(password, hash))) {
+        return res.status(401).json(INVALID_CREDS)
+      }
+
+      const token = signToken({ type: 'admin', adminId: admin.id, role: admin.role })
+      return res.json({
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        token,
+      })
+    }
+
+    return res.status(401).json(INVALID_CREDS)
+  })
+)
+
+// ═══════════════════════════════════════════
+// Forgot Password — sends reset email via Supabase
+// ═══════════════════════════════════════════
+
+/** @route POST /api/auth/forgot-password */
+router.post('/forgot-password',
+  authLimiter,
+  validateBody({ email: { required: true, type: 'string' } }),
+  asyncHandler(async (req, res) => {
+    const { email } = req.body
+
+    // Always return success to prevent email enumeration
+    if (!supabase) {
+      return res.json({ success: true })
+    }
+
+    // Only send reset if admin exists
+    const r = await db.query(
+      'SELECT id FROM admins WHERE LOWER(email) = LOWER($1) AND active = true AND supabase_uid IS NOT NULL',
+      [email.trim()]
+    )
+
+    if (r.rows.length > 0) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${process.env.ALLOWED_ORIGINS?.split(',')[0] || 'http://localhost:5173'}/reset-password`,
+      })
+      if (error) {
+        logger.error({ err: error }, 'Failed to send password reset email')
+      }
+    }
+
+    res.json({ success: true })
+  })
+)
+
+// ═══════════════════════════════════════════
+// Reset Password — set new password with Supabase token
+// ═══════════════════════════════════════════
+
+/** @route POST /api/auth/reset-password */
+router.post('/reset-password',
+  validateBody({
+    accessToken: { required: true, type: 'string' },
+    password: { required: true, type: 'string' },
+  }),
+  asyncHandler(async (req, res) => {
+    const { accessToken, password } = req.body
+
+    if (!supabase) {
+      return res.status(500).json({ error: 'Password reset not available' })
+    }
+
+    // Verify the token and get the user
+    const { data: { user }, error: verifyError } = await supabase.auth.getUser(accessToken)
+    if (verifyError || !user) {
+      return res.status(400).json({ error: 'Invalid or expired reset link' })
+    }
+
+    // Update the password
+    const { error } = await supabase.auth.admin.updateUserById(user.id, { password })
+    if (error) {
+      return res.status(400).json({ error: error.message })
+    }
+
+    res.json({ success: true })
   })
 )
 

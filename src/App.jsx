@@ -12,10 +12,11 @@ import { lazy, Suspense } from "react"
 import { T } from "@/app/tokens.js"
 import { Leaf } from "lucide-react"
 
-const LandingPage     = lazy(() => import("@/app/marketing/LandingPage.jsx"))
-const AdminLoginPage  = lazy(() => import("@/app/auth/AdminLoginPage.jsx"))
-const DashboardShell  = lazy(() => import("@/app/dashboard/DashboardShell.jsx"))
-const FieldShell      = lazy(() => import("@/app/field/FieldShell.jsx"))
+const LandingPage      = lazy(() => import("@/app/marketing/LandingPage.jsx"))
+const AdminLoginPage   = lazy(() => import("@/app/auth/AdminLoginPage.jsx"))
+const ResetPasswordPage = lazy(() => import("@/app/auth/ResetPasswordPage.jsx"))
+const DashboardShell   = lazy(() => import("@/app/dashboard/DashboardShell.jsx"))
+const FieldShell       = lazy(() => import("@/app/field/FieldShell.jsx"))
 
 function ShellLoader() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<AdminLoginPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/admin/*" element={<DashboardShell />} />
         <Route path="/app/*" element={<FieldShell />} />
         <Route path="*" element={<Navigate to="/" replace />} />
