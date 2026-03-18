@@ -10,6 +10,16 @@ import { request, setAuthToken, getAuthToken, clearAuthToken } from './core.js'
 
 export const checkHealth = () => request('/health')
 
+// ── Signup ──
+export const signup = async (name, email, password) => {
+  const r = await request('/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password }),
+  })
+  if (r.token) setAuthToken(r.token)
+  return r
+}
+
 // ── Admin: email + password ──
 export const loginWithEmail = async (email, password) => {
   const r = await request('/auth/login', {

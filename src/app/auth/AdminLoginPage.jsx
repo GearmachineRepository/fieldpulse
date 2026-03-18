@@ -259,18 +259,28 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        {/* Field app link */}
+        {/* Signup link */}
         <div style={{ textAlign: "center", marginTop: 24 }}>
-          <button onClick={() => navigate("/app")} style={{
+          <button onClick={() => navigate("/signup")} style={{
             border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
             fontSize: 14, color: T.textMed, fontWeight: 500,
           }}>
-            Crew member? <span style={{ color: T.accent, fontWeight: 600 }}>Open Field App →</span>
+            Don't have an account? <span style={{ color: T.accent, fontWeight: 600 }}>Sign up</span>
+          </button>
+        </div>
+
+        {/* Field app link */}
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          <button onClick={() => navigate("/app")} style={{
+            border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
+            fontSize: 13, color: T.textLight,
+          }}>
+            Crew member? Open Field App →
           </button>
         </div>
 
         {/* Back to landing */}
-        <div style={{ textAlign: "center", marginTop: 12 }}>
+        <div style={{ textAlign: "center", marginTop: 8 }}>
           <button onClick={() => navigate("/")} style={{
             border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
             fontSize: 13, color: T.textLight,

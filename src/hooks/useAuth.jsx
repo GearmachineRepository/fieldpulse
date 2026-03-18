@@ -8,6 +8,7 @@
 import { useState, useCallback, useEffect, useRef, createContext, useContext } from 'react'
 import { clearAuthToken } from '@/lib/api/core.js'
 import {
+  signup as signupApi,
   loginWithEmail,
   crewLogin,
   restoreSession,
@@ -44,6 +45,13 @@ export function AuthProvider({ children }) {
       .finally(() => setRestoring(false))
   }, [])
 
+  // ── Signup: create account ──
+  const signupAdmin = useCallback(async (name, email, password) => {
+    const result = await signupApi(name, email, password)
+    setAdmin(result)
+    return result
+  }, [])
+
   // ── Admin login: email + password ──
   const loginAdmin = useCallback(async (email, password) => {
     const result = await loginWithEmail(email, password)
@@ -78,6 +86,7 @@ export function AuthProvider({ children }) {
     isAdmin: !!admin,
     isField: !!employee,
     isAuthenticated: !!(admin || employee),
+    signupAdmin,
     loginAdmin,
     loginCrew,
     logout,

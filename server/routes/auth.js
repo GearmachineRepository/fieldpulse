@@ -36,6 +36,86 @@ const authLimiter = rateLimit({
 })
 
 // ═══════════════════════════════════════════
+// Signup — Create account via Supabase Auth
+// ═══════════════════════════════════════════
+
+/** @route POST /api/auth/signup — Create new account */
+router.post('/signup',
+  authLimiter,
+  validateBody({
+    name: { required: true, type: 'string', maxLength: 100 },
+    email: { required: true, type: 'string', maxLength: 255 },
+    password: { required: true, type: 'string' },
+  }),
+  asyncHandler(async (req, res) => {
+    const { name, email, password } = req.body
+
+    if (!supabase) {
+      return res.status(500).json({ error: 'Signup is not available' })
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' })
+    }
+
+    // Check if email already exists in admins table
+    const existing = await db.query(
+      'SELECT id FROM admins WHERE LOWER(email) = LOWER($1)',
+      [email.trim()]
+    )
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: 'An account with this email already exists' })
+    }
+
+    // Create Supabase Auth user
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: email.trim(),
+      password,
+      email_confirm: true,
+      user_metadata: { name: name.trim() },
+    })
+
+    if (authError) {
+      logger.error({ err: authError }, 'Supabase signup failed')
+      if (authError.message?.includes('already been registered')) {
+        return res.status(409).json({ error: 'An account with this email already exists' })
+      }
+      return res.status(400).json({ error: authError.message })
+    }
+
+    // Create admin record with 14-day trial
+    const trialDays = 14
+    const r = await db.query(
+      `INSERT INTO admins (name, email, role, pin_hash, supabase_uid, trial_ends_at)
+       VALUES ($1, $2, 'owner', '', $3, NOW() + INTERVAL '${trialDays} days')
+       RETURNING id, name, email, role`,
+      [name.trim(), email.trim(), authData.user.id]
+    )
+
+    const admin = r.rows[0]
+
+    // Sign them in immediately
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    })
+
+    if (signInError) {
+      logger.error({ err: signInError }, 'Post-signup sign-in failed')
+      return res.status(500).json({ error: 'Account created but sign-in failed. Please try logging in.' })
+    }
+
+    res.json({
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+      role: admin.role,
+      token: signInData.session.access_token,
+    })
+  })
+)
+
+// ═══════════════════════════════════════════
 // Admin Login — via Supabase Auth
 // ═══════════════════════════════════════════
 
