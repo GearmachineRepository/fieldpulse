@@ -11,6 +11,8 @@ dotenv.config()
 // Return DATE columns as 'YYYY-MM-DD' strings, not JS Date objects
 pg.types.setTypeParser(1082, (val) => val)
 
+const isRemote = process.env.DB_SSL === 'true'
+
 const pool = new pg.Pool({
   host:     process.env.DB_HOST     || 'localhost',
   port:     parseInt(process.env.DB_PORT || '5432'),
@@ -20,6 +22,7 @@ const pool = new pg.Pool({
   max:                    10,
   idleTimeoutMillis:      30_000,
   connectionTimeoutMillis: 5_000,
+  ...(isRemote && { ssl: { rejectUnauthorized: false } }),
 })
 
 pool.on('error', (err) => {

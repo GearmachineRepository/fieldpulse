@@ -26,28 +26,39 @@ async function setup() {
     process.exit(1)
   }
 
-  const adminPool = new pg.Pool({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '',
-    database: 'postgres',
-  })
+  const isSupabase = !!process.env.SUPABASE_URL
+  const isRemote = process.env.DB_SSL === 'true'
+  const sslConfig = isRemote ? { ssl: { rejectUnauthorized: false } } : {}
 
-  try {
-    const dbCheck = await adminPool.query('SELECT 1 FROM pg_database WHERE datname = $1', [dbName])
-    if (dbCheck.rows.length === 0) {
-      console.log(`  Creating database "${dbName}"...`)
-      // Safe because we validated dbName above
-      await adminPool.query(`CREATE DATABASE ${dbName}`)
-      console.log(`  ✓ Database created`)
-    } else {
-      console.log(`  ✓ Database "${dbName}" exists`)
+  // ── Create database (local PostgreSQL only) ──
+  // Supabase always uses the 'postgres' database — no CREATE DATABASE allowed.
+  if (!isSupabase) {
+    const adminPool = new pg.Pool({
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || '',
+      database: 'postgres',
+      ...sslConfig,
+    })
+
+    try {
+      const dbCheck = await adminPool.query('SELECT 1 FROM pg_database WHERE datname = $1', [dbName])
+      if (dbCheck.rows.length === 0) {
+        console.log(`  Creating database "${dbName}"...`)
+        // Safe because we validated dbName above
+        await adminPool.query(`CREATE DATABASE ${dbName}`)
+        console.log(`  ✓ Database created`)
+      } else {
+        console.log(`  ✓ Database "${dbName}" exists`)
+      }
+    } catch (err) {
+      console.error(`  ✗ ${err.message}`)
+    } finally {
+      await adminPool.end()
     }
-  } catch (err) {
-    console.error(`  ✗ ${err.message}`)
-  } finally {
-    await adminPool.end()
+  } else {
+    console.log('  Supabase detected — skipping database creation')
   }
 
   const pool = new pg.Pool({
@@ -56,6 +67,7 @@ async function setup() {
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '',
     database: dbName,
+    ...sslConfig,
   })
 
   try {
