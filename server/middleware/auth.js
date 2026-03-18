@@ -42,7 +42,7 @@ async function verifySupabaseToken(token) {
   if (error || !user) return null
 
   const r = await db.query(
-    'SELECT id, name, email, role FROM admins WHERE supabase_uid = $1 AND active = true',
+    'SELECT id, name, email, role, org_id FROM admins WHERE supabase_uid = $1 AND active = true',
     [user.id]
   )
   if (!r.rows.length) return null
@@ -51,6 +51,7 @@ async function verifySupabaseToken(token) {
     type: 'admin',
     adminId: r.rows[0].id,
     role: r.rows[0].role,
+    orgId: r.rows[0].org_id,
     supabaseUid: user.id,
   }
 }

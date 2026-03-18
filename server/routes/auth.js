@@ -83,16 +83,30 @@ router.post('/signup',
       return res.status(400).json({ error: authError.message })
     }
 
-    // Create admin record with 14-day trial
+    // Create organization for the new user
+    const slug = email.trim().split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 50)
+      + '-' + Date.now().toString(36)
     const trialDays = 14
+    const orgResult = await db.query(
+      `INSERT INTO organizations (name, slug, plan, trial_ends_at)
+       VALUES ($1, $2, 'trial', NOW() + INTERVAL '${trialDays} days')
+       RETURNING id`,
+      [`${name.trim()}'s Organization`, slug]
+    )
+    const orgId = orgResult.rows[0].id
+
+    // Create admin record linked to the org
     const r = await db.query(
-      `INSERT INTO admins (name, email, role, pin_hash, supabase_uid, trial_ends_at)
-       VALUES ($1, $2, 'owner', '', $3, NOW() + INTERVAL '${trialDays} days')
+      `INSERT INTO admins (name, email, role, pin_hash, supabase_uid, trial_ends_at, org_id)
+       VALUES ($1, $2, 'owner', '', $3, NOW() + INTERVAL '${trialDays} days', $4)
        RETURNING id, name, email, role`,
-      [name.trim(), email.trim(), authData.user.id]
+      [name.trim(), email.trim(), authData.user.id, orgId]
     )
 
     const admin = r.rows[0]
+
+    // Set the org owner
+    await db.query('UPDATE organizations SET owner_id = $1 WHERE id = $2', [admin.id, orgId])
 
     // Sign them in immediately
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -267,7 +281,7 @@ router.post('/crew-login',
     const { employeeId, pin } = req.body
     const r = await db.query(
       `SELECT e.id, e.first_name, e.last_name, e.license_number, e.cert_number,
-              e.pin_hash, e.is_crew_lead, e.default_crew_id,
+              e.pin_hash, e.is_crew_lead, e.default_crew_id, e.org_id,
               c.name AS crew_name, c.lead_name,
               v.id AS vehicle_id, v.name AS vehicle_name
        FROM employees e
@@ -288,6 +302,7 @@ router.post('/crew-login',
       employeeId: emp.id,
       crewName: emp.crew_name,
       isCrewLead: emp.is_crew_lead,
+      orgId: emp.org_id,
     })
 
     res.json({

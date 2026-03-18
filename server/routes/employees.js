@@ -9,23 +9,27 @@ import { requireAuth } from '../middleware/auth.js'
 import { validateIdParam, buildSetClause } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { AppError } from '../utils/AppError.js'
+import { getOrgId } from '../utils/db.js'
 
 export default function employeeRoutes(upload, uploadToStorage) {
   const router = Router()
 
   /** @route GET /api/employees — List all active employees with crew names */
   router.get('/', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const r = await db.query(
       `SELECT e.*, c.name AS crew_name,
               CASE WHEN e.pin_hash IS NOT NULL THEN true ELSE false END AS has_pin
        FROM employees e LEFT JOIN crews c ON c.id = e.default_crew_id
-       WHERE e.active = true ORDER BY e.last_name, e.first_name`
+       WHERE e.active = true AND e.org_id = $1 ORDER BY e.last_name, e.first_name`,
+      [orgId]
     )
     res.json(r.rows.map(row => ({ ...row, cert_number: row.cert_number || null })))
   }))
 
   /** @route POST /api/employees — Create employee (multipart for photo) */
   router.post('/', requireAuth, upload.single('photo'), uploadToStorage, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { firstName, lastName, phone, licenseNumber, certNumber, defaultCrewId, pin, isCrewLead } = req.body
 
     if (!firstName || !lastName) {
@@ -36,10 +40,10 @@ export default function employeeRoutes(upload, uploadToStorage) {
     const pinHash = pin ? await bcrypt.hash(pin, 10) : null
 
     const r = await db.query(
-      `INSERT INTO employees (first_name, last_name, phone, license_number, cert_number, photo_filename, pin_hash, is_crew_lead, default_crew_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      `INSERT INTO employees (first_name, last_name, phone, license_number, cert_number, photo_filename, pin_hash, is_crew_lead, default_crew_id, org_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
       [firstName, lastName, phone || null, licenseNumber || null, certNumber || null,
-       photoFilename, pinHash, isCrewLead === 'true' || isCrewLead === true, defaultCrewId || null]
+       photoFilename, pinHash, isCrewLead === 'true' || isCrewLead === true, defaultCrewId || null, orgId]
     )
     res.json(r.rows[0])
   }))
@@ -81,14 +85,17 @@ export default function employeeRoutes(upload, uploadToStorage) {
       throw new AppError('No fields to update', 400)
     }
 
+    const orgId = getOrgId(req)
     values.push(req.params.id)
-    await db.query(`UPDATE employees SET ${setClause} WHERE id = $${nextIndex}`, values)
+    values.push(orgId)
+    await db.query(`UPDATE employees SET ${setClause} WHERE id = $${nextIndex} AND org_id = $${nextIndex + 1}`, values)
     res.json({ success: true })
   }))
 
   /** @route DELETE /api/employees/:id — Soft-delete employee */
   router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-    await db.query('UPDATE employees SET active = false WHERE id = $1', [req.params.id])
+    const orgId = getOrgId(req)
+    await db.query('UPDATE employees SET active = false WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
     res.json({ success: true })
   }))
 

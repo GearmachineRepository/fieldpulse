@@ -13,6 +13,7 @@ import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam, sanitizeQueryInt } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { logger } from '../utils/logger.js'
+import { getOrgId } from '../utils/db.js'
 
 const router = Router()
 
@@ -161,10 +162,14 @@ async function geocode({ address, city, state, zip }) {
 
 /** @route GET /api/accounts — List all active accounts */
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const { search, type, city } = req.query
   const limit = sanitizeQueryInt(req.query.limit, 200, 1, 500)
   const where = ['a.active = true']
   const params = []
+
+  params.push(orgId)
+  where.push(`a.org_id = $${params.length}`)
 
   if (search) {
     params.push(`%${search}%`)
@@ -192,7 +197,8 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 
 /** @route GET /api/accounts/:id — Get single account */
 router.get('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-  const result = await db.query('SELECT * FROM accounts WHERE id = $1 AND active = true', [req.params.id])
+  const orgId = getOrgId(req)
+  const result = await db.query('SELECT * FROM accounts WHERE id = $1 AND active = true AND org_id = $2', [req.params.id, orgId])
   if (result.rows.length === 0) return res.status(404).json({ error: 'Account not found' })
   res.json(formatAccount(result.rows[0]))
 }))
@@ -205,6 +211,7 @@ router.post('/',
     address: { required: true, type: 'string', maxLength: 300 },
   }),
   asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { name, address, city, state, zip, contactName, contactPhone, contactEmail, accountType, notes, groupId, estimatedMinutes } = req.body
     let { latitude, longitude } = req.body
 
@@ -215,12 +222,12 @@ router.post('/',
     }
 
     const result = await db.query(
-      `INSERT INTO accounts (name, address, city, state, zip, latitude, longitude, contact_name, contact_phone, contact_email, account_type, notes, group_id, estimated_minutes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
+      `INSERT INTO accounts (name, address, city, state, zip, latitude, longitude, contact_name, contact_phone, contact_email, account_type, notes, group_id, estimated_minutes, org_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
       [name, address, city || null, state || 'CA', zip || null,
        latitude || null, longitude || null,
        contactName || null, contactPhone || null, contactEmail || null,
-       accountType || 'residential', notes || null, groupId || null, estimatedMinutes || 30]
+       accountType || 'residential', notes || null, groupId || null, estimatedMinutes || 30, orgId]
     )
     res.json(formatAccount(result.rows[0]))
   })
@@ -228,6 +235,7 @@ router.post('/',
 
 /** @route PUT /api/accounts/:id — Update account (auto-geocodes) */
 router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const { name, address, city, state, zip, contactName, contactPhone, contactEmail, accountType, notes, groupId, estimatedMinutes } = req.body
   let { latitude, longitude } = req.body
 
@@ -240,21 +248,22 @@ router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
   await db.query(
     `UPDATE accounts SET name=$1, address=$2, city=$3, state=$4, zip=$5,
      latitude=$6, longitude=$7, contact_name=$8, contact_phone=$9, contact_email=$10,
-     account_type=$11, notes=$12, group_id=$13, estimated_minutes=$14 WHERE id=$15`,
+     account_type=$11, notes=$12, group_id=$13, estimated_minutes=$14 WHERE id=$15 AND org_id=$16`,
     [name, address, city || null, state || 'CA', zip || null,
      latitude || null, longitude || null,
      contactName || null, contactPhone || null, contactEmail || null,
      accountType || 'residential', notes || null, groupId || null, estimatedMinutes || 30,
-     req.params.id]
+     req.params.id, orgId]
   )
 
-  const updated = await db.query('SELECT * FROM accounts WHERE id = $1', [req.params.id])
+  const updated = await db.query('SELECT * FROM accounts WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
   res.json(formatAccount(updated.rows[0]))
 }))
 
 /** @route DELETE /api/accounts/:id — Soft-delete account */
 router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-  await db.query('UPDATE accounts SET active = false WHERE id = $1', [req.params.id])
+  const orgId = getOrgId(req)
+  await db.query('UPDATE accounts SET active = false WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
   res.json({ success: true })
 }))
 
@@ -270,11 +279,12 @@ router.post('/geocode',
 
 /** @route PATCH /api/accounts/:id/estimated-time — Update estimated service time */
 router.patch('/:id/estimated-time', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const { estimatedMinutes } = req.body
   if (!estimatedMinutes && estimatedMinutes !== 0) return res.status(400).json({ error: 'estimatedMinutes is required' })
 
-  await db.query('UPDATE accounts SET estimated_minutes = $1 WHERE id = $2', [parseInt(estimatedMinutes) || 30, req.params.id])
-  const updated = await db.query('SELECT * FROM accounts WHERE id = $1', [req.params.id])
+  await db.query('UPDATE accounts SET estimated_minutes = $1 WHERE id = $2 AND org_id = $3', [parseInt(estimatedMinutes) || 30, req.params.id, orgId])
+  const updated = await db.query('SELECT * FROM accounts WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
   res.json(formatAccount(updated.rows[0]))
 }))
 
@@ -284,14 +294,16 @@ router.patch('/:id/estimated-time', requireAuth, validateIdParam, asyncHandler(a
 
 /** @route GET /api/accounts/:id/resources — List resources linked to this account */
 router.get('/:id/resources', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const result = await db.query(`
     SELECT r.*, c.name AS category_name, c.color AS category_color
     FROM account_resources ar
     JOIN resources r ON r.id = ar.resource_id AND r.active = true
+    JOIN accounts a ON a.id = ar.account_id AND a.org_id = $2
     LEFT JOIN resource_categories c ON c.id = r.category_id
     WHERE ar.account_id = $1
     ORDER BY r.pinned DESC, r.title ASC
-  `, [req.params.id])
+  `, [req.params.id, orgId])
 
   res.json(result.rows.map(row => ({
     id: row.id, title: row.title, description: row.description,
@@ -306,8 +318,13 @@ router.get('/:id/resources', requireAuth, validateIdParam, asyncHandler(async (r
 
 /** @route POST /api/accounts/:id/resources — Link a resource to this account */
 router.post('/:id/resources', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const { resourceId } = req.body
   if (!resourceId) return res.status(400).json({ error: 'resourceId is required' })
+
+  // Verify account belongs to org
+  const acct = await db.query('SELECT id FROM accounts WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
+  if (acct.rows.length === 0) return res.status(404).json({ error: 'Account not found' })
 
   await db.query(
     `INSERT INTO account_resources (account_id, resource_id)
@@ -319,8 +336,13 @@ router.post('/:id/resources', requireAuth, validateIdParam, asyncHandler(async (
 
 /** @route DELETE /api/accounts/:id/resources/:resourceId — Unlink a resource from this account */
 router.delete('/:id/resources/:resourceId', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const resourceId = parseInt(req.params.resourceId, 10)
   if (isNaN(resourceId) || resourceId < 1) return res.status(400).json({ error: 'Invalid resource ID' })
+
+  // Verify account belongs to org
+  const acct = await db.query('SELECT id FROM accounts WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
+  if (acct.rows.length === 0) return res.status(404).json({ error: 'Account not found' })
 
   await db.query(
     'DELETE FROM account_resources WHERE account_id = $1 AND resource_id = $2',

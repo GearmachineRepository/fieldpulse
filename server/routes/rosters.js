@@ -7,7 +7,7 @@ import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam, sanitizeQueryInt } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
-import { withTransaction } from '../utils/db.js'
+import { withTransaction, getOrgId } from '../utils/db.js'
 
 const router = Router()
 
@@ -23,6 +23,7 @@ router.post('/',
     members: { required: true, type: 'array' },
   }),
   asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { crewId, crewName, submittedById, submittedByName, workDate, members, notes } = req.body
     const date = workDate || new Date().toLocaleDateString('en-CA')
 
@@ -30,8 +31,8 @@ router.post('/',
       // Upsert: remove existing roster for this crew + date
       if (crewId) {
         const existing = await client.query(
-          'SELECT id FROM daily_crew_rosters WHERE crew_id = $1 AND work_date = $2',
-          [crewId, date]
+          'SELECT id FROM daily_crew_rosters WHERE crew_id = $1 AND work_date = $2 AND org_id = $3',
+          [crewId, date, orgId]
         )
         for (const row of existing.rows) {
           await client.query('DELETE FROM daily_roster_members WHERE roster_id = $1', [row.id])
@@ -40,9 +41,9 @@ router.post('/',
       }
 
       const rosterR = await client.query(
-        `INSERT INTO daily_crew_rosters (crew_id, crew_name, submitted_by_id, submitted_by_name, work_date, notes)
-         VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, created_at`,
-        [crewId, crewName, submittedById, submittedByName, date, notes || null]
+        `INSERT INTO daily_crew_rosters (crew_id, crew_name, submitted_by_id, submitted_by_name, work_date, notes, org_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, created_at`,
+        [crewId, crewName, submittedById, submittedByName, date, notes || null, orgId]
       )
       const rosterId = rosterR.rows[0].id
 
@@ -62,11 +63,13 @@ router.post('/',
 
 /** @route GET /api/rosters — List rosters with optional filters */
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const { crewId, date } = req.query
   const limit = sanitizeQueryInt(req.query.limit, 50, 1, 200)
   const where = []
   const params = []
 
+  params.push(orgId); where.push(`r.org_id = $${params.length}`)
   if (crewId) { params.push(crewId); where.push(`r.crew_id = $${params.length}`) }
   if (date) { params.push(date); where.push(`r.work_date = $${params.length}`) }
 
@@ -97,10 +100,11 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 
 /** @route GET /api/rosters/today — Today's roster for a crew */
 router.get('/today', requireAuth, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const { crewId } = req.query
   const today = new Date().toLocaleDateString('en-CA')
-  let where = 'WHERE r.work_date = $1'
-  const params = [today]
+  let where = 'WHERE r.work_date = $1 AND r.org_id = $2'
+  const params = [today, orgId]
   if (crewId) { params.push(crewId); where += ` AND r.crew_id = $${params.length}` }
 
   const result = await db.query(`
@@ -131,15 +135,16 @@ router.get('/today', requireAuth, asyncHandler(async (req, res) => {
  * Returns { crews, unrostered, totalWorking, totalEmployees }
  */
 router.get('/attendance-today', requireAuth, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const today = new Date().toLocaleDateString('en-CA')
-  const crewsR = await db.query('SELECT c.id, c.name, c.lead_name FROM crews c WHERE c.active = true ORDER BY c.name')
-  const empsR = await db.query('SELECT e.id, e.first_name, e.last_name, e.default_crew_id FROM employees e WHERE e.active = true')
+  const crewsR = await db.query('SELECT c.id, c.name, c.lead_name FROM crews c WHERE c.active = true AND c.org_id = $1 ORDER BY c.name', [orgId])
+  const empsR = await db.query('SELECT e.id, e.first_name, e.last_name, e.default_crew_id FROM employees e WHERE e.active = true AND e.org_id = $1', [orgId])
   const rostersR = await db.query(`
     SELECT r.crew_id, r.crew_name, r.submitted_by_name,
       COALESCE((SELECT json_agg(json_build_object('employeeId',m.employee_id,'name',m.employee_name))
         FROM daily_roster_members m WHERE m.roster_id = r.id), '[]') AS members
-    FROM daily_crew_rosters r WHERE r.work_date = $1
-    ORDER BY r.created_at DESC`, [today])
+    FROM daily_crew_rosters r WHERE r.work_date = $1 AND r.org_id = $2
+    ORDER BY r.created_at DESC`, [today, orgId])
 
   const rosterByCrewId = {}
   for (const r of rostersR.rows) {
@@ -178,8 +183,9 @@ router.get('/attendance-today', requireAuth, asyncHandler(async (req, res) => {
 
 /** @route DELETE /api/rosters/:id — Delete roster */
 router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   await db.query('DELETE FROM daily_roster_members WHERE roster_id = $1', [req.params.id])
-  await db.query('DELETE FROM daily_crew_rosters WHERE id = $1', [req.params.id])
+  await db.query('DELETE FROM daily_crew_rosters WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
   res.json({ success: true })
 }))
 

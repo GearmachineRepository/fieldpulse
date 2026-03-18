@@ -45,6 +45,16 @@ export async function withTransaction(callback) {
  * const { whereStr, params } = buildWhere({ 'r.crew_id': crewId, 'rc.work_date': date }, [])
  * await db.query(`SELECT * FROM routes r ${whereStr}`, params)
  */
+/**
+ * Extracts the org_id from req.user.
+ * Throws 403 if no org_id is present.
+ */
+export function getOrgId(req) {
+  const orgId = req.user?.orgId
+  if (!orgId) throw Object.assign(new Error('Organization context required'), { statusCode: 403, isOperational: true })
+  return orgId
+}
+
 export function buildWhere(conditions, params = []) {
   const clauses = []
   for (const [col, val] of Object.entries(conditions)) {

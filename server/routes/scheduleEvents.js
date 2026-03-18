@@ -7,6 +7,7 @@ import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { getOrgId } from '../utils/db.js'
 
 const router = Router()
 
@@ -24,9 +25,12 @@ function formatEvent(row) {
 
 /** @route GET /api/schedule-events — List events, filterable by date range */
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
   const { startDate, endDate, crewId } = req.query
   const where = ['e.active = true']
   const params = []
+
+  params.push(orgId); where.push(`e.org_id = $${params.length}`)
 
   if (startDate) { params.push(startDate); where.push(`e.event_date >= $${params.length}`) }
   if (endDate)   { params.push(endDate);   where.push(`e.event_date <= $${params.length}`) }
@@ -49,12 +53,13 @@ router.post('/',
   requireAuth,
   validateBody({ title: { required: true, type: 'string' }, eventDate: { required: true, type: 'string' } }),
   asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { title, notes, eventDate, startTime, endTime, eventType, color, crewId, accountId } = req.body
     const result = await db.query(
-      `INSERT INTO schedule_events (title, notes, event_date, start_time, end_time, event_type, color, crew_id, account_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      `INSERT INTO schedule_events (title, notes, event_date, start_time, end_time, event_type, color, crew_id, account_id, org_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
       [title, notes || null, eventDate, startTime || null, endTime || null,
-       eventType || 'task', color || '#3B82F6', crewId || null, accountId || null]
+       eventType || 'task', color || '#3B82F6', crewId || null, accountId || null, orgId]
     )
     // Re-fetch with joins
     const full = await db.query(`
@@ -89,14 +94,17 @@ router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
 
   if (updates.length === 0) return res.json({ success: true })
 
+  const orgId = getOrgId(req)
   params.push(req.params.id)
-  await db.query(`UPDATE schedule_events SET ${updates.join(', ')} WHERE id = $${params.length}`, params)
+  params.push(orgId)
+  await db.query(`UPDATE schedule_events SET ${updates.join(', ')} WHERE id = $${params.length - 1} AND org_id = $${params.length}`, params)
   res.json({ success: true })
 }))
 
 /** @route DELETE /api/schedule-events/:id */
 router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-  await db.query('UPDATE schedule_events SET active = false WHERE id = $1', [req.params.id])
+  const orgId = getOrgId(req)
+  await db.query('UPDATE schedule_events SET active = false WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
   res.json({ success: true })
 }))
 

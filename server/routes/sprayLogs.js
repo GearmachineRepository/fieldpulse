@@ -7,7 +7,7 @@ import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam, sanitizeQueryInt } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
-import { withTransaction } from '../utils/db.js'
+import { withTransaction, getOrgId } from '../utils/db.js'
 import { SPRAY_LOG_DEFAULT_LIMIT, SPRAY_LOG_MAX_LIMIT } from '../constants/index.js'
 
 export default function sprayLogRoutes(upload, uploadToStorage) {
@@ -26,6 +26,7 @@ export default function sprayLogRoutes(upload, uploadToStorage) {
       products: { required: true, type: 'array' },
     }),
     asyncHandler(async (req, res) => {
+      const orgId = getOrgId(req)
       const b = req.body
 
       const result = await withTransaction(async (client) => {
@@ -33,12 +34,12 @@ export default function sprayLogRoutes(upload, uploadToStorage) {
           `INSERT INTO spray_logs
            (vehicle_id, crew_name, crew_lead, license, property, location,
             equipment_id, equipment_name, total_mix_vol, target_pest, notes,
-            wx_temp, wx_humidity, wx_wind_speed, wx_wind_dir, wx_conditions)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+            wx_temp, wx_humidity, wx_wind_speed, wx_wind_dir, wx_conditions, org_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
            RETURNING id, created_at`,
           [b.vehicleId, b.crewName, b.crewLead, b.license, b.property, b.location,
            b.equipmentId, b.equipmentName, b.totalMixVol, b.targetPest, b.notes,
-           b.weather.temp, b.weather.humidity, b.weather.windSpeed, b.weather.windDir, b.weather.conditions]
+           b.weather.temp, b.weather.humidity, b.weather.windSpeed, b.weather.windDir, b.weather.conditions, orgId]
         )
 
         const logId = logR.rows[0].id
@@ -82,10 +83,13 @@ export default function sprayLogRoutes(upload, uploadToStorage) {
 
   /** @route GET /api/spray-logs — List spray logs with optional filters */
   router.get('/', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { vehicleId, crewName, start, end } = req.query
     const limit = sanitizeQueryInt(req.query.limit, SPRAY_LOG_DEFAULT_LIMIT, 1, SPRAY_LOG_MAX_LIMIT)
     const where = []
     const params = []
+
+    params.push(orgId); where.push(`sl.org_id = $${params.length}`)
 
     if (vehicleId) { params.push(vehicleId); where.push(`sl.vehicle_id = $${params.length}`) }
     if (crewName) { params.push(crewName); where.push(`sl.crew_name = $${params.length}`) }
@@ -126,7 +130,8 @@ export default function sprayLogRoutes(upload, uploadToStorage) {
 
   /** @route DELETE /api/spray-logs/:id — Hard-delete a spray log (cascades) */
   router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-    await db.query('DELETE FROM spray_logs WHERE id = $1', [req.params.id])
+    const orgId = getOrgId(req)
+    await db.query('DELETE FROM spray_logs WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
     res.json({ success: true })
   }))
 

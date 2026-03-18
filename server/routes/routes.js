@@ -9,6 +9,7 @@ import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam, sanitizeQueryInt } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { getOrgId } from '../utils/db.js'
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -21,10 +22,13 @@ export default function routeRoutes(upload, uploadToStorage) {
 
   // ── Admin: Work log (all completions with filters) ──
   router.get('/completions/log', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { start, end, crewId, routeId } = req.query
     const limit = sanitizeQueryInt(req.query.limit, 200, 1, 500)
     const where = []
     const params = []
+
+    params.push(orgId); where.push(`r.org_id = $${params.length}`)
 
     if (start) { params.push(start); where.push(`rc.work_date >= $${params.length}`) }
     if (end) { params.push(end); where.push(`rc.work_date <= $${params.length}`) }
@@ -63,12 +67,13 @@ export default function routeRoutes(upload, uploadToStorage) {
   }))
 
   router.get('/schedule/week', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const result = await db.query(`
       SELECT r.id, r.name, r.day_of_week, r.color, r.crew_id, c.name AS crew_name,
         (SELECT COUNT(*) FROM route_stops rs WHERE rs.route_id = r.id AND rs.active = true) AS stop_count
-      FROM routes r LEFT JOIN crews c ON c.id = r.crew_id WHERE r.active = true
+      FROM routes r LEFT JOIN crews c ON c.id = r.crew_id WHERE r.active = true AND r.org_id = $1
       ORDER BY r.day_of_week ASC NULLS LAST, c.name ASC, r.name ASC
-    `)
+    `, [orgId])
     const schedule = {}
     for (let d = 0; d < 7; d++) schedule[d] = { day: d, dayName: DAY_NAMES[d], routes: [] }
     schedule['unscheduled'] = { day: null, dayName: 'Unscheduled', routes: [] }
@@ -80,6 +85,7 @@ export default function routeRoutes(upload, uploadToStorage) {
   }))
 
   router.get('/schedule/daily-progress', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const date = req.query.date || new Date().toLocaleDateString('en-CA')
     const dayOfWeek = new Date(date + 'T12:00:00').getDay()
     const result = await db.query(`
@@ -88,9 +94,9 @@ export default function routeRoutes(upload, uploadToStorage) {
         (SELECT COUNT(*) FROM route_completions rc JOIN route_stops rs2 ON rs2.id = rc.route_stop_id
          WHERE rc.route_id = r.id AND rc.work_date = $1 AND rc.status = 'complete') AS completed_stops
       FROM routes r LEFT JOIN crews c ON c.id = r.crew_id
-      WHERE r.active = true AND r.day_of_week = $2
+      WHERE r.active = true AND r.day_of_week = $2 AND r.org_id = $3
       ORDER BY c.name ASC, r.name ASC
-    `, [date, dayOfWeek])
+    `, [date, dayOfWeek, orgId])
     res.json(result.rows.map(row => ({
       id: row.id, name: row.name, color: row.color, crewId: row.crew_id, crewName: row.crew_name,
       totalStops: parseInt(row.total_stops), completedStops: parseInt(row.completed_stops),
@@ -99,6 +105,7 @@ export default function routeRoutes(upload, uploadToStorage) {
 
   // ── Calculated visits for a date range (frequency-aware) ──
   router.get('/schedule/visits', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { start, end, crewId } = req.query
     if (!start || !end) return res.status(400).json({ error: 'start and end required' })
 
@@ -119,9 +126,9 @@ export default function routeRoutes(upload, uploadToStorage) {
       JOIN route_stops rs ON rs.route_id = r.id AND rs.active = true
       JOIN accounts a ON a.id = rs.account_id
       LEFT JOIN crews c ON c.id = r.crew_id
-      WHERE r.active = true AND r.day_of_week IS NOT NULL
+      WHERE r.active = true AND r.day_of_week IS NOT NULL AND r.org_id = $1
       ORDER BY r.day_of_week, rs.stop_order
-    `)
+    `, [orgId])
 
     let rows = routesR.rows
     if (crewId) rows = rows.filter(r => r.crew_id && String(r.crew_id) === String(crewId))
@@ -199,14 +206,15 @@ export default function routeRoutes(upload, uploadToStorage) {
   }))
 
   router.get('/crew/:crewId', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const crewId = parseInt(req.params.crewId, 10)
     if (isNaN(crewId) || crewId < 1) return res.status(400).json({ error: 'Invalid crew ID' })
     const result = await db.query(`
       SELECT r.*, (SELECT COUNT(*) FROM route_stops rs WHERE rs.route_id = r.id AND rs.active = true) AS stop_count,
         (SELECT COALESCE(SUM(rs.estimated_minutes), 0) FROM route_stops rs WHERE rs.route_id = r.id AND rs.active = true) AS total_minutes
-      FROM routes r WHERE r.crew_id = $1 AND r.active = true
+      FROM routes r WHERE r.crew_id = $1 AND r.active = true AND r.org_id = $2
       ORDER BY r.day_of_week ASC NULLS LAST, r.name ASC
-    `, [crewId])
+    `, [crewId, orgId])
     res.json(result.rows.map(formatRoute))
   }))
 
@@ -252,8 +260,10 @@ export default function routeRoutes(upload, uploadToStorage) {
   // ═══════════════════════════════════════════
 
   router.get('/', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { crewId, dayOfWeek } = req.query
     const where = ['r.active = true']; const params = []
+    params.push(orgId); where.push(`r.org_id = $${params.length}`)
     if (crewId) { params.push(crewId); where.push(`r.crew_id = $${params.length}`) }
     if (dayOfWeek !== undefined) { params.push(dayOfWeek); where.push(`r.day_of_week = $${params.length}`) }
     const result = await db.query(`
@@ -267,14 +277,16 @@ export default function routeRoutes(upload, uploadToStorage) {
   }))
 
   router.post('/', requireAuth, validateBody({ name: { required: true, type: 'string', maxLength: 200 } }), asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { name, crewId, dayOfWeek, color, notes } = req.body
-    const result = await db.query('INSERT INTO routes (name, crew_id, day_of_week, color, notes) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-      [name, crewId || null, dayOfWeek !== undefined ? dayOfWeek : null, color || '#2F6FED', notes || null])
+    const result = await db.query('INSERT INTO routes (name, crew_id, day_of_week, color, notes, org_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
+      [name, crewId || null, dayOfWeek !== undefined ? dayOfWeek : null, color || '#2F6FED', notes || null, orgId])
     res.json(formatRoute(result.rows[0]))
   }))
 
   router.get('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-    const routeR = await db.query('SELECT r.*, c.name AS crew_name FROM routes r LEFT JOIN crews c ON c.id = r.crew_id WHERE r.id = $1 AND r.active = true', [req.params.id])
+    const orgId = getOrgId(req)
+    const routeR = await db.query('SELECT r.*, c.name AS crew_name FROM routes r LEFT JOIN crews c ON c.id = r.crew_id WHERE r.id = $1 AND r.active = true AND r.org_id = $2', [req.params.id, orgId])
     if (routeR.rows.length === 0) return res.status(404).json({ error: 'Route not found' })
     const stopsR = await db.query(`
       SELECT rs.*, a.name AS account_name, a.address, a.city, a.state, a.zip,
@@ -289,19 +301,22 @@ export default function routeRoutes(upload, uploadToStorage) {
   }))
 
   router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { name, crewId, dayOfWeek, color, notes } = req.body
-    await db.query('UPDATE routes SET name=$1, crew_id=$2, day_of_week=$3, color=$4, notes=$5 WHERE id=$6',
-      [name, crewId || null, dayOfWeek !== undefined ? dayOfWeek : null, color || '#2F6FED', notes || null, req.params.id])
+    await db.query('UPDATE routes SET name=$1, crew_id=$2, day_of_week=$3, color=$4, notes=$5 WHERE id=$6 AND org_id=$7',
+      [name, crewId || null, dayOfWeek !== undefined ? dayOfWeek : null, color || '#2F6FED', notes || null, req.params.id, orgId])
     res.json({ success: true })
   }))
 
   router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-    await db.query('UPDATE routes SET active = false WHERE id = $1', [req.params.id])
+    const orgId = getOrgId(req)
+    await db.query('UPDATE routes SET active = false WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
     res.json({ success: true })
   }))
 
   router.get('/:id/day/:date', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-    const routeR = await db.query('SELECT r.*, c.name AS crew_name FROM routes r LEFT JOIN crews c ON c.id = r.crew_id WHERE r.id = $1 AND r.active = true', [req.params.id])
+    const orgId = getOrgId(req)
+    const routeR = await db.query('SELECT r.*, c.name AS crew_name FROM routes r LEFT JOIN crews c ON c.id = r.crew_id WHERE r.id = $1 AND r.active = true AND r.org_id = $2', [req.params.id, orgId])
     if (routeR.rows.length === 0) return res.status(404).json({ error: 'Route not found' })
     const stopsR = await db.query(`
       SELECT rs.*, a.name AS account_name, a.address, a.city, a.state, a.zip,
