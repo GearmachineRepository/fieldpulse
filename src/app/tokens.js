@@ -13,41 +13,48 @@
 
 export const T = {
   // Surface
-  bg: '#F6F7F9',
+  bg: '#F4F5F7',
   card: '#FFFFFF',
-  border: '#E5E7EB',
+  border: '#DDE2E8',
 
-  // Sidebar
-  sidebar: '#0F172A',
-  sidebarHover: '#1E293B',
-  sidebarActive: '#334155',
+  // Sidebar / Rail (dark warm)
+  railBg: 'hsl(30, 8%, 11%)',
+  sidebar: 'hsl(30, 8%, 14%)',
+  sidebarText: 'hsl(30, 8%, 70%)',
+  sidebarHover: 'hsl(30, 8%, 18%)',
+  sidebarActive: 'hsla(38, 92%, 50%, 0.08)',
+  sidebarDivider: 'hsl(30, 8%, 22%)',
+  sidebarSection: 'hsl(30, 8%, 50%)',
 
   // Text
-  text: '#0F172A',
-  textMed: '#475569',
-  textLight: '#64748B',
+  text: '#0F1923',
+  textMed: '#4A5568',
+  textLight: '#8896A4',
 
-  // Accent (Blue)
-  accent: '#2F6FED',
-  accentLight: '#EBF1FD',
-  accentBorder: '#B4CCFA',
+  // Accent (Amber)
+  accent: '#D97706',
+  accentLight: '#FEF3DC',
+  accentBorder: '#FDE8B4',
 
   // Semantic
-  blue: '#3B82F6',
-  blueLight: '#EFF6FF',
-  amber: '#F59E0B',
-  amberLight: '#FFFBEB',
-  red: '#EF4444',
+  blue: '#2563EB',
+  blueLight: '#EBF2FF',
+  amber: '#E8930A',
+  amberLight: '#FEF3DC',
+  red: '#DC2626',
   redLight: '#FEF2F2',
+  green: '#059669',
+  greenLight: '#ECFDF5',
   purple: '#7C3AED',
   purpleLight: '#F5F3FF',
 
   // Typography
-  font: "'Inter', -apple-system, system-ui, sans-serif",
+  font: "'IBM Plex Sans', system-ui, sans-serif",
+  mono: "'IBM Plex Mono', monospace",
 
   // Layout
-  radius: '12px',
-  radiusSm: '8px',
+  radius: '3px',
+  radiusSm: '2px',
 
   // Shadows
   shadow: '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06)',

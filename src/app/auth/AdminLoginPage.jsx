@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!restoring && isAdmin) navigate("/admin", { replace: true })
+    if (!restoring && isAdmin) navigate("/dashboard", { replace: true })
   }, [isAdmin, restoring, navigate])
 
   const handleSubmit = async (e) => {
@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
     setSubmitting(true)
     try {
       await loginAdmin(email.trim(), password)
-      navigate("/admin", { replace: true })
+      navigate("/dashboard", { replace: true })
     } catch (err) {
       setError(err.message || "Invalid email or password")
       setPassword("")

@@ -1,5 +1,7 @@
 /* ═══════════════════════════════════════════
    Schedule Page — CSS Module
+   Product: Daily/weekly/monthly planning tool.
+   Calendar + route management for stop-based work.
    ═══════════════════════════════════════════ */
 
 /* ── Header bar ── */
@@ -7,20 +9,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .monthLabel {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
   min-width: 180px;
 }
 
@@ -31,7 +33,7 @@
 
 .headerRight {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
   flex-wrap: wrap;
 }
@@ -39,67 +41,77 @@
 .viewToggle {
   display: flex;
   gap: 2px;
-  background: var(--color-card);
-  border-radius: 8px;
-  border: 1px solid var(--color-card-border);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
   padding: 3px;
 }
 
 /* ── Nav + View buttons ── */
 .navBtn {
-  border-radius: 7px;
-  border: 1px solid var(--color-card-border);
-  background: var(--color-card);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
   cursor: pointer;
-  font-family: var(--font-sans);
-  color: var(--color-text-med);
-  font-size: 12px;
-  font-weight: 600;
+  font-family: var(--fn);
+  color: var(--t2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.navBtn:hover {
+  background: var(--s2);
 }
 
 .navBtnIcon {
   composes: navBtn;
-  padding: 5px 8px;
+  padding: 5px var(--space-2);
 }
 
 .navBtnLabel {
   composes: navBtn;
-  padding: 5px 14px;
+  padding: 5px var(--space-3);
 }
 
 .viewBtn {
-  padding: 5px 12px;
-  border-radius: 6px;
+  padding: 5px var(--space-3);
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
+  transition: background var(--transition-fast);
 }
 
 .viewBtnActive {
   composes: viewBtn;
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--amb);
+  color: var(--amb-text);
 }
 
 .viewBtnInactive {
   composes: viewBtn;
   background: transparent;
-  color: var(--color-text-light);
+  color: var(--t3);
+}
+
+.viewBtnInactive:hover {
+  background: var(--s2);
 }
 
 /* ═══ CALENDAR VIEW ═══ */
 .calendarContainer {
-  background: var(--color-card);
-  border-radius: 14px;
-  border: 1px solid var(--color-card-border);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
@@ -107,17 +119,18 @@
 .calendarHeader {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  border-bottom: 1px solid var(--color-card-border);
+  border-bottom: 1px solid var(--bd);
 }
 
 .calendarDayHeader {
-  padding: 10px 0;
+  padding: var(--space-2) 0;
   text-align: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--t3);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--tracking-label);
 }
 
 .calendarGrid {
@@ -127,8 +140,8 @@
 
 .calendarCell {
   min-height: 110px;
-  padding: 4px 5px;
-  border-bottom: 1px solid var(--color-card-border);
+  padding: var(--space-1) 5px;
+  border-bottom: 1px solid var(--bd);
 }
 
 @media (max-width: 768px) {
@@ -138,21 +151,21 @@
 }
 
 .calendarCellBorder {
-  border-right: 1px solid var(--color-card-border);
+  border-right: 1px solid var(--bd);
 }
 
 .calendarCellOutOfMonth {
-  background: #FAFBFC;
+  background: var(--s2);
   opacity: 0.45;
 }
 
 .calendarCellInMonth {
-  background: var(--color-card);
+  background: var(--s1);
   opacity: 1;
 }
 
 .calendarCellToday {
-  background: #F0FDF9;
+  background: var(--grn-dim);
   opacity: 1;
 }
 
@@ -167,9 +180,10 @@
 .dayNumber {
   width: 24px;
   height: 24px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 700;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,30 +191,30 @@
 
 .dayNumberToday {
   composes: dayNumber;
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--amb);
+  color: var(--amb-text);
 }
 
 .dayNumberDefault {
   composes: dayNumber;
   background: transparent;
-  color: var(--color-text);
+  color: var(--t1);
 }
 
 .dayNumberOutOfMonth {
   composes: dayNumber;
   background: transparent;
-  color: var(--color-text-light);
+  color: var(--t3);
 }
 
 .calAddBtn {
   width: 18px;
   height: 18px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
   background: transparent;
-  color: var(--color-text-light);
+  color: var(--t3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,6 +227,7 @@
 }
 
 .cellContent {
+  display: flex;
   flex-direction: column;
   gap: 2px;
 }
@@ -223,13 +238,13 @@
   justify-content: space-between;
   width: 100%;
   padding: 2px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--fn);
   text-align: left;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   line-height: 1.3;
   overflow: hidden;
 }
@@ -244,7 +259,7 @@
   font-size: 10px;
   opacity: 0.7;
   flex-shrink: 0;
-  margin-left: 4px;
+  margin-left: var(--space-1);
 }
 
 .calEventBtn {
@@ -253,13 +268,13 @@
   gap: 3px;
   width: 100%;
   padding: 2px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--fn);
   text-align: left;
   background: transparent;
-  font-size: 11px;
+  font-size: var(--text-xs);
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -269,30 +284,26 @@
 .eventDot {
   width: 6px;
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-full);
   flex-shrink: 0;
 }
 
 .eventTime {
-  color: var(--color-text-light);
+  color: var(--t3);
   margin-right: 2px;
 }
 
 .moreItems {
   font-size: 10px;
-  color: var(--color-text-light);
+  color: var(--t3);
   padding: 1px 5px;
 }
 
-/* Desktop content / Mobile dots responsive visibility */
-.cellContent {
-  display: flex;
-}
-
+/* Desktop content / Mobile dots */
 .mobileDots {
   display: none;
   gap: 3px;
-  padding: 2px 4px;
+  padding: 2px var(--space-1);
   flex-wrap: wrap;
 }
 
@@ -309,134 +320,136 @@
 .mobileDot {
   width: 6px;
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-full);
 }
 
 /* ═══ LIST VIEW ═══ */
 .listView {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .listDayHeader {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  padding: 0 4px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-1);
 }
 
 .listDayNumber {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--r);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: 800;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
 }
 
 .listDayNumberToday {
   composes: listDayNumber;
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--amb);
+  color: var(--amb-text);
 }
 
 .listDayNumberDefault {
   composes: listDayNumber;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--s2);
+  color: var(--t1);
 }
 
 .listDayName {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
 }
 
 .listDayNameToday {
-  color: var(--color-accent);
+  color: var(--amb);
 }
 
 .listDayNameDefault {
-  color: var(--color-text);
+  color: var(--t1);
 }
 
 .listDateLabel {
-  font-size: 12px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  color: var(--t3);
 }
 
 .todayBadge {
-  font-size: 10px;
-  font-weight: 700;
-  background: var(--color-accent-light);
-  color: var(--color-accent);
-  padding: 3px 8px;
-  border-radius: 6px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  background: var(--amb-dim);
+  color: var(--amb);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
 }
 
 .emptyDay {
-  padding: 14px 18px;
-  background: var(--color-card);
-  border-radius: 12px;
-  border: 1px dashed var(--color-card-border);
-  color: var(--color-text-light);
-  font-size: 13px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px dashed var(--bd);
+  color: var(--t3);
+  font-size: var(--text-sm);
 }
 
 .listItems {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .routeCardContent {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .routeBar {
   width: 4px;
   height: 36px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
 .routeTitle {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
 }
 
 .routeSubtext {
-  font-size: 12px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t3);
 }
 
 .routeVisitTags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 8px;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
   padding-left: 36px;
 }
 
 .visitTag {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--color-bg);
-  color: var(--color-text-med);
-  border: 1px solid var(--color-card-border);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--s2);
+  color: var(--t2);
+  border: 1px solid var(--bd);
 }
 
 .eventCardContent {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .toggleCompleteBtn {
@@ -453,20 +466,20 @@
 }
 
 .eventTitle {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
 }
 
 .eventSubtext {
-  font-size: 12px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t3);
 }
 
 .eventTypeBadge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -474,137 +487,149 @@
 .modalGrid3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .modalGrid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .modalGrid2Wide {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .colorPickerGroup {
-  margin-bottom: 14px;
+  margin-bottom: var(--space-3);
 }
 
 .colorPickerLabel {
   display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-2);
 }
 
 .colorSwatches {
   display: flex;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .colorSwatch {
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: var(--r);
   border: none;
   cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.colorSwatch:hover {
+  transform: scale(1.1);
 }
 
 /* ═══ ROUTE STOP MANAGER ═══ */
 .backBtn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
   border: none;
   background: none;
   cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  color: var(--color-text-light);
-  font-weight: 600;
+  font-family: var(--fn);
+  font-size: var(--text-base);
+  color: var(--t3);
+  font-weight: var(--font-medium);
   padding: 0;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
+  transition: color var(--transition-fast);
+}
+
+.backBtn:hover {
+  color: var(--t1);
 }
 
 .routeHeader {
   display: flex;
   justify-content: space-between;
   align-items: start;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .routeHeaderLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .routeColorBar {
   width: 6px;
   height: 36px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .routeHeaderTitle {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
 }
 
 .routeHeaderSubtext {
-  font-size: 13px;
-  color: var(--color-text-light);
+  font-size: var(--text-sm);
+  color: var(--t3);
 }
 
 .routeActions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .stopList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .stopItem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--color-card);
-  border-radius: 12px;
-  border: 1px solid var(--color-card-border);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
   box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-fast);
 }
 
 .stopItemDragOver {
-  border-color: var(--color-accent);
+  border-color: var(--amb);
 }
 
 .stopDragHandle {
   cursor: grab;
-  color: var(--color-text-light);
+  color: var(--t3);
   flex-shrink: 0;
 }
 
 .stopNumber {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--r);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
   flex-shrink: 0;
 }
 
@@ -616,139 +641,161 @@
 .stopNameRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .stopName {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
 }
 
 .stopBadge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 4px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
 }
 
 .stopAddress {
-  font-size: 12px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t3);
 }
 
 .stopEditBtn {
-  font-size: 12px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t2);
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: var(--color-bg);
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-weight: 600;
-  border: 1px solid var(--color-card-border);
+  gap: var(--space-1);
+  background: var(--s2);
+  border-radius: var(--r);
+  padding: var(--space-1) var(--space-2);
+  font-weight: var(--font-medium);
+  border: 1px solid var(--bd);
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--fn);
+  transition: background var(--transition-fast);
+}
+
+.stopEditBtn:hover {
+  background: var(--s3);
 }
 
 .stopRemoveBtn {
   width: 30px;
   height: 30px;
-  border-radius: 8px;
-  border: 1px solid var(--color-card-border);
-  background: var(--color-card);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--t3);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.stopRemoveBtn:hover {
+  background: var(--red-dim);
+  color: var(--red);
+  border-color: var(--red);
 }
 
 /* ═══ STOP FREQUENCY MODAL ═══ */
 .freqGroup {
-  margin-bottom: 14px;
+  margin-bottom: var(--space-3);
 }
 
 .freqLabel {
   display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-1);
 }
 
 .freqOptions {
   display: flex;
-  gap: 6px;
+  gap: var(--space-1);
   flex-wrap: wrap;
 }
 
 .freqBtn {
-  padding: 7px 12px;
-  border-radius: 8px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
   cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 700;
+  font-family: var(--fn);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .freqBtnActive {
   composes: freqBtn;
-  border: 1.5px solid var(--color-accent);
-  background: var(--color-accent-light);
-  color: var(--color-accent);
+  border: 1px solid var(--amb);
+  background: var(--amb-dim);
+  color: var(--amb);
 }
 
 .freqBtnInactive {
   composes: freqBtn;
-  border: 1.5px solid var(--color-card-border);
-  background: var(--color-card);
-  color: var(--color-text-med);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+}
+
+.freqBtnInactive:hover {
+  background: var(--s2);
 }
 
 .seasonalSection {
-  border-top: 1px solid var(--color-card-border);
-  padding-top: 12px;
-  margin-top: 8px;
-  margin-bottom: 14px;
+  border-top: 1px solid var(--bd);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .seasonalTitle {
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-2);
+  color: var(--t1);
 }
 
 .seasonalHint {
-  font-size: 11px;
-  color: var(--color-text-light);
-  margin-top: 4px;
+  font-size: var(--text-xs);
+  color: var(--t3);
+  margin-top: var(--space-1);
 }
 
 /* ═══ STOP SEARCH ═══ */
 .searchBar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--color-bg);
-  border-radius: 10px;
-  padding: 10px 14px;
-  border: 1px solid var(--color-card-border);
-  margin-bottom: 14px;
+  gap: var(--space-2);
+  background: var(--s2);
+  border-radius: var(--r);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--bd);
+  margin-bottom: var(--space-3);
 }
 
 .searchInput {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 14px;
-  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-family: var(--fn);
   background: transparent;
-  color: var(--color-text);
+  color: var(--t1);
+}
+
+.searchInput::placeholder {
+  color: var(--t3);
 }
 
 .searchResults {
@@ -757,28 +804,29 @@
 }
 
 .searchEmpty {
-  padding: 20px;
+  padding: var(--space-5);
   text-align: center;
-  color: var(--color-text-light);
-  font-size: 14px;
+  color: var(--t3);
+  font-size: var(--text-sm);
 }
 
 .searchItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
-  padding: 12px 14px;
+  padding: var(--space-3);
   border: none;
   background: none;
   cursor: pointer;
-  font-family: var(--font-sans);
+  font-family: var(--fn);
   text-align: left;
-  border-bottom: 1px solid var(--color-card-border);
+  border-bottom: 1px solid var(--bd);
+  transition: background var(--transition-fast);
 }
 
 .searchItem:hover {
-  background: var(--color-bg);
+  background: var(--s2);
 }
 
 .searchItemInfo {
@@ -786,12 +834,12 @@
 }
 
 .searchItemName {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
 }
 
 .searchItemAddress {
-  font-size: 12px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t3);
 }

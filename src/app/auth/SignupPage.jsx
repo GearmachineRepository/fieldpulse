@@ -21,7 +21,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
-    if (!restoring && isAdmin) navigate("/admin", { replace: true })
+    if (!restoring && isAdmin) navigate("/dashboard", { replace: true })
   }, [isAdmin, restoring, navigate])
 
   const canSubmit = name.trim() && email.trim() && password.length >= 8
@@ -33,7 +33,7 @@ export default function SignupPage() {
     setSubmitting(true)
     try {
       await signupAdmin(name.trim(), email.trim(), password)
-      navigate("/admin", { replace: true })
+      navigate("/dashboard", { replace: true })
     } catch (err) {
       setError(err.message || "Failed to create account")
     } finally {

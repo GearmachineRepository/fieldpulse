@@ -5,55 +5,125 @@
    palette. Every component references these
    variables instead of hardcoded values.
 
-   To re-skin the app: swap this one file.
+   Light mode is the default. Dark mode activates
+   via [data-theme="dark"] on <html>.
    ═══════════════════════════════════════════ */
 
 :root {
   /* ── Surface ── */
-  --color-bg:             #F6F7F9;
-  --color-card:           #FFFFFF;
-  --color-card-border:    #E5E7EB;
-  --color-input-bg:       #F6F7F9;
+  --bg:      #F4F5F7;
+  --s1:      #FFFFFF;
+  --s2:      #F0F2F5;
+  --s3:      #E8EDF2;
+
+  /* ── Borders ── */
+  --bd:      #DDE2E8;
+  --bd2:     #C8D0D8;
+  --bd3:     #B0BBC6;
 
   /* ── Text ── */
-  --color-text:           #0F172A;
-  --color-text-med:       #475569;
-  --color-text-light:     #64748B;
-  --color-text-inverse:   #FFFFFF;
+  --t1:      #0F1923;
+  --t2:      #4A5568;
+  --t3:      #8896A4;
 
-  /* ── Brand / Accent (Blue) ── */
-  --color-accent:         #2F6FED;
-  --color-accent-light:   #EBF1FD;
-  --color-accent-border:  #B4CCFA;
+  /* ── Accent — amber (primary brand) ── */
+  --amb:      #D97706;
+  --amb2:     #E8930A;
+  --amb-dim:  #FEF3DC;
+  --amb-mid:  #FDE8B4;
+  --amb-text: #1A0D00;  /* text color ON amber backgrounds */
 
-  /* ── Semantic: Info ── */
-  --color-blue:           #3B82F6;
-  --color-blue-light:     #EFF6FF;
-  --color-blue-border:    #BFDBFE;
+  /* ── Status — green (active / success) ── */
+  --grn:     #059669;
+  --grn-dim: #ECFDF5;
 
-  /* ── Semantic: Warning ── */
-  --color-amber:          #F59E0B;
-  --color-amber-light:    #FFFBEB;
-  --color-amber-border:   #FDE68A;
+  /* ── Status — red (issue / error) ── */
+  --red:     #DC2626;
+  --red-dim: #FEF2F2;
 
-  /* ── Semantic: Danger ── */
-  --color-red:            #EF4444;
-  --color-red-light:      #FEF2F2;
-  --color-red-border:     #FECACA;
+  /* ── Status — blue (informational) ── */
+  --blu:     #2563EB;
+  --blu-dim: #EBF2FF;
 
-  /* ── Semantic: Purple ── */
-  --color-purple:         #7C3AED;
-  --color-purple-light:   #F5F3FF;
+  /* ── Sidebar & Rail — dark warm palette ── */
+  --rail-bg:       hsl(30, 8%, 11%);
+  --sb-bg:         hsl(30, 8%, 14%);
+  --sb-text:       hsl(30, 8%, 70%);
+  --sb-text-active: var(--amb);
+  --sb-hover:      hsl(30, 8%, 18%);
+  --sb-active-bg:  hsla(38, 92%, 50%, 0.08);
+  --sb-divider:    hsl(30, 8%, 22%);
+  --sb-section:    hsl(30, 8%, 50%);
 
-  /* ── Chrome ── */
-  --color-sidebar:        #0F172A;
-  --color-sidebar-hover:  #1E293B;
-  --color-sidebar-active: #334155;
-  --color-overlay:        rgba(0, 0, 0, 0.45);
+  /* ── Overlay ── */
+  --color-overlay: rgba(0, 0, 0, 0.45);
 
   /* ── Shadows ── */
   --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.07);
   --shadow-lg:   0 10px 40px rgba(0, 0, 0, 0.1);
   --shadow-toast: 0 8px 32px rgba(0, 0, 0, 0.25);
+
+  /* ── Backward-compat aliases ──
+     Existing components reference these old names.
+     They map to the new token names so nothing breaks. */
+  --color-bg:             var(--bg);
+  --color-card:           var(--s1);
+  --color-card-border:    var(--bd);
+  --color-input-bg:       var(--s2);
+  --color-text:           var(--t1);
+  --color-text-med:       var(--t2);
+  --color-text-light:     var(--t3);
+  --color-text-inverse:   #FFFFFF;
+  --color-accent:         var(--amb);
+  --color-accent-light:   var(--amb-dim);
+  --color-accent-border:  var(--amb-mid);
+  --color-blue:           var(--blu);
+  --color-blue-light:     var(--blu-dim);
+  --color-blue-border:    #BFDBFE;
+  --color-amber:          var(--amb2);
+  --color-amber-light:    var(--amb-dim);
+  --color-amber-border:   var(--amb-mid);
+  --color-red:            var(--red);
+  --color-red-light:      var(--red-dim);
+  --color-red-border:     #FECACA;
+  --color-purple:         #7C3AED;
+  --color-purple-light:   #F5F3FF;
+  --color-sidebar:        var(--sb-bg);
+  --color-sidebar-hover:  var(--sb-hover);
+  --color-sidebar-active: var(--sb-active-bg);
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --bg:      #0E1117;
+  --s1:      #161B23;
+  --s2:      #1D2430;
+  --s3:      #242D3A;
+  --bd:      #252D3A;
+  --bd2:     #2E3848;
+  --bd3:     #3A4557;
+  --t1:      #E8EDF3;
+  --t2:      #8A97A8;
+  --t3:      #4E5D6E;
+  --amb:     #E8930A;
+  --amb2:    #F5A623;
+  --amb-dim: #2A1F08;
+  --amb-mid: #3D2D0A;
+  --grn:     #16A37F;
+  --grn-dim: #0C2420;
+  --red:     #E05252;
+  --red-dim: #281414;
+  --blu:     #4A90D9;
+  --blu-dim: #0E1E30;
+  --color-text-inverse: #0F1923;
+
+  /* Sidebar stays dark warm in dark mode, just slightly adjusted */
+  --rail-bg:       hsl(30, 6%, 8%);
+  --sb-bg:         hsl(30, 6%, 10%);
+  --sb-text:       hsl(30, 8%, 65%);
+  --sb-hover:      hsl(30, 6%, 14%);
+  --sb-active-bg:  hsla(38, 92%, 50%, 0.10);
+  --sb-divider:    hsl(30, 6%, 16%);
+  --sb-section:    hsl(30, 8%, 45%);
 }

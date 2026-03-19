@@ -1,21 +1,25 @@
 // ═══════════════════════════════════════════
-// Dashboard Home — Real Data
+// Dashboard Home — Command Center
 //
+// Product: First screen every owner sees.
 // Pulls live data from useData() + specialized
 // endpoints. No mock data.
 // ═══════════════════════════════════════════
 
 import { useState, useEffect } from "react"
 import {
-  Truck, Users, FileText, AlertTriangle, Clock, MapPin,
-  BookOpen, ChevronRight, Droplets, Camera, Loader2,
-  CheckCircle2, XCircle, RefreshCw,
+  Truck, Users, FileText, AlertTriangle, Clock, Briefcase,
+  BookOpen, ChevronRight, Droplets, ShieldCheck, Loader2,
+  CheckCircle2, XCircle,
 } from "lucide-react"
 import { useData } from "@/context/DataProvider.jsx"
+import useNavigation from "@/hooks/useNavigation.js"
 import { getAttendanceToday } from "@/lib/api/rosters.js"
+import StatCard from "../components/StatCard.jsx"
 import s from "./DashboardHome.module.css"
 
-export default function DashboardHome({ onNavigate }) {
+export default function DashboardHome() {
+  const { navigate: onNavigate } = useNavigation()
   const { vehicles, crews, employees, sprayLogs } = useData()
   const [attendance, setAttendance] = useState(null)
   const [loadingAttendance, setLoadingAttendance] = useState(true)
@@ -38,20 +42,13 @@ export default function DashboardHome({ onNavigate }) {
   const totalWorking = attendance?.totalWorking || 0
   const totalEmployees = attendance?.totalEmployees || employeeCount
 
-  // Today's logs (check if date matches today)
+  // Today's logs
   const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })
-  const todayShort = new Date().toLocaleDateString("en-US", { month: "numeric", day: "numeric" })
-  const todayLogs = sprayLogs.data.filter(log => {
-    // log.date comes as "Mar 9" or similar from formatShortDate
-    return log.date === today
-  })
+  const recentLogs = sprayLogs.data.slice(0, 5)
 
   // Rosters submitted today
   const rostersSubmitted = attendance?.crews?.filter(c => c.submitted).length || 0
   const totalCrews = attendance?.crews?.length || crewCount
-
-  // Recent logs (last 5)
-  const recentLogs = sprayLogs.data.slice(0, 5)
 
   // Crews with attendance info
   const crewsWithAttendance = attendance?.crews || crews.data.map(c => ({
@@ -66,41 +63,41 @@ export default function DashboardHome({ onNavigate }) {
 
   const statCards = [
     {
-      label: "FLEET",
-      val: String(vehicleCount),
-      sub: `${crewCount} crew${crewCount !== 1 ? "s" : ""} active`,
+      label: "Active Crews",
+      value: String(crewCount),
+      sub: `${rostersSubmitted}/${totalCrews} clocked in`,
+      icon: Users,
+      color: "var(--amb)",
+    },
+    {
+      label: "Working",
+      value: String(totalWorking),
+      sub: `of ${totalEmployees} employees`,
+      icon: Clock,
+      color: "var(--blu)",
+    },
+    {
+      label: "Fleet",
+      value: String(vehicleCount),
+      sub: `${vehicleCount} vehicle${vehicleCount !== 1 ? "s" : ""} tracked`,
       icon: Truck,
-      color: "var(--color-accent)",
+      color: "var(--grn)",
     },
     {
-      label: "WORKING",
-      val: String(totalWorking),
-      sub: `${rostersSubmitted}/${totalCrews} rosters in`,
-      icon: Users,
-      color: "var(--color-blue)",
-    },
-    {
-      label: "LOGS TODAY",
-      val: String(todayLogs.length),
-      sub: "Spray applications",
-      icon: FileText,
-      color: "var(--color-amber)",
-    },
-    {
-      label: "TEAM",
-      val: String(employeeCount),
-      sub: `Across ${crewCount} crew${crewCount !== 1 ? "s" : ""}`,
-      icon: Users,
-      color: "var(--color-purple)",
+      label: "Compliance",
+      value: "—",
+      sub: "Certs & training",
+      icon: ShieldCheck,
+      color: "var(--red)",
     },
   ]
 
   const quickActions = [
-    { icon: Truck, label: "Fleet", sub: "Track vehicles", page: "fleet" },
-    { icon: FileText, label: "Field Docs", sub: "View & export", page: "field-docs" },
-    { icon: Clock, label: "Roster", sub: "Today's crews", page: "clock-in" },
-    { icon: MapPin, label: "Routes", sub: "Schedule stops", page: "schedule" },
-    { icon: BookOpen, label: "Resources", sub: "SDS & docs", page: "resources" },
+    { icon: Briefcase, label: "Jobs",       sub: "Manage sites",      page: "jobs" },
+    { icon: Users,     label: "Crews",      sub: "Today's crews",     page: "crews" },
+    { icon: Truck,     label: "Fleet",      sub: "Inspections",       page: "vehicles" },
+    { icon: ShieldCheck, label: "Compliance", sub: "Certs & training", page: "training" },
+    { icon: BookOpen,  label: "Resources",  sub: "SDS & docs",        page: "documents" },
   ]
 
   return (
@@ -112,7 +109,7 @@ export default function DashboardHome({ onNavigate }) {
           <div className={s.greeting}>{greeting}</div>
         </div>
         {isLoading && (
-          <Loader2 size={20} color="var(--color-text-light)" className={s.spinner} />
+          <Loader2 size={20} color="var(--t3)" className={s.spinner} />
         )}
       </div>
 
@@ -120,7 +117,7 @@ export default function DashboardHome({ onNavigate }) {
       {!loadingAttendance && totalCrews > 0 && rostersSubmitted < totalCrews && (
         <div className={s.alert}>
           <div className={s.alertIconWrap}>
-            <AlertTriangle size={18} color="var(--color-amber)" />
+            <AlertTriangle size={18} color="var(--amb)" />
           </div>
           <div className={s.alertContent}>
             <div className={s.alertTitle}>Crews Not Clocked In</div>
@@ -128,25 +125,21 @@ export default function DashboardHome({ onNavigate }) {
               {totalCrews - rostersSubmitted} of {totalCrews} crew{totalCrews !== 1 ? "s" : ""} haven't submitted today's roster
             </div>
           </div>
-          <ChevronRight size={18} color="#A16207" className={s.alertChevron} />
+          <ChevronRight size={18} color="var(--amb)" className={s.alertChevron} />
         </div>
       )}
 
       {/* Stat cards */}
       <div className={s.statsGrid}>
         {statCards.map((card, i) => (
-          <div key={i} className={s.statCard} style={{ borderTop: `3px solid ${card.color}` }}>
-            <div className={s.statCardInner}>
-              <div className={s.statContent}>
-                <div className={s.statLabel}>{card.label}</div>
-                <div className={s.statVal}>{card.val}</div>
-                <div className={s.statSub}>{card.sub}</div>
-              </div>
-              <div className={s.statIconWrap} style={{ background: `${card.color}10` }}>
-                <card.icon size={20} color={card.color} />
-              </div>
-            </div>
-          </div>
+          <StatCard
+            key={i}
+            label={card.label}
+            value={card.value}
+            sub={card.sub}
+            icon={card.icon}
+            color={card.color}
+          />
         ))}
       </div>
 
@@ -156,7 +149,7 @@ export default function DashboardHome({ onNavigate }) {
         <div className={s.card}>
           <div className={s.cardHeader}>
             <div className={s.cardTitleWrap}>
-              <Users size={18} color="var(--color-text-med)" />
+              <Users size={18} color="var(--t2)" />
               <span className={s.cardTitle}>Today's Crews</span>
             </div>
             <button onClick={() => onNavigate?.("clock-in")} className={s.cardLink}>
@@ -173,7 +166,7 @@ export default function DashboardHome({ onNavigate }) {
               <div key={i} className={s.crewRow}>
                 <div
                   className={s.crewDot}
-                  style={{ background: c.submitted ? "var(--color-accent)" : "var(--color-text-light)" }}
+                  style={{ background: c.submitted ? "var(--grn)" : "var(--t3)" }}
                 />
                 <div className={s.crewInfo}>
                   <div className={s.crewName}>{c.crewName}</div>
@@ -185,9 +178,9 @@ export default function DashboardHome({ onNavigate }) {
                   </div>
                 </div>
                 {c.submitted ? (
-                  <CheckCircle2 size={16} color="var(--color-accent)" className={s.flexShrink0} />
+                  <CheckCircle2 size={16} color="var(--grn)" className={s.flexShrink0} />
                 ) : (
-                  <XCircle size={16} color="var(--color-text-light)" className={s.flexShrink0} />
+                  <XCircle size={16} color="var(--t3)" className={s.flexShrink0} />
                 )}
               </div>
             ))
@@ -198,7 +191,7 @@ export default function DashboardHome({ onNavigate }) {
         <div className={s.card}>
           <div className={s.cardHeader}>
             <div className={s.cardTitleWrap}>
-              <FileText size={18} color="var(--color-text-med)" />
+              <FileText size={18} color="var(--t2)" />
               <span className={s.cardTitle}>Recent Spray Logs</span>
             </div>
             <button onClick={() => onNavigate?.("mod-spray")} className={s.cardLink}>
@@ -213,10 +206,10 @@ export default function DashboardHome({ onNavigate }) {
               No spray logs yet. Crew members can submit them from the field app.
             </div>
           ) : (
-            recentLogs.slice(0, 4).map((log, i) => (
+            recentLogs.slice(0, 4).map((log) => (
               <div key={log.id} className={s.logRow}>
                 <div className={s.logIconWrap}>
-                  <Droplets size={16} color="var(--color-purple)" />
+                  <Droplets size={16} color="var(--blu)" />
                 </div>
                 <div className={s.logInfo}>
                   <div className={s.logProperty}>
@@ -241,7 +234,7 @@ export default function DashboardHome({ onNavigate }) {
         <div className={s.quickActionsGrid}>
           {quickActions.map((a, i) => (
             <div key={i} onClick={() => onNavigate?.(a.page)} className={s.quickActionCard}>
-              <a.icon size={24} color="var(--color-text-med)" strokeWidth={1.5} className={s.quickActionIcon} />
+              <a.icon size={24} color="var(--t2)" strokeWidth={1.5} className={s.quickActionIcon} />
               <div className={s.quickActionLabel}>{a.label}</div>
               <div className={s.quickActionSub}>{a.sub}</div>
             </div>

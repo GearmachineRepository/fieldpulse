@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  color: var(--color-text-light);
+  color: var(--t3);
 }
 
 .notFoundInner {
@@ -13,66 +13,67 @@
 }
 
 .notFoundTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text);
-  margin-top: 16px;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-top: var(--space-4);
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
   flex-wrap: wrap;
 }
 
 .iconBox {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .modLabel {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
 }
 
 .modCategory {
-  font-size: 13px;
-  color: var(--color-text-light);
+  font-size: var(--text-sm);
+  color: var(--t3);
 }
 
 .tabBar {
   display: flex;
-  gap: 4px;
-  background: var(--color-card);
-  border-radius: 10px;
-  border: 1px solid var(--color-card-border);
-  padding: 4px;
-  margin-bottom: 24px;
+  gap: var(--space-1);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  padding: var(--space-1);
+  margin-bottom: var(--space-6);
   overflow-x: auto;
 }
 
 .tabButton {
-  padding: 8px 18px;
-  border-radius: 8px;
+  padding: var(--space-2) 18px;
+  border-radius: var(--r);
   border: none;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
   white-space: nowrap;
-  color: var(--color-text-med);
+  color: var(--t2);
+  transition: var(--transition-fast);
 }
 
 .card {
-  background: var(--color-card);
-  border-radius: 14px;
-  border: 1px solid var(--color-card-border);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
@@ -81,27 +82,28 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--color-card-border);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--bd);
 }
 
 .cardTitle {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
 }
 
 .newLogButton {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
   border: none;
   cursor: pointer;
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  transition: var(--transition-fast);
 }
 
 .table {
@@ -110,66 +112,68 @@
 }
 
 .tableHeadRow {
-  background: var(--color-bg);
+  background: var(--s2);
 }
 
 .tableHeadCell {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--t3);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--tracking-label);
   text-align: left;
-  padding: 10px 16px;
+  padding: 10px var(--space-4);
 }
 
 .tableRow {
-  border-bottom: 1px solid var(--color-card-border);
+  border-bottom: 1px solid var(--bd);
   cursor: pointer;
 }
 
 .tableCell {
-  padding: 14px 16px;
-  font-size: 13px;
+  padding: 14px var(--space-4);
+  font-size: var(--text-sm);
 }
 
 .tableCellDate {
   composes: tableCell;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
 }
 
 .tableCellCrew {
   composes: tableCell;
-  color: var(--color-text-med);
+  color: var(--t2);
 }
 
 .statusBadge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-accent);
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--amb);
 }
 
 .emptyCard {
-  background: var(--color-card);
-  border-radius: 14px;
-  border: 1px solid var(--color-card-border);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
   box-shadow: var(--shadow-sm);
   padding: 40px;
   text-align: center;
-  color: var(--color-text-light);
+  color: var(--t3);
 }
 
 .emptyTitle {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text);
-  margin-top: 12px;
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-top: var(--space-3);
 }
 
 .emptySubtitle {
-  font-size: 13px;
-  margin-top: 4px;
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
 }

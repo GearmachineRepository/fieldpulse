@@ -5,22 +5,28 @@
 /* ── Header actions ── */
 .headerActions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .csvBtn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1.5px solid var(--color-card-border);
-  background: var(--color-card);
-  color: var(--color-text-med);
-  font-size: 14px;
-  font-weight: 600;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
   cursor: pointer;
-  font-family: var(--font-sans);
+  transition: var(--transition-fast);
+}
+
+.csvBtn:hover {
+  border-color: var(--t3);
+  color: var(--t1);
 }
 
 .csvBtn:disabled {
@@ -30,16 +36,21 @@
 .printBtn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: 10px;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
   border: none;
-  background: var(--color-accent);
+  background: var(--amb);
   color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
   cursor: pointer;
-  font-family: var(--font-sans);
+  transition: var(--transition-fast);
+}
+
+.printBtn:hover {
+  opacity: 0.88;
 }
 
 .printBtn:disabled {
@@ -49,8 +60,8 @@
 /* ── Report type tabs ── */
 .tabBar {
   display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
   overflow-x: auto;
   padding-bottom: 2px;
 }
@@ -58,29 +69,35 @@
 .tabBtn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
   cursor: pointer;
-  font-family: var(--font-sans);
   white-space: nowrap;
-  border: 1.5px solid var(--color-card-border);
-  background: var(--color-card);
-  color: var(--color-text-med);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  transition: var(--transition-fast);
+}
+
+.tabBtn:hover {
+  color: var(--t1);
+  border-color: var(--t3);
 }
 
 /* ── Filters bar ── */
 .filterBar {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
   flex-wrap: wrap;
-  padding: 14px 18px;
-  background: var(--color-card);
-  border-radius: 12px;
-  border: 1px solid var(--color-card-border);
+  padding: var(--space-3) var(--space-4);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
   align-items: flex-end;
 }
 
@@ -91,43 +108,55 @@
 
 .filterLabel {
   display: block;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--t3);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-1);
 }
 
 .filterInput {
   width: 100%;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1.5px solid var(--color-card-border);
-  background: var(--color-bg);
-  font-size: 14px;
-  font-family: var(--font-sans);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  font-size: var(--text-base);
+  font-family: var(--fn);
   outline: none;
   box-sizing: border-box;
-  color: var(--color-text);
+  color: var(--t1);
+  transition: var(--transition-fast);
+}
+
+.filterInput:focus {
+  border-color: var(--t3);
 }
 
 .presetGroup {
   display: flex;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .presetBtn {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--color-card-border);
-  background: var(--color-card);
-  color: var(--color-text-med);
-  font-size: 12px;
-  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
   cursor: pointer;
-  font-family: var(--font-sans);
   white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.presetBtn:hover {
+  color: var(--t1);
+  border-color: var(--t3);
 }
 
 /* ── Print header ── */
@@ -136,45 +165,49 @@
 }
 
 .printTitle {
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 4px;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-1);
 }
 
 .printSubtitle {
-  font-size: 13px;
-  color: var(--color-text-light);
-  margin-bottom: 16px;
+  font-size: var(--text-sm);
+  color: var(--t3);
+  margin-bottom: var(--space-4);
 }
 
 /* ── Summary cards row ── */
 .statsRow {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
   flex-wrap: wrap;
 }
 
 .statCard {
-  background: var(--color-card);
-  border-radius: 12px;
-  padding: 16px 18px;
-  border: 1px solid var(--color-card-border);
-  border-top: 3px solid var(--color-accent);
+  background: var(--s1);
+  border-radius: var(--r);
+  padding: var(--space-4) var(--space-4);
+  border: 1px solid var(--bd);
+  border-top: 3px solid var(--amb);
   flex: 1;
   min-width: 120px;
 }
 
 .statValue {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-text);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--t1);
 }
 
 .statLabel {
-  font-size: 12px;
-  color: var(--color-text-light);
-  margin-top: 2px;
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-top: var(--space-1);
 }
 
 /* ── Tables ── */
@@ -185,75 +218,81 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
-  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
 }
 
 .tableHeadRow {
-  border-bottom: 2px solid var(--color-card-border);
+  border-bottom: 2px solid var(--bd);
 }
 
 .th {
-  padding: 10px 12px;
+  padding: var(--space-2) var(--space-3);
   text-align: left;
-  font-weight: 700;
-  color: var(--color-text-med);
-  font-size: 11px;
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--t3);
+  font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--tracking-label);
 }
 
 .tableRow {
-  border-bottom: 1px solid var(--color-card-border);
+  border-bottom: 1px solid var(--bd);
+  transition: var(--transition-fast);
+}
+
+.tableRow:hover {
+  background: var(--s2);
 }
 
 .cell {
-  padding: 10px 12px;
+  padding: var(--space-2) var(--space-3);
   vertical-align: top;
 }
 
 .cellBold {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .cellSub {
-  font-size: 11px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t3);
 }
 
 .cellSmall {
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .cellMuted {
-  font-size: 11px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t3);
 }
 
 /* ── Product row in spray table ── */
 .productLine {
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .productName {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .productDetail {
-  color: var(--color-text-light);
+  color: var(--t3);
 }
 
 /* ── Card list (PUR, Attendance) ── */
 .cardList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .card {
-  background: var(--color-card);
-  border-radius: 12px;
-  border: 1px solid var(--color-card-border);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
   overflow: hidden;
 }
 
@@ -261,164 +300,178 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--color-card-border);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--bd);
 }
 
 .cardTitle {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-text);
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
 }
 
 .cardSubtitle {
-  font-size: 12px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t3);
 }
 
 .cardBody {
-  padding: 0 18px;
+  padding: 0 var(--space-4);
 }
 
 /* ── PUR report ── */
 .purAmount {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-accent);
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--amb);
 }
 
 .purAppCount {
-  font-size: 12px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--t3);
 }
 
 .purAppRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  font-size: 12px;
+  padding: var(--space-2) 0;
+  font-size: var(--text-xs);
 }
 
 .purAppRowBorder {
   composes: purAppRow;
-  border-bottom: 1px solid var(--color-card-border);
+  border-bottom: 1px solid var(--bd);
 }
 
 .purAppDate {
-  color: var(--color-text-med);
+  color: var(--t2);
+  font-family: var(--mono);
 }
 
 .purAppProperty {
-  font-weight: 600;
-  color: var(--color-text);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
 }
 
 .purAppCrew {
-  color: var(--color-text-light);
+  color: var(--t3);
 }
 
 .purAppAmount {
-  font-weight: 600;
-  color: var(--color-accent);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--amb);
 }
 
 /* ── Attendance report ── */
 .attendanceStats {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   text-align: center;
 }
 
 .attendanceBigNum {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--amb);
 }
 
 .attendanceBigNumRed {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--color-red);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--red);
 }
 
 .attendanceSmallLabel {
-  font-size: 10px;
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
 }
 
 .rosterRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  font-size: 12px;
+  padding: var(--space-2) 0;
+  font-size: var(--text-xs);
 }
 
 .rosterRowBorder {
   composes: rosterRow;
-  border-bottom: 1px solid var(--color-card-border);
+  border-bottom: 1px solid var(--bd);
 }
 
 .rosterDate {
-  font-weight: 600;
-  color: var(--color-text);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--t1);
 }
 
 .rosterLead {
-  color: var(--color-text-light);
+  color: var(--t3);
 }
 
 .rosterPresent {
-  color: var(--color-accent);
-  font-weight: 600;
+  color: var(--amb);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
 }
 
 .rosterAbsent {
-  color: var(--color-red);
-  font-weight: 600;
+  color: var(--red);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
 }
 
 /* ── Work log route color indicator ── */
 .routeIndicator {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .routeColorDot {
   width: 4px;
   height: 16px;
-  border-radius: 2px;
-  background: var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--amb);
 }
 
 .routeName {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 /* ── Status badge ── */
 .statusBadge {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
 }
 
 .statusComplete {
   composes: statusBadge;
-  background: var(--color-accent-light);
-  color: var(--color-accent);
+  background: var(--amb-dim);
+  color: var(--amb);
 }
 
 .statusPending {
   composes: statusBadge;
-  background: var(--color-amber-light);
-  color: var(--color-amber);
+  background: color-mix(in srgb, var(--amb) 12%, transparent);
+  color: var(--amb);
 }
 
 .cellTextMed {
-  color: var(--color-text-med);
+  color: var(--t2);
 }
 
 .textRight {
@@ -439,7 +492,7 @@
     left: 0;
     top: 0;
     width: 100%;
-    padding: 20px;
+    padding: var(--space-5);
   }
   .printOnly {
     display: block !important;

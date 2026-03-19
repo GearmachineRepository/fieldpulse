@@ -1,0 +1,35 @@
+/* ═══════════════════════════════════════════
+   TabBar — Bottom-border tab navigation
+   ═══════════════════════════════════════════ */
+
+.bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--bd);
+  margin-bottom: var(--space-4);
+}
+
+.tab {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-family: var(--fn);
+  color: var(--t3);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--t2);
+}
+
+.active {
+  color: var(--amb);
+  border-bottom-color: var(--amb);
+  font-weight: var(--font-semibold);
+}

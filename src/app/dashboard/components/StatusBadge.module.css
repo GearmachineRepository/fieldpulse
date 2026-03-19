@@ -1,0 +1,22 @@
+/* ═══════════════════════════════════════════
+   StatusBadge — Tinted background + dark text
+   ═══════════════════════════════════════════ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  line-height: var(--leading-tight);
+  white-space: nowrap;
+}
+
+/* Variants — tinted bg + dark text per design system */
+.green  { background: var(--grn-dim); color: var(--grn); }
+.amber  { background: var(--amb-dim); color: var(--amb); }
+.red    { background: var(--red-dim); color: var(--red); }
+.blue   { background: var(--blu-dim); color: var(--blu); }
+.gray   { background: var(--s2);      color: var(--t3); }

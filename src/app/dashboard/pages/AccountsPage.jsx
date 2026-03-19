@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// Accounts Page — Properties with group filtering
+// Jobs Page — Properties with group filtering
 // + Resource linking via edit modal "Resources" tab
 // ═══════════════════════════════════════════
 
@@ -20,6 +20,7 @@ import {
   PageHeader, AddButton, SearchBar, ClickableCard, IconButton,
   LoadingSpinner, EmptyMessage,
 } from "@/app/dashboard/components/PageUI.jsx"
+import FilterPill from "@/app/dashboard/components/FilterPill.jsx"
 
 const STATE_MAP = {
   alabama:"AL", alaska:"AK", arizona:"AZ", arkansas:"AR", california:"CA",
@@ -84,14 +85,14 @@ export default function AccountsPage() {
 
   return (
     <div>
-      <PageHeader title="Accounts" count={accounts.data.length} countLabel={`propert${accounts.data.length !== 1 ? "ies" : "y"}`}
-        action={<AddButton label="Add Account" icon={Plus} onClick={() => setEditing({})} />} />
+      <PageHeader title="Jobs" count={accounts.data.length} countLabel={`propert${accounts.data.length !== 1 ? "ies" : "y"}`}
+        action={<AddButton label="Add Job" icon={Plus} onClick={() => setEditing({})} />} />
 
       {/* Filters */}
       <div className={s.filterBar}>
-        <SearchBar value={searchQ} onChange={setSearchQ} placeholder="Search accounts..." />
+        <SearchBar value={searchQ} onChange={setSearchQ} placeholder="Search jobs..." />
         <div className={s.filterRow}>
-          <FilterPill label="All" count={accounts.data.length} color="var(--color-accent)"
+          <FilterPill label="All" count={accounts.data.length} color="var(--amb)"
             active={!filterGroup} onClick={() => setFilterGroup("")} />
           {accountGroups.data.map(g => {
             const count = accounts.data.filter(a => a.group_id === g.id).length
@@ -99,14 +100,14 @@ export default function AccountsPage() {
               active={filterGroup === g.id} onClick={() => setFilterGroup(filterGroup === g.id ? "" : g.id)} />
           })}
           <button onClick={() => setManagingGroups(true)} className={s.manageGroupsBtn} title="Manage Groups">
-            <Settings size={14} color="var(--color-text-light)" />
+            <Settings size={14} color="var(--t3)" />
           </button>
         </div>
       </div>
 
       {/* Cards */}
       {accounts.loading && !accounts.data.length ? <LoadingSpinner /> :
-       filtered.length === 0 ? <EmptyMessage text={searchQ || filterGroup ? "No matches." : "No accounts yet."} /> : (
+       filtered.length === 0 ? <EmptyMessage text={searchQ || filterGroup ? "No matches." : "No jobs yet."} /> : (
         <div className={s.cardGrid}>
           {filtered.map(acct => {
             const group = accountGroups.data.find(g => g.id === acct.group_id)
@@ -123,7 +124,7 @@ export default function AccountsPage() {
                 </div>
 
                 <div className={s.addressRow}>
-                  <MapPin size={14} color="var(--color-text-light)" className={s.addressIcon} />
+                  <MapPin size={14} color="var(--t3)" className={s.addressIcon} />
                   <div className={s.addressText}>
                     {acct.address}{acct.city && <>, {acct.city}</>}{acct.state && <>, {acct.state}</>}{acct.zip && <> {acct.zip}</>}
                   </div>
@@ -177,7 +178,7 @@ export default function AccountsPage() {
 }
 
 // ═══════════════════════════════════════════
-// Account Modal — with Resources tab for existing accounts
+// Job Modal — with Resources tab for existing jobs
 // ═══════════════════════════════════════════
 function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
   const isEdit = !!account.id
@@ -221,7 +222,7 @@ function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
   ]
 
   return (
-    <Modal title={isEdit ? "Edit Account" : "Add Account"} onClose={onClose} size="lg">
+    <Modal title={isEdit ? "Edit Job" : "Add Job"} onClose={onClose} size="lg">
       {/* Tabs — only for existing accounts */}
       {isEdit && (
         <div className={s.tabBar}>
@@ -236,7 +237,7 @@ function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
       {/* Details tab */}
       {tab === "details" && (
         <>
-          <FormField label="Property Name *" value={name} onChange={setName} autoFocus placeholder="e.g. Oak Ridge Estates" />
+          <FormField label="Job Name *" value={name} onChange={setName} autoFocus placeholder="e.g. Oak Ridge Estates" />
           <FormField label="Address *" value={address} onChange={setAddress} placeholder="Street address" />
           <div className={s.formRow3}>
             <FormField label="City" value={city} onChange={setCity} />
@@ -359,7 +360,7 @@ export function AccountResourcesTab({ accountId, toast, onClose }) {
       {/* Linked list */}
       {linked.length === 0 ? (
         <div className={s.emptyResources}>
-          <BookOpen size={28} color="var(--color-text-light)" className={s.emptyResourcesIcon} />
+          <BookOpen size={28} color="var(--t3)" className={s.emptyResourcesIcon} />
           <div>No resources attached yet</div>
           <div className={s.emptyResourcesSub}>
             Attach SDS sheets, site plans, or manuals for crews to access on-site
@@ -370,10 +371,10 @@ export function AccountResourcesTab({ accountId, toast, onClose }) {
           {linked.map(r => (
             <div key={r.id} className={s.linkedRow}>
               <div className={s.resourceIcon}
-                style={{ background: r.categoryColor ? `${r.categoryColor}15` : "var(--color-blue-light)" }}>
+                style={{ background: r.categoryColor ? `${r.categoryColor}15` : "var(--blu-dim)" }}>
                 {r.resourceType === "link"
-                  ? <ExternalLink size={16} color={r.categoryColor || "var(--color-blue)"} />
-                  : <FileText size={16} color={r.categoryColor || "var(--color-blue)"} />
+                  ? <ExternalLink size={16} color={r.categoryColor || "var(--blu)"} />
+                  : <FileText size={16} color={r.categoryColor || "var(--blu)"} />
                 }
               </div>
               <div className={s.resourceInfo}>
@@ -385,7 +386,7 @@ export function AccountResourcesTab({ accountId, toast, onClose }) {
                 </div>
               </div>
               <button onClick={() => handleUnlink(r.id)} className={s.unlinkBtn} title="Unlink">
-                <X size={16} color="var(--color-text-light)" />
+                <X size={16} color="var(--t3)" />
               </button>
             </div>
           ))}
@@ -430,11 +431,11 @@ export function ResourcePickerOverlay({ available, search, onSearch, onSelect, o
           <div className={s.pickerTitleRow}>
             <div className={s.pickerTitle}>Attach Resource</div>
             <button onClick={onClose} className={s.pickerCloseBtn}>
-              <X size={18} color="var(--color-text-light)" />
+              <X size={18} color="var(--t3)" />
             </button>
           </div>
           <div className={s.pickerSearchWrap}>
-            <Search size={16} color="var(--color-text-light)" className={s.pickerSearchIcon} />
+            <Search size={16} color="var(--t3)" className={s.pickerSearchIcon} />
             <input
               value={search} onChange={e => onSearch(e.target.value)}
               placeholder="Search resources..."
@@ -451,10 +452,10 @@ export function ResourcePickerOverlay({ available, search, onSearch, onSelect, o
             available.map(r => (
               <button key={r.id} onClick={() => onSelect(r.id)} className={s.pickerItem}>
                 <div className={s.resourceIcon}
-                  style={{ background: r.categoryColor ? `${r.categoryColor}15` : "var(--color-blue-light)" }}>
+                  style={{ background: r.categoryColor ? `${r.categoryColor}15` : "var(--blu-dim)" }}>
                   {r.resourceType === "link"
-                    ? <ExternalLink size={16} color={r.categoryColor || "var(--color-blue)"} />
-                    : <FileText size={16} color={r.categoryColor || "var(--color-blue)"} />
+                    ? <ExternalLink size={16} color={r.categoryColor || "var(--blu)"} />
+                    : <FileText size={16} color={r.categoryColor || "var(--blu)"} />
                   }
                 </div>
                 <div className={s.resourceInfo}>
@@ -465,7 +466,7 @@ export function ResourcePickerOverlay({ available, search, onSearch, onSelect, o
                     {r.categoryName || "Uncategorized"}
                   </div>
                 </div>
-                <Plus size={16} color="var(--color-accent)" />
+                <Plus size={16} color="var(--amb)" />
               </button>
             ))
           )}
@@ -475,21 +476,6 @@ export function ResourcePickerOverlay({ available, search, onSearch, onSelect, o
   )
 }
 
-
-// ═══════════════════════════════════════════
-// Filter Pill — Clickable tag for filtering
-// ═══════════════════════════════════════════
-function FilterPill({ label, count, color, active, onClick }) {
-  return (
-    <button onClick={onClick}
-      className={`${s.filterPill} ${active ? s.filterPillActive : ""}`}
-      style={active ? { borderColor: color, background: `${color}10`, color } : undefined}
-    >
-      {label}
-      {count !== undefined && <span className={s.filterPillCount}>({count})</span>}
-    </button>
-  )
-}
 
 // ═══════════════════════════════════════════
 // Manage Items Modal — Shared for groups + categories
@@ -518,10 +504,10 @@ function ManageItemsModal({ title, items, onSave, onDelete, onClose }) {
                 <div className={s.manageCount}>{item.count} item{item.count !== 1 ? "s" : ""}</div>
               </div>
               <button onClick={() => setEditingItem(item)} className={s.manageActionBtn} title="Edit">
-                <Edit3 size={14} color="var(--color-text-med)" />
+                <Edit3 size={14} color="var(--t2)" />
               </button>
               <button onClick={() => setConfirmDel(item)} className={s.manageActionBtn} title="Delete">
-                <Trash2 size={14} color="var(--color-red)" />
+                <Trash2 size={14} color="var(--red)" />
               </button>
             </div>
           ))}
@@ -588,7 +574,7 @@ function ItemEditModal({ item, onSave, onClose }) {
               <button key={c} onClick={() => setColor(c)} className={s.colorSwatch}
                 style={{
                   background: c,
-                  boxShadow: color === c ? `0 0 0 2px var(--color-bg), 0 0 0 4px ${c}` : "none",
+                  boxShadow: color === c ? `0 0 0 2px var(--s1), 0 0 0 4px ${c}` : "none",
                 }} />
             ))}
           </div>

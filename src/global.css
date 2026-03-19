@@ -12,8 +12,9 @@
 }
 
 body {
-  font-family: var(--font-sans);
-  background: var(--color-bg);
+  font-family: var(--fn);
+  background: var(--bg);
+  color: var(--t1);
 }
 
 /* ── Focus ring fix ──
@@ -31,13 +32,11 @@ body {
   border-radius: inherit;
 }
 
-/* Inputs and buttons get a subtler focus indicator */
+/* Inputs: amber focus ring via module CSS; just kill default outline here */
 input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  box-shadow: none;
-  border-color: var(--color-accent) !important;
 }
 
 button:focus-visible {
@@ -51,8 +50,8 @@ html {
 
 /* ── Selection color ── */
 ::selection {
-  background: var(--color-accent-border);
-  color: var(--color-text);
+  background: var(--amb-dim);
+  color: var(--t1);
 }
 
 /* ── Responsive breakpoints (documented, not usable in media queries) ──

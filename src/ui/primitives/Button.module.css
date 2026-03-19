@@ -10,7 +10,7 @@
   border: none;
   cursor: pointer;
   font-family: var(--font-sans);
-  font-weight: var(--font-extrabold);
+  font-weight: var(--font-semibold);
   text-align: center;
   transition: opacity var(--transition-fast), transform var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
@@ -28,21 +28,24 @@
 /* ── Sizes ── */
 
 .sm {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
-  border-radius: var(--radius-sm);
+  height: 28px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--r);
 }
 
 .md {
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--text-base);
-  border-radius: var(--radius-md);
+  height: 36px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+  border-radius: var(--r);
 }
 
 .lg {
-  padding: var(--space-4);
-  font-size: var(--text-lg);
-  border-radius: var(--radius-xl);
+  height: 44px;
+  padding: 0 var(--space-5);
+  font-size: var(--text-base);
+  border-radius: var(--r);
 }
 
 /* ── Width ── */
@@ -54,21 +57,18 @@
 /* ── Variants ── */
 
 .accent {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-  box-shadow: 0 2px 8px rgba(47, 111, 237, 0.19);
+  background: var(--amb);
+  color: var(--amb-text);
 }
 
 .blue {
-  background: var(--color-blue);
-  color: var(--color-text-inverse);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.19);
+  background: var(--blu);
+  color: #fff;
 }
 
 .red {
-  background: var(--color-red);
-  color: var(--color-text-inverse);
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.19);
+  background: var(--red);
+  color: #fff;
 }
 
 .ghost {

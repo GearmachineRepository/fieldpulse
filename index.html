@@ -20,20 +20,17 @@
 
     <title>CruPoint</title>
 
-    <!--
-      Leaflet CSS removed from here.
-      It was render-blocking (Lighthouse: "Render blocking requests — est. 150ms savings").
-      It's now imported directly in AccountMap.jsx via:
-        import 'leaflet/dist/leaflet.css'
-      Vite bundles it only when the map component is loaded, making it non-blocking.
-    -->
+    <!-- IBM Plex fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 
     <!-- Preconnect to tile servers used by Leaflet — reduces map tile latency -->
     <link rel="preconnect" href="https://tile.openstreetmap.org" />
 
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      body { font-family: 'Nunito Sans', 'Avenir', 'Segoe UI', sans-serif; background: #F6F7F9; }
+      body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: #F4F5F7; }
     </style>
   </head>
   <body>

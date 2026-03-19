@@ -26,9 +26,9 @@
 }
 
 /* ── Sizes ── */
-.sm  { max-width: 380px; }
-.md  { max-width: 500px; }
-.lg  { max-width: 640px; }
+.sm  { max-width: 480px; }
+.md  { max-width: 640px; }
+.lg  { max-width: 900px; }
 
 .header {
   display: flex;
@@ -38,9 +38,9 @@
 }
 
 .title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-black);
-  color: var(--color-text);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
   margin: 0;
 }
 

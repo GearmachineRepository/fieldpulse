@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  color: var(--color-text-light);
+  color: var(--t3);
 }
 
 .inner {
@@ -15,14 +15,14 @@
 }
 
 .title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text);
-  margin-top: 16px;
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-top: var(--space-4);
 }
 
 .subtitle {
-  font-size: 14px;
-  color: var(--color-text-med);
-  margin-top: 6px;
+  font-size: var(--text-base);
+  color: var(--t2);
+  margin-top: var(--space-2);
 }

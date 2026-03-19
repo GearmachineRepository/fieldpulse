@@ -1,0 +1,137 @@
+/* ===================================================
+   DashboardRail — Expandable section navigation
+   48px collapsed -> ~160px overlay on hover
+   Wrapper keeps 48px reserved in layout flow.
+   Dark warm background with amber accents.
+   =================================================== */
+
+/* Wrapper: always 48px in flex layout, never changes */
+.wrapper {
+  width: var(--rail-width);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Rail: positioned absolute inside wrapper so it can expand without shifting layout */
+.rail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--rail-width);
+  background: var(--rail-bg);
+  border-right: 1px solid var(--sb-divider);
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 8px;
+  overflow: hidden;
+  z-index: 20;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s ease;
+}
+
+.rail:hover {
+  width: 160px;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.2);
+}
+
+/* -- Logo mark -- */
+.logo {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 11px;
+  border-bottom: 1px solid var(--sb-divider);
+  flex-shrink: 0;
+}
+
+.logoMark {
+  width: 26px;
+  height: 26px;
+  background: var(--amb);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoSvg {
+  width: 14px;
+  height: 14px;
+}
+
+/* -- Nav area -- */
+.nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 6px;
+  gap: 2px;
+  width: 160px;
+}
+
+/* -- Separator -- */
+.sep {
+  height: 1px;
+  background: var(--sb-divider);
+  margin: 4px 6px;
+}
+
+/* -- Nav item (icon + label) -- */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: var(--r);
+  cursor: pointer;
+  color: var(--sb-text);
+  border: none;
+  background: transparent;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  font-family: var(--fn);
+  font-size: var(--text-sm);
+}
+
+.item:hover {
+  background: var(--sb-hover);
+  color: hsl(30, 8%, 85%);
+}
+
+.item.active {
+  background: var(--sb-active-bg);
+  color: var(--sb-text-active);
+}
+
+.itemIcon {
+  flex-shrink: 0;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.itemLabel {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  overflow: hidden;
+}
+
+/* Show labels when rail is hovered */
+.rail:hover .itemLabel {
+  opacity: 1;
+}
+
+/* ===================================================
+   Mobile: hide rail, use hamburger instead
+   =================================================== */
+@media (max-width: 768px) {
+  .wrapper {
+    display: none;
+  }
+}

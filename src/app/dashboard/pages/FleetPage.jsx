@@ -52,7 +52,7 @@ export default function FleetPage() {
               <div className={s.cardTop}>
                 <div className={s.cardInfo}>
                   <div className={s.cardIcon}>
-                    <Truck size={20} color="var(--color-accent)" />
+                    <Truck size={20} color="var(--amb)" />
                   </div>
                   <div>
                     <div className={s.cardName}>{v.name}</div>

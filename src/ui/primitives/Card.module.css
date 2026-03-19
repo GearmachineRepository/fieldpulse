@@ -1,15 +1,15 @@
 /* ═══════════════════════════════════════════
-   Card — Styles
+   Card — Styles (Design System Aligned)
    ═══════════════════════════════════════════ */
 
 .card {
-  background: var(--color-card);
-  border: 1.5px solid var(--color-card-border);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-4) var(--space-5);
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: var(--space-5);
   margin-bottom: var(--space-3);
   box-shadow: var(--shadow-sm);
-  font-family: var(--font-sans);
+  font-family: var(--fn);
   text-align: left;
   width: 100%;
 }
@@ -22,29 +22,30 @@
 
 .clickable {
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
 .clickable:hover {
-  border-color: var(--color-blue);
+  box-shadow: var(--shadow-md);
+  border-color: var(--bd2);
 }
 
 /* ── Variants ── */
 
 .selected {
-  border-color: var(--color-blue);
-  background: var(--color-blue-light);
+  border-color: var(--amb);
+  background: var(--amb-dim);
 }
 
 .danger {
-  border-color: var(--color-red-border);
-  background: var(--color-red-light);
+  border-color: color-mix(in srgb, var(--red) 30%, transparent);
+  background: var(--red-dim);
 }
 
 .info {
-  border-color: var(--color-blue-border);
-  background: var(--color-blue-light);
+  border-color: color-mix(in srgb, var(--blu) 30%, transparent);
+  background: var(--blu-dim);
 }
 
 /* ── Header sub-component ── */
@@ -57,14 +58,14 @@
 }
 
 .title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-extrabold);
-  color: var(--color-text);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
 }
 
 .subtitle {
   font-size: var(--text-sm);
-  color: var(--color-text-light);
+  color: var(--t3);
   margin-top: 2px;
 }
 

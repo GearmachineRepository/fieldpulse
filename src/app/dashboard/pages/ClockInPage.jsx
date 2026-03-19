@@ -15,6 +15,7 @@ import {
 import { useData } from "@/context/DataProvider.jsx"
 import { getAttendanceToday } from "@/lib/api/rosters.js"
 import { PageHeader, LoadingSpinner, EmptyMessage } from "@/app/dashboard/components/PageUI.jsx"
+import StatCard from "../components/StatCard.jsx"
 import s from "./ClockInPage.module.css"
 
 export default function ClockInPage() {
@@ -62,26 +63,26 @@ export default function ClockInPage() {
 
       {/* Summary cards */}
       <div className={s.summaryGrid}>
-        <SummaryCard
+        <StatCard
           label="Working Today"
-          value={totalWorking}
+          value={String(totalWorking)}
           sub={`of ${totalEmployees} employees`}
           icon={UserCheck}
-          color="var(--color-accent)"
+          color="var(--amb)"
         />
-        <SummaryCard
+        <StatCard
           label="Rosters In"
-          value={submitted.length}
+          value={String(submitted.length)}
           sub={`of ${(attendance?.crews || []).length} crews`}
           icon={CheckCircle2}
-          color="var(--color-blue)"
+          color="var(--blu)"
         />
-        <SummaryCard
+        <StatCard
           label="Not Clocked In"
-          value={unrostered.length}
+          value={String(unrostered.length)}
           sub="employees"
           icon={UserX}
-          color={unrostered.length > 0 ? "var(--color-amber)" : "var(--color-text-light)"}
+          color={unrostered.length > 0 ? "var(--amb)" : "var(--t3)"}
         />
       </div>
 
@@ -94,12 +95,12 @@ export default function ClockInPage() {
           <div className={s.crewList}>
             {notSubmitted.map(crew => (
               <div key={crew.crewId} className={s.waitingRow}>
-                <XCircle size={20} color="var(--color-amber)" className={s.iconShrink} />
+                <XCircle size={20} color="var(--amb)" className={s.iconShrink} />
                 <div className={s.rowBody}>
                   <div className={s.crewName}>{crew.crewName}</div>
                   <div className={s.crewSub}>No roster submitted today</div>
                 </div>
-                <Clock size={16} color="var(--color-text-light)" />
+                <Clock size={16} color="var(--t3)" />
               </div>
             ))}
           </div>
@@ -118,14 +119,14 @@ export default function ClockInPage() {
               return (
                 <div key={crew.crewId} className={s.submittedCard}>
                   <button onClick={() => setExpandedCrew(isExpanded ? null : crew.crewId)} className={s.submittedBtn}>
-                    <CheckCircle2 size={20} color="var(--color-accent)" className={s.iconShrink} />
+                    <CheckCircle2 size={20} color="var(--grn)" className={s.iconShrink} />
                     <div className={s.rowBody}>
                       <div className={s.submittedCrewName}>{crew.crewName}</div>
                       <div className={s.submittedCrewSub}>
                         {crew.memberCount} member{crew.memberCount !== 1 ? "s" : ""} · Submitted by {crew.submittedBy}
                       </div>
                     </div>
-                    {isExpanded ? <ChevronUp size={16} color="var(--color-text-light)" /> : <ChevronDown size={16} color="var(--color-text-light)" />}
+                    {isExpanded ? <ChevronUp size={16} color="var(--t3)" /> : <ChevronDown size={16} color="var(--t3)" />}
                   </button>
 
                   {isExpanded && crew.members.length > 0 && (
@@ -162,7 +163,7 @@ export default function ClockInPage() {
                   <div className={s.empName}>{emp.name}</div>
                   {emp.defaultCrew && <div className={s.empDefaultCrew}>Usually: {emp.defaultCrew}</div>}
                 </div>
-                <UserX size={16} color="var(--color-text-light)" />
+                <UserX size={16} color="var(--t3)" />
               </div>
             ))}
           </div>
@@ -170,23 +171,6 @@ export default function ClockInPage() {
       )}
 
       {(attendance?.crews || []).length === 0 && <EmptyMessage text="No crews set up yet." />}
-    </div>
-  )
-}
-
-function SummaryCard({ label, value, sub, icon: Icon, color }) {
-  return (
-    <div className={s.summaryCard} style={{ borderTop: `3px solid ${color}` }}>
-      <div className={s.summaryCardInner}>
-        <div>
-          <div className={s.summaryLabel}>{label}</div>
-          <div className={s.summaryValue}>{value}</div>
-          <div className={s.summarySub}>{sub}</div>
-        </div>
-        <div className={s.summaryIconWrap} style={{ background: `${color}10` }}>
-          <Icon size={18} color={color} />
-        </div>
-      </div>
     </div>
   )
 }

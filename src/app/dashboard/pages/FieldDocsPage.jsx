@@ -50,7 +50,7 @@ export default function FieldDocsPage() {
               value={filterCrew}
               onChange={e => setFilterCrew(e.target.value)}
               className={s.crewSelect}
-              style={{ color: filterCrew ? "var(--color-text)" : undefined }}
+              style={{ color: filterCrew ? "var(--t1)" : undefined }}
             >
               <option value="">All Crews</option>
               {crewNames.map(n => <option key={n} value={n}>{n}</option>)}
@@ -97,7 +97,7 @@ export default function FieldDocsPage() {
                   {(log.photos || []).length > 0 ? `${log.photos.length}` : "—"}
                 </div>
                 <div>
-                  <Eye size={16} color="var(--color-accent)" />
+                  <Eye size={16} color="var(--amb)" />
                 </div>
               </button>
 
@@ -107,7 +107,7 @@ export default function FieldDocsPage() {
                 className={`${s.mobileRow} ${i < filtered.length - 1 ? s.rowBorder : ""}`}
               >
                 <div className={s.mobileIcon}>
-                  <Droplets size={18} color="var(--color-purple)" />
+                  <Droplets size={18} color="var(--blu)" />
                 </div>
                 <div className={s.mobileContent}>
                   <div className={s.mobileProperty}>{log.property}</div>
@@ -165,25 +165,25 @@ function LogDetailModal({ log, onClose }) {
           <div className={s.weatherBar}>
             {log.weather.temp && (
               <div className={s.weatherItem}>
-                <Thermometer size={14} color="var(--color-text-light)" />
+                <Thermometer size={14} color="var(--t3)" />
                 <span className={s.weatherBold}>{log.weather.temp}°F</span>
               </div>
             )}
             {log.weather.humidity && (
               <div className={s.weatherItem}>
-                <Droplets size={14} color="var(--color-text-light)" />
+                <Droplets size={14} color="var(--t3)" />
                 <span>{log.weather.humidity}%</span>
               </div>
             )}
             {log.weather.windSpeed && (
               <div className={s.weatherItem}>
-                <Wind size={14} color="var(--color-text-light)" />
+                <Wind size={14} color="var(--t3)" />
                 <span>{log.weather.windSpeed} mph {log.weather.windDir || ""}</span>
               </div>
             )}
             {log.weather.conditions && (
               <div className={s.weatherItem}>
-                <Cloud size={14} color="var(--color-text-light)" />
+                <Cloud size={14} color="var(--t3)" />
                 <span>{log.weather.conditions}</span>
               </div>
             )}
@@ -202,7 +202,7 @@ function LogDetailModal({ log, onClose }) {
           <div className={s.productList}>
             {log.products.map((p, i) => (
               <div key={i} className={s.productRow}
-                style={i < log.products.length - 1 ? { borderBottom: "1px solid var(--color-card-border)" } : undefined}
+                style={i < log.products.length - 1 ? { borderBottom: "1px solid var(--bd)" } : undefined}
               >
                 <div>
                   <div className={s.productName}>{p.name}</div>
@@ -272,7 +272,7 @@ function InfoCell({ icon: Icon, label, value }) {
   return (
     <div className={s.infoCell}>
       <div className={s.infoCellHeader}>
-        <Icon size={13} color="var(--color-text-light)" />
+        <Icon size={13} color="var(--t3)" />
         <span className={s.infoCellLabel}>{label}</span>
       </div>
       <div className={s.infoCellValue}>{value}</div>

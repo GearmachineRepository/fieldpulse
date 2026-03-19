@@ -3,11 +3,13 @@
 // ═══════════════════════════════════════════
 
 import { useState } from "react"
+import { useParams } from "react-router-dom"
 import { Plus, FileText, CheckCircle2 } from "lucide-react"
 import { ENABLED_MODULES } from "@/app/modules.js"
 import s from "./ModulePage.module.css"
 
-export default function ModulePage({ moduleKey }) {
+export default function ModulePage() {
+  const { moduleKey } = useParams()
   const mod = ENABLED_MODULES.find(m => m.key === moduleKey)
   const [tab, setTab] = useState("logs")
 

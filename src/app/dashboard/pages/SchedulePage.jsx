@@ -269,9 +269,9 @@ export default function SchedulePage() {
                     {items.routes.slice(0, 4).map(route => (
                       <button key={`r${route.id}`} onClick={() => setViewingRoute(route)} className={s.calRouteBtn}
                         style={{
-                          background: `${route.color || "var(--color-accent)"}15`,
-                          borderLeft: `2px solid ${route.color || "var(--color-accent)"}`,
-                          color: route.color || "var(--color-accent)",
+                          background: `${route.color || "var(--amb)"}15`,
+                          borderLeft: `2px solid ${route.color || "var(--amb)"}`,
+                          color: route.color || "var(--amb)",
                         }}>
                         <span className={s.calRouteName}>{route.name}</span>
                         {route.visitCount > 0 && (
@@ -282,11 +282,11 @@ export default function SchedulePage() {
                     {items.events.slice(0, 3).map(event => (
                       <button key={`e${event.id}`} onClick={() => setEditingEvent(event)} className={s.calEventBtn}
                         style={{
-                          color: event.completed ? "var(--color-text-light)" : "var(--color-text)",
+                          color: event.completed ? "var(--t3)" : "var(--t1)",
                           textDecoration: event.completed ? "line-through" : "none",
                         }}>
                         <span className={s.eventDot}
-                          style={{ background: event.completed ? "var(--color-text-light)" : (event.color || "#3B82F6") }} />
+                          style={{ background: event.completed ? "var(--t3)" : (event.color || "var(--blu)") }} />
                         {event.startTime && <span className={s.eventTime}>{event.startTime.slice(0, 5)}</span>}
                         {event.title}
                       </button>
@@ -301,10 +301,10 @@ export default function SchedulePage() {
                   {hasContent && (
                     <div className={s.mobileDots}>
                       {items.routes.map(r => (
-                        <div key={r.id} className={s.mobileDot} style={{ background: r.color || "var(--color-accent)" }} />
+                        <div key={r.id} className={s.mobileDot} style={{ background: r.color || "var(--amb)" }} />
                       ))}
                       {items.events.map(e => (
-                        <div key={e.id} className={s.mobileDot} style={{ background: e.completed ? "var(--color-text-light)" : (e.color || "#3B82F6") }} />
+                        <div key={e.id} className={s.mobileDot} style={{ background: e.completed ? "var(--t3)" : (e.color || "var(--blu)") }} />
                       ))}
                     </div>
                   )}
@@ -347,10 +347,10 @@ export default function SchedulePage() {
                 ) : (
                   <div className={s.listItems}>
                     {items.routes.map(route => (
-                      <ClickableCard key={`r${route.id}`} onClick={() => setViewingRoute(route)} style={{ padding: "14px 18px" }}>
+                      <ClickableCard key={`r${route.id}`} onClick={() => setViewingRoute(route)} style={{ padding: "var(--space-4) var(--space-5)" }}>
                         <div className={s.routeCardContent}>
-                          <div className={s.routeBar} style={{ background: route.color || "var(--color-accent)" }} />
-                          <MapPin size={16} color={route.color || "var(--color-accent)"} style={{ flexShrink: 0 }} />
+                          <div className={s.routeBar} style={{ background: route.color || "var(--amb)" }} />
+                          <MapPin size={16} color={route.color || "var(--amb)"} style={{ flexShrink: 0 }} />
                           <div style={{ flex: 1 }}>
                             <div className={s.routeTitle}>{route.name}</div>
                             <div className={s.routeSubtext}>
@@ -358,7 +358,7 @@ export default function SchedulePage() {
                               {route.crewName && ` · ${route.crewName}`}
                             </div>
                           </div>
-                          <ChevronRight size={16} color="var(--color-text-light)" />
+                          <ChevronRight size={16} color="var(--t3)" />
                         </div>
                         {/* Visit names under route */}
                         {route.visitCount > 0 && (
@@ -371,16 +371,16 @@ export default function SchedulePage() {
                       </ClickableCard>
                     ))}
                     {items.events.map(event => (
-                      <ClickableCard key={`e${event.id}`} onClick={() => setEditingEvent(event)} style={{ padding: "12px 18px" }}>
+                      <ClickableCard key={`e${event.id}`} onClick={() => setEditingEvent(event)} style={{ padding: "var(--space-3) var(--space-5)" }}>
                         <div className={s.eventCardContent}>
                           <button onClick={e => { e.stopPropagation(); handleToggleComplete(event) }} className={s.toggleCompleteBtn}>
-                            {event.completed ? <CheckCircle2 size={20} color="var(--color-accent)" /> : <Circle size={20} color={event.color || "#3B82F6"} />}
+                            {event.completed ? <CheckCircle2 size={20} color="var(--amb)" /> : <Circle size={20} color={event.color || "var(--blu)"} />}
                           </button>
                           <div className={s.eventInfo}>
                             <div className={s.eventTitle}
                               style={{
                                 textDecoration: event.completed ? "line-through" : "none",
-                                color: event.completed ? "var(--color-text-light)" : "var(--color-text)",
+                                color: event.completed ? "var(--t3)" : "var(--t1)",
                               }}>{event.title}</div>
                             <div className={s.eventSubtext}>
                               {event.startTime || ""}{event.endTime ? ` – ${event.endTime}` : ""}
@@ -390,8 +390,8 @@ export default function SchedulePage() {
                           </div>
                           <span className={s.eventTypeBadge}
                             style={{
-                              background: `${event.color || "#3B82F6"}12`,
-                              color: event.color || "#3B82F6",
+                              background: `${event.color || "var(--blu)"}12`,
+                              color: event.color || "var(--blu)",
                             }}>
                             {EVENT_TYPES.find(t => t.value === event.eventType)?.label || "Task"}
                           </span>
@@ -491,7 +491,7 @@ function EventModal({ event, crews, accounts, onClose, onSave, onDelete }) {
             <button key={c} onClick={() => setColor(c)} className={s.colorSwatch}
               style={{
                 background: c,
-                boxShadow: color === c ? `0 0 0 2px var(--color-bg), 0 0 0 3px ${c}` : "none",
+                boxShadow: color === c ? `0 0 0 2px var(--s1), 0 0 0 3px ${c}` : "none",
               }} />
           ))}
         </div>
@@ -542,7 +542,7 @@ function RouteModal({ route, crews, onClose, onSave, onDelete }) {
             <button key={c} onClick={() => setColor(c)} className={s.colorSwatch}
               style={{
                 background: c,
-                boxShadow: color === c ? `0 0 0 2px var(--color-bg), 0 0 0 3px ${c}` : "none",
+                boxShadow: color === c ? `0 0 0 2px var(--s1), 0 0 0 3px ${c}` : "none",
               }} />
           ))}
         </div>
@@ -597,7 +597,7 @@ function RouteStopManager({ routeId, routeName, route: routeMeta, accounts, toas
       </button>
       <div className={s.routeHeader}>
         <div className={s.routeHeaderLeft}>
-          <div className={s.routeColorBar} style={{ background: routeMeta?.color || "var(--color-accent)" }} />
+          <div className={s.routeColorBar} style={{ background: routeMeta?.color || "var(--amb)" }} />
           <div>
             <div className={s.routeHeaderTitle}>{routeName}</div>
             <div className={s.routeHeaderSubtext}>
@@ -619,7 +619,7 @@ function RouteStopManager({ routeId, routeName, route: routeMeta, accounts, toas
               className={`${s.stopItem} ${dragOver === i && dragFrom !== i ? s.stopItemDragOver : ""}`}
               style={{ opacity: dragFrom === i ? 0.5 : 1 }}>
               <div className={s.stopDragHandle}><GripVertical size={18} /></div>
-              <div className={s.stopNumber} style={{ background: routeMeta?.color || "var(--color-accent)" }}>{i + 1}</div>
+              <div className={s.stopNumber} style={{ background: routeMeta?.color || "var(--amb)" }}>{i + 1}</div>
               <div className={s.stopInfo}>
                 <div className={s.stopNameRow}>
                   <span className={s.stopName}>{stop.account.name}</span>
@@ -642,7 +642,7 @@ function RouteStopManager({ routeId, routeName, route: routeMeta, accounts, toas
                 <Clock size={12} />{stop.account.estimatedMinutes || 30}m
               </button>
               <button onClick={() => handleRemove(stop.id)} className={s.stopRemoveBtn}>
-                <Trash2 size={13} color="var(--color-red)" />
+                <Trash2 size={13} color="var(--red)" />
               </button>
             </div>
           ))}
@@ -737,7 +737,7 @@ function StopSearch({ accounts, onAdd }) {
   return (
     <div>
       <div className={s.searchBar}>
-        <Search size={16} color="var(--color-text-light)" />
+        <Search size={16} color="var(--t3)" />
         <input value={q} onChange={e => setQ(e.target.value)} autoFocus placeholder="Search accounts..."
           className={s.searchInput} />
       </div>
@@ -745,12 +745,12 @@ function StopSearch({ accounts, onAdd }) {
         {f.length === 0 ? <div className={s.searchEmpty}>No accounts.</div> :
           f.map(a => (
             <button key={a.id} onClick={() => onAdd(a.id)} className={s.searchItem}>
-              <MapPin size={16} color="var(--color-accent)" style={{ flexShrink: 0 }} />
+              <MapPin size={16} color="var(--amb)" style={{ flexShrink: 0 }} />
               <div className={s.searchItemInfo}>
                 <div className={s.searchItemName}>{a.name}</div>
                 <div className={s.searchItemAddress}>{a.address}{a.city && `, ${a.city}`}</div>
               </div>
-              <Plus size={16} color="var(--color-accent)" />
+              <Plus size={16} color="var(--amb)" />
             </button>
           ))
         }

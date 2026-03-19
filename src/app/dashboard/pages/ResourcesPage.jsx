@@ -128,13 +128,13 @@ export default function ResourcesPage() {
       {/* Search + category pills */}
       <div className={s.searchSection}>
         <div className={s.searchWrap}>
-          <Search size={16} color="var(--color-text-light)" className={s.searchIcon} />
+          <Search size={16} color="var(--t3)" className={s.searchIcon} />
           <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search resources..."
             className={s.searchInput}
           />
         </div>
         <div className={s.pillBar}>
-          <CatPill label="All" count={resources.length} color="var(--color-accent)"
+          <CatPill label="All" count={resources.length} color="var(--amb)"
             active={!activeCategory} onClick={() => setActiveCategory(null)} />
           {categories.map(c => {
             const count = resources.filter(r => r.categoryId === c.id).length
@@ -142,7 +142,7 @@ export default function ResourcesPage() {
               active={activeCategory === c.id} onClick={() => setActiveCategory(activeCategory === c.id ? null : c.id)} />
           })}
           <button onClick={() => setManagingCategories(true)} className={s.settingsBtn} title="Manage Categories">
-            <Settings size={14} color="var(--color-text-light)" />
+            <Settings size={14} color="var(--t3)" />
           </button>
         </div>
       </div>
@@ -183,7 +183,7 @@ export default function ResourcesPage() {
               className={s.addChoiceBtn}
             >
               <div className={s.addChoiceIconLink}>
-                <Link2 size={22} color="var(--color-blue)" />
+                <Link2 size={22} color="var(--blu)" />
               </div>
               <div>
                 <div className={s.addChoiceTitle}>Add a Link</div>
@@ -194,7 +194,7 @@ export default function ResourcesPage() {
               className={s.addChoiceBtn}
             >
               <div className={s.addChoiceIconFile}>
-                <Upload size={22} color="var(--color-accent)" />
+                <Upload size={22} color="var(--amb)" />
               </div>
               <div>
                 <div className={s.addChoiceTitle}>Upload a File</div>
@@ -255,10 +255,10 @@ function ResourceCard({ resource, onEdit, onPin }) {
   const FileIcon = isFile ? getFileIcon(resource.mimeType) : ExternalLink
 
   return (
-    <ClickableCard onClick={onEdit} style={{ padding: "16px 18px" }}>
+    <ClickableCard onClick={onEdit} style={{ padding: "var(--space-4) var(--space-5)" }}>
       <div className={s.cardRow}>
         <div className={isFile ? s.cardIconFile : s.cardIconLink}>
-          <FileIcon size={20} color={isFile ? "var(--color-accent)" : "var(--color-blue)"} />
+          <FileIcon size={20} color={isFile ? "var(--amb)" : "var(--blu)"} />
         </div>
 
         <div className={s.cardBody}>
@@ -266,7 +266,7 @@ function ResourceCard({ resource, onEdit, onPin }) {
             <div className={s.cardTitle}>
               {resource.title}
             </div>
-            {resource.pinned && <Pin size={12} color="var(--color-amber)" />}
+            {resource.pinned && <Pin size={12} color="var(--amb)" />}
           </div>
 
           {resource.description && (
@@ -278,8 +278,8 @@ function ResourceCard({ resource, onEdit, onPin }) {
           <div className={s.cardMeta}>
             {resource.categoryName && (
               <span className={s.categoryBadge} style={{
-                background: `${resource.categoryColor || "var(--color-text-light)"}12`,
-                color: resource.categoryColor || "var(--color-text-light)",
+                background: `${resource.categoryColor || "var(--t3)"}12`,
+                color: resource.categoryColor || "var(--t3)",
               }}>{resource.categoryName}</span>
             )}
             {isFile && resource.fileSize && (
@@ -296,17 +296,17 @@ function ResourceCard({ resource, onEdit, onPin }) {
         <div className={s.cardActions}>
           <button onClick={e => { e.stopPropagation(); onPin() }} className={s.iconBtn}
             title={resource.pinned ? "Unpin" : "Pin"}>
-            <Pin size={14} color={resource.pinned ? "var(--color-amber)" : "var(--color-text-light)"} />
+            <Pin size={14} color={resource.pinned ? "var(--amb)" : "var(--t3)"} />
           </button>
           {isFile && resource.filename ? (
             <a href={`/uploads/${resource.filename}`} download={resource.originalName}
               onClick={e => e.stopPropagation()} className={s.actionLink}>
-              <Download size={14} color="var(--color-accent)" />
+              <Download size={14} color="var(--amb)" />
             </a>
           ) : resource.url ? (
             <a href={resource.url} target="_blank" rel="noopener noreferrer"
               onClick={e => e.stopPropagation()} className={s.actionLink}>
-              <ExternalLink size={14} color="var(--color-blue)" />
+              <ExternalLink size={14} color="var(--blu)" />
             </a>
           ) : null}
         </div>
@@ -386,7 +386,7 @@ function ResourceModal({ resource, categories, onClose, onSave, onDelete }) {
               {isEdit && !file && (
                 <div className={s.existingFile}>
                   <div className={s.existingFileIcon}>
-                    <FileText size={20} color="var(--color-accent)" />
+                    <FileText size={20} color="var(--amb)" />
                   </div>
                   <div className={s.existingFileInfo}>
                     <div className={s.existingFileName}>
@@ -405,7 +405,7 @@ function ResourceModal({ resource, categories, onClose, onSave, onDelete }) {
               {/* New file selected (creating or replacing) */}
               {file && (
                 <button onClick={() => fileRef.current?.click()} className={s.fileSelectedBtn}>
-                  <FileText size={24} color="var(--color-accent)" className={s.iconCenter} />
+                  <FileText size={24} color="var(--amb)" className={s.iconCenter} />
                   <div className={s.fileSelectedName}>{file.name}</div>
                   <div className={s.fileSelectedHint}>{formatFileSize(file.size)} · Click to change</div>
                 </button>
@@ -414,7 +414,7 @@ function ResourceModal({ resource, categories, onClose, onSave, onDelete }) {
               {/* New resource — no file selected yet */}
               {!isEdit && !file && (
                 <button onClick={() => fileRef.current?.click()} className={s.fileEmptyBtn}>
-                  <Upload size={24} color="var(--color-text-light)" className={s.iconCenter} />
+                  <Upload size={24} color="var(--t3)" className={s.iconCenter} />
                   <div className={s.fileEmptyTitle}>Click to select a file</div>
                   <div className={s.fileEmptyHint}>PDF, Word, Excel, images — up to 25MB</div>
                 </button>
@@ -439,7 +439,7 @@ function ResourceModal({ resource, categories, onClose, onSave, onDelete }) {
             <div className={pinned ? s.pinCheckboxChecked : s.pinCheckboxUnchecked}>
               {pinned && <span className={s.pinCheckmark}>✓</span>}
             </div>
-            <Pin size={16} color={pinned ? "var(--color-amber)" : "var(--color-text-light)"} />
+            <Pin size={16} color={pinned ? "var(--amb)" : "var(--t3)"} />
             <span className={s.pinLabel}>Pin to top</span>
           </button>
 
@@ -524,7 +524,7 @@ function ResourceAccountsTab({ resourceId, onClose }) {
       {/* Linked accounts list */}
       {linkedAccounts.length === 0 ? (
         <div className={s.emptyAccounts}>
-          <MapPinned size={28} color="var(--color-text-light)" style={{ marginBottom: 8 }} />
+          <MapPinned size={28} color="var(--t3)" style={{ marginBottom: 8 }} />
           <div>Not attached to any accounts</div>
           <div className={s.emptyAccountsSub}>
             Attach to accounts so crews can access this resource at specific jobsites
@@ -535,7 +535,7 @@ function ResourceAccountsTab({ resourceId, onClose }) {
           {linkedAccounts.map(a => (
             <div key={a.id} className={s.linkedRow}>
               <div className={s.linkedIcon}>
-                <MapPinned size={16} color="var(--color-accent)" />
+                <MapPinned size={16} color="var(--amb)" />
               </div>
               <div className={s.linkedInfo}>
                 <div className={s.linkedName}>
@@ -546,7 +546,7 @@ function ResourceAccountsTab({ resourceId, onClose }) {
                 </div>
               </div>
               <button onClick={() => handleUnlink(a.id)} className={s.iconBtn} title="Unlink">
-                <X size={16} color="var(--color-text-light)" />
+                <X size={16} color="var(--t3)" />
               </button>
             </div>
           ))}
@@ -566,11 +566,11 @@ function ResourceAccountsTab({ resourceId, onClose }) {
               <div className={s.pickerTitleRow}>
                 <div className={s.pickerTitle}>Attach to Account</div>
                 <button onClick={() => setShowPicker(false)} className={s.iconBtn}>
-                  <X size={18} color="var(--color-text-light)" />
+                  <X size={18} color="var(--t3)" />
                 </button>
               </div>
               <div className={s.pickerSearchWrap}>
-                <Search size={16} color="var(--color-text-light)" className={s.pickerSearchIcon} />
+                <Search size={16} color="var(--t3)" className={s.pickerSearchIcon} />
                 <input
                   value={pickerSearch} onChange={e => setPickerSearch(e.target.value)}
                   placeholder="Search accounts..."
@@ -587,7 +587,7 @@ function ResourceAccountsTab({ resourceId, onClose }) {
                 filteredAvailable.map(a => (
                   <button key={a.id} onClick={() => handleLink(a.id)} className={s.pickerItem}>
                     <div className={s.pickerItemIcon}>
-                      <MapPinned size={16} color="var(--color-accent)" />
+                      <MapPinned size={16} color="var(--amb)" />
                     </div>
                     <div className={s.pickerItemInfo}>
                       <div className={s.pickerItemName}>
@@ -597,7 +597,7 @@ function ResourceAccountsTab({ resourceId, onClose }) {
                         {a.address}{a.city ? `, ${a.city}` : ""}
                       </div>
                     </div>
-                    <Plus size={16} color="var(--color-accent)" />
+                    <Plus size={16} color="var(--amb)" />
                   </button>
                 ))
               )}
@@ -634,10 +634,10 @@ function ManageCategoriesModal({ categories, onSave, onDelete, onClose }) {
                 <div className={s.catCount}>{item.count} resource{item.count !== 1 ? "s" : ""}</div>
               </div>
               <button onClick={() => setEditingItem(item)} className={s.iconBtn} title="Edit">
-                <Edit3 size={14} color="var(--color-text-med)" />
+                <Edit3 size={14} color="var(--t2)" />
               </button>
               <button onClick={() => setConfirmDel(item)} className={s.iconBtn} title="Delete">
-                <Trash2 size={14} color="var(--color-red)" />
+                <Trash2 size={14} color="var(--red)" />
               </button>
             </div>
           ))}
@@ -696,7 +696,7 @@ function CatItemEditModal({ item, onSave, onClose }) {
             {CAT_COLORS.map(c => (
               <button key={c} onClick={() => setColor(c)} className={s.colorSwatch} style={{
                 background: c,
-                boxShadow: color === c ? `0 0 0 2px var(--color-bg), 0 0 0 4px ${c}` : "none",
+                boxShadow: color === c ? `0 0 0 2px var(--s1), 0 0 0 3px ${c}` : "none",
               }} />
             ))}
           </div>
