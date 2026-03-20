@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════
 // Schedule Page — Monthly Calendar + Weekly List
+// Phase 3A: usePageData, SlidePanel for routes/events
 // ═══════════════════════════════════════════
 
 import { useState, useEffect, useMemo } from "react"
@@ -9,9 +10,18 @@ import {
   GripVertical, Search, LayoutGrid, List,
 } from "lucide-react"
 import s from "./SchedulePage.module.css"
-import { useData } from "@/context/DataProvider.jsx"
-import { getRoute, addRouteStop, removeRouteStop, reorderRouteStops, updateRouteStop, getScheduleVisits } from "@/lib/api/routes.js"
+import usePageData from "@/hooks/usePageData.js"
+import useToast from "@/hooks/useToast.js"
+import {
+  getRoutes, createRoute, updateRoute, deleteRoute,
+  getRoute, addRouteStop, removeRouteStop, reorderRouteStops, updateRouteStop,
+  getScheduleVisits,
+} from "@/lib/api/routes.js"
 import { getScheduleEvents, createScheduleEvent, updateScheduleEvent, deleteScheduleEvent } from "@/lib/api/scheduleEvents.js"
+import { getCrews } from "@/lib/api/crews.js"
+import { getAccounts } from "@/lib/api/accounts.js"
+import SlidePanel from "../components/SlidePanel.jsx"
+import StatusBadge from "../components/StatusBadge.jsx"
 import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField, TextareaField,
   PageHeader, AddButton, ClickableCard, IconButton, LoadingSpinner, EmptyMessage,
@@ -20,11 +30,11 @@ import {
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 const DAY_HDR = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
 const EVENT_TYPES = [
-  { value: "task", label: "Task", color: "#3B82F6" },
-  { value: "event", label: "Event", color: "#7C3AED" },
-  { value: "meeting", label: "Meeting", color: "#F59E0B" },
-  { value: "deadline", label: "Deadline", color: "#EF4444" },
-  { value: "reminder", label: "Reminder", color: "#0891B2" },
+  { value: "task", label: "Task", color: "#3B82F6", variant: "blue" },
+  { value: "event", label: "Event", color: "#7C3AED", variant: "blue" },
+  { value: "meeting", label: "Meeting", color: "#F59E0B", variant: "amber" },
+  { value: "deadline", label: "Deadline", color: "#EF4444", variant: "red" },
+  { value: "reminder", label: "Reminder", color: "#0891B2", variant: "blue" },
 ]
 const COLORS = ["#3B82F6", "#2F6FED", "#F59E0B", "#EF4444", "#7C3AED", "#0891B2", "#DB2777", "#92400E"]
 const ROUTE_COLORS = ["#2F6FED", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED", "#0891B2", "#DB2777", "#92400E"]
@@ -60,7 +70,12 @@ function getWeekStart(date) {
 }
 
 export default function SchedulePage() {
-  const { routes, crews, accounts, toast } = useData()
+  // ── Data via usePageData ──
+  const routes = usePageData("routes", { fetchFn: getRoutes, createFn: createRoute, updateFn: updateRoute, deleteFn: deleteRoute })
+  const crews = usePageData("crews", { fetchFn: getCrews })
+  const accounts = usePageData("accounts", { fetchFn: getAccounts })
+  const toast = useToast()
+
   const [view, setView] = useState("calendar")
   const today = new Date()
 
@@ -71,7 +86,7 @@ export default function SchedulePage() {
   // List state
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()))
 
-  // Events + Visits
+  // Events + Visits (date-range filtered, managed directly)
   const [events, setEvents] = useState([])
   const [visits, setVisits] = useState([])
   const [loadingEvents, setLoadingEvents] = useState(true)
@@ -79,7 +94,10 @@ export default function SchedulePage() {
   // Modals
   const [editingEvent, setEditingEvent] = useState(null)
   const [editingRoute, setEditingRoute] = useState(null)
-  const [viewingRoute, setViewingRoute] = useState(null)
+
+  // SlidePanel state
+  const [panelRoute, setPanelRoute] = useState(null)
+  const [panelEvent, setPanelEvent] = useState(null)
 
   // ── Fetch events + calculated visits for visible range ──
   const fetchData = async () => {
@@ -134,13 +152,11 @@ export default function SchedulePage() {
     const dayEvents = events.filter(e => typeof e.eventDate === "string" && e.eventDate.startsWith(dateKey))
     const dayVisits = visits.filter(v => v.date === dateKey && v.status === "scheduled")
 
-    // Enrich routes with visit counts for this specific date
     const enrichedRoutes = dayRoutes.map(r => {
       const routeVisits = dayVisits.filter(v => v.routeId === r.id)
       return { ...r, visitCount: routeVisits.length, visits: routeVisits }
     })
 
-    // Standalone visits (not tied to a displayed route — shouldn't happen but safety)
     const routeIds = new Set(dayRoutes.map(r => r.id))
     const standaloneVisits = dayVisits.filter(v => !routeIds.has(v.routeId))
 
@@ -150,13 +166,13 @@ export default function SchedulePage() {
   // ── Event CRUD ──
   const handleSaveEvent = async (data) => {
     try {
-      if (editingEvent.id) { await updateScheduleEvent(editingEvent.id, data); toast.show("Updated ✓") }
-      else { await createScheduleEvent(data); toast.show("Added ✓") }
-      setEditingEvent(null); fetchData()
+      if (editingEvent.id) { await updateScheduleEvent(editingEvent.id, data); toast.show("Updated") }
+      else { await createScheduleEvent(data); toast.show("Added") }
+      setEditingEvent(null); setPanelEvent(null); fetchData()
     } catch (err) { toast.show(err.message || "Failed to save") }
   }
   const handleDeleteEvent = async (id) => {
-    try { await deleteScheduleEvent(id); toast.show("Removed ✓"); setEditingEvent(null); fetchData() }
+    try { await deleteScheduleEvent(id); toast.show("Removed"); setEditingEvent(null); setPanelEvent(null); fetchData() }
     catch { toast.show("Failed") }
   }
   const handleToggleComplete = async (event) => {
@@ -168,36 +184,29 @@ export default function SchedulePage() {
   const handleSaveRoute = async (data) => {
     try {
       if (editingRoute.id) {
-        await routes.update(editingRoute.id, data); toast.show("Updated ✓")
+        await routes.update(editingRoute.id, data); toast.show("Updated")
         setEditingRoute(null)
       } else {
-        const newRoute = await routes.create(data); toast.show("Created ✓")
+        const newRoute = await routes.create(data); toast.show("Created")
         setEditingRoute(null)
-        // Auto-navigate to stop manager so boss can add stops immediately
-        if (newRoute?.id) setViewingRoute(newRoute)
+        // Auto-open SlidePanel so boss can add stops immediately
+        if (newRoute?.id) setPanelRoute(newRoute)
       }
     } catch (err) { toast.show(err.message || "Failed") }
   }
   const handleDeleteRoute = async (id) => {
-    try { await routes.remove(id); toast.show("Removed ✓"); setEditingRoute(null); setViewingRoute(null) }
+    try { await routes.remove(id); toast.show("Removed"); setEditingRoute(null); setPanelRoute(null) }
     catch { toast.show("Failed") }
   }
 
-  // ── Route stop view — modal renders alongside so it's not hidden ──
-  if (viewingRoute) {
-    return (
-      <>
-        <RouteStopManager routeId={viewingRoute.id} routeName={viewingRoute.name} route={viewingRoute}
-          accounts={accounts.data} toast={toast}
-          onBack={() => { setViewingRoute(null); routes.refresh() }}
-          onEdit={() => setEditingRoute(viewingRoute)} />
-        {editingRoute !== null && (
-          <RouteModal route={editingRoute} crews={crews.data}
-            onClose={() => setEditingRoute(null)} onSave={handleSaveRoute}
-            onDelete={editingRoute.id ? () => handleDeleteRoute(editingRoute.id) : undefined} />
-        )}
-      </>
-    )
+  // ── Click handlers for SlidePanel ──
+  const openRoutePanel = (route) => {
+    setPanelEvent(null)
+    setPanelRoute(route)
+  }
+  const openEventPanel = (event) => {
+    setPanelRoute(null)
+    setPanelEvent(event)
   }
 
   return (
@@ -265,38 +274,42 @@ export default function SchedulePage() {
                     )}
                   </div>
 
-                  <div className={s.cellContent}>
-                    {items.routes.slice(0, 4).map(route => (
-                      <button key={`r${route.id}`} onClick={() => setViewingRoute(route)} className={s.calRouteBtn}
-                        style={{
-                          background: `${route.color || "var(--amb)"}15`,
-                          borderLeft: `2px solid ${route.color || "var(--amb)"}`,
-                          color: route.color || "var(--amb)",
-                        }}>
-                        <span className={s.calRouteName}>{route.name}</span>
-                        {route.visitCount > 0 && (
-                          <span className={s.calRouteCount}>{route.visitCount}</span>
-                        )}
-                      </button>
-                    ))}
-                    {items.events.slice(0, 3).map(event => (
-                      <button key={`e${event.id}`} onClick={() => setEditingEvent(event)} className={s.calEventBtn}
-                        style={{
-                          color: event.completed ? "var(--t3)" : "var(--t1)",
-                          textDecoration: event.completed ? "line-through" : "none",
-                        }}>
-                        <span className={s.eventDot}
-                          style={{ background: event.completed ? "var(--t3)" : (event.color || "var(--blu)") }} />
-                        {event.startTime && <span className={s.eventTime}>{event.startTime.slice(0, 5)}</span>}
-                        {event.title}
-                      </button>
-                    ))}
-                    {(items.routes.length + items.events.length) > 4 && (
-                      <div className={s.moreItems}>
-                        +{items.routes.length + items.events.length - 4} more
-                      </div>
-                    )}
-                  </div>
+                  {loadingEvents && !hasContent ? (
+                    <div className={s.cellLoading}>Loading...</div>
+                  ) : (
+                    <div className={s.cellContent}>
+                      {items.routes.slice(0, 4).map(route => (
+                        <button key={`r${route.id}`} onClick={() => openRoutePanel(route)} className={s.calRouteBtn}
+                          style={{
+                            background: `${route.color || "var(--amb)"}15`,
+                            borderLeft: `2px solid ${route.color || "var(--amb)"}`,
+                            color: route.color || "var(--amb)",
+                          }}>
+                          <span className={s.calRouteName}>{route.name}</span>
+                          {route.visitCount > 0 && (
+                            <span className={s.calRouteCount}>{route.visitCount}</span>
+                          )}
+                        </button>
+                      ))}
+                      {items.events.slice(0, 3).map(event => (
+                        <button key={`e${event.id}`} onClick={() => openEventPanel(event)} className={s.calEventBtn}
+                          style={{
+                            color: event.completed ? "var(--t3)" : "var(--t1)",
+                            textDecoration: event.completed ? "line-through" : "none",
+                          }}>
+                          <span className={s.eventDot}
+                            style={{ background: event.completed ? "var(--t3)" : (event.color || "var(--blu)") }} />
+                          {event.startTime && <span className={s.eventTime}>{event.startTime.slice(0, 5)}</span>}
+                          {event.title}
+                        </button>
+                      ))}
+                      {(items.routes.length + items.events.length) > 4 && (
+                        <div className={s.moreItems}>
+                          +{items.routes.length + items.events.length - 4} more
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {hasContent && (
                     <div className={s.mobileDots}>
@@ -347,7 +360,7 @@ export default function SchedulePage() {
                 ) : (
                   <div className={s.listItems}>
                     {items.routes.map(route => (
-                      <ClickableCard key={`r${route.id}`} onClick={() => setViewingRoute(route)} style={{ padding: "var(--space-4) var(--space-5)" }}>
+                      <ClickableCard key={`r${route.id}`} onClick={() => openRoutePanel(route)} style={{ padding: "var(--space-4) var(--space-5)" }}>
                         <div className={s.routeCardContent}>
                           <div className={s.routeBar} style={{ background: route.color || "var(--amb)" }} />
                           <MapPin size={16} color={route.color || "var(--amb)"} style={{ flexShrink: 0 }} />
@@ -360,7 +373,6 @@ export default function SchedulePage() {
                           </div>
                           <ChevronRight size={16} color="var(--t3)" />
                         </div>
-                        {/* Visit names under route */}
                         {route.visitCount > 0 && (
                           <div className={s.routeVisitTags}>
                             {route.visits.map((v, vi) => (
@@ -371,7 +383,7 @@ export default function SchedulePage() {
                       </ClickableCard>
                     ))}
                     {items.events.map(event => (
-                      <ClickableCard key={`e${event.id}`} onClick={() => setEditingEvent(event)} style={{ padding: "var(--space-3) var(--space-5)" }}>
+                      <ClickableCard key={`e${event.id}`} onClick={() => openEventPanel(event)} style={{ padding: "var(--space-3) var(--space-5)" }}>
                         <div className={s.eventCardContent}>
                           <button onClick={e => { e.stopPropagation(); handleToggleComplete(event) }} className={s.toggleCompleteBtn}>
                             {event.completed ? <CheckCircle2 size={20} color="var(--amb)" /> : <Circle size={20} color={event.color || "var(--blu)"} />}
@@ -383,18 +395,15 @@ export default function SchedulePage() {
                                 color: event.completed ? "var(--t3)" : "var(--t1)",
                               }}>{event.title}</div>
                             <div className={s.eventSubtext}>
-                              {event.startTime || ""}{event.endTime ? ` – ${event.endTime}` : ""}
+                              {event.startTime && <span className={s.monoTime}>{event.startTime}</span>}
+                              {event.endTime && <span className={s.monoTime}> – {event.endTime}</span>}
                               {event.crewName && ` · ${event.crewName}`}
                               {event.accountName && ` · ${event.accountName}`}
                             </div>
                           </div>
-                          <span className={s.eventTypeBadge}
-                            style={{
-                              background: `${event.color || "var(--blu)"}12`,
-                              color: event.color || "var(--blu)",
-                            }}>
+                          <StatusBadge variant={EVENT_TYPES.find(t => t.value === event.eventType)?.variant || "gray"}>
                             {EVENT_TYPES.find(t => t.value === event.eventType)?.label || "Task"}
-                          </span>
+                          </StatusBadge>
                         </div>
                       </ClickableCard>
                     ))}
@@ -406,6 +415,32 @@ export default function SchedulePage() {
         </div>
       )}
 
+      {/* ═══ ROUTE SLIDE PANEL ═══ */}
+      <SlidePanel open={!!panelRoute} onClose={() => setPanelRoute(null)} title={panelRoute?.name || "Route"} width={460}>
+        {panelRoute && (
+          <RoutePanel
+            route={panelRoute}
+            accounts={accounts.data}
+            toast={toast}
+            onRefresh={() => routes.refresh()}
+            onEdit={() => setEditingRoute(panelRoute)}
+            onClose={() => setPanelRoute(null)}
+          />
+        )}
+      </SlidePanel>
+
+      {/* ═══ EVENT SLIDE PANEL ═══ */}
+      <SlidePanel open={!!panelEvent && !editingEvent} onClose={() => setPanelEvent(null)} title="Event Details" width={420}>
+        {panelEvent && (
+          <EventPanel
+            event={panelEvent}
+            onEdit={() => setEditingEvent(panelEvent)}
+            onDelete={() => handleDeleteEvent(panelEvent.id)}
+            onToggleComplete={() => handleToggleComplete(panelEvent)}
+          />
+        )}
+      </SlidePanel>
+
       {/* ── Modals ── */}
       {editingEvent !== null && (
         <EventModal event={editingEvent} crews={crews.data} accounts={accounts.data}
@@ -416,6 +451,11 @@ export default function SchedulePage() {
         <RouteModal route={editingRoute} crews={crews.data}
           onClose={() => setEditingRoute(null)} onSave={handleSaveRoute}
           onDelete={editingRoute.id ? () => handleDeleteRoute(editingRoute.id) : undefined} />
+      )}
+
+      {/* ── Toast ── */}
+      {toast.message && (
+        <div className={s.toast} onClick={toast.dismiss}>{toast.message}</div>
       )}
     </div>
   )
@@ -437,6 +477,197 @@ function ViewBtn({ icon: Icon, label, active, onClick }) {
     <button onClick={onClick} className={active ? s.viewBtnActive : s.viewBtnInactive}>
       <Icon size={14} /> {label}
     </button>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Event Panel — SlidePanel content for event details
+// ═══════════════════════════════════════════
+function EventPanel({ event, onEdit, onDelete, onToggleComplete }) {
+  const typeInfo = EVENT_TYPES.find(t => t.value === event.eventType) || EVENT_TYPES[0]
+
+  return (
+    <div className={s.panelBody}>
+      <div className={s.panelSection}>
+        <div className={s.panelRow}>
+          <StatusBadge variant={typeInfo.variant || "gray"}>{typeInfo.label}</StatusBadge>
+          {event.completed && <StatusBadge variant="green">Completed</StatusBadge>}
+        </div>
+      </div>
+
+      <div className={s.panelSection}>
+        <div className={s.panelLabel}>Date</div>
+        <div className={s.panelValueMono}>{event.eventDate}</div>
+      </div>
+
+      {(event.startTime || event.endTime) && (
+        <div className={s.panelSection}>
+          <div className={s.panelLabel}>Time</div>
+          <div className={s.panelValueMono}>
+            {event.startTime || "—"}{event.endTime ? ` – ${event.endTime}` : ""}
+          </div>
+        </div>
+      )}
+
+      {event.crewName && (
+        <div className={s.panelSection}>
+          <div className={s.panelLabel}>Crew</div>
+          <div className={s.panelValue}>
+            <Users size={14} className={s.panelIcon} /> {event.crewName}
+          </div>
+        </div>
+      )}
+
+      {event.accountName && (
+        <div className={s.panelSection}>
+          <div className={s.panelLabel}>Property</div>
+          <div className={s.panelValue}>
+            <MapPin size={14} className={s.panelIcon} /> {event.accountName}
+          </div>
+        </div>
+      )}
+
+      {event.notes && (
+        <div className={s.panelSection}>
+          <div className={s.panelLabel}>Notes</div>
+          <div className={s.panelValue}>{event.notes}</div>
+        </div>
+      )}
+
+      <div className={s.panelActions}>
+        <button onClick={onToggleComplete} className={s.panelBtnSecondary}>
+          {event.completed ? <Circle size={16} /> : <CheckCircle2 size={16} />}
+          {event.completed ? "Mark Incomplete" : "Mark Complete"}
+        </button>
+        <button onClick={onEdit} className={s.panelBtnPrimary}>
+          <Edit3 size={16} /> Edit
+        </button>
+        <button onClick={onDelete} className={s.panelBtnDanger}>
+          <Trash2 size={16} /> Delete
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════
+// Route Panel — SlidePanel content for route details + stops
+// ═══════════════════════════════════════════
+function RoutePanel({ route: routeMeta, accounts, toast, onRefresh, onEdit, onClose }) {
+  const [route, setRoute] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [showAdd, setShowAdd] = useState(false)
+  const [dragFrom, setDragFrom] = useState(null)
+  const [dragOver, setDragOver] = useState(null)
+  const [editingStop, setEditingStop] = useState(null)
+
+  const load = async () => {
+    try { setRoute(await getRoute(routeMeta.id)) }
+    catch { toast.show("Failed to load route") }
+    finally { setLoading(false) }
+  }
+  useEffect(() => { load() }, [routeMeta.id])
+
+  const handleAdd = async (accountId) => {
+    try { await addRouteStop(routeMeta.id, { accountId }); toast.show("Added"); setShowAdd(false); load() }
+    catch (err) { toast.show(err.message || "Already on route") }
+  }
+  const handleRemove = async (stopId) => {
+    try { await removeRouteStop(routeMeta.id, stopId); toast.show("Removed"); load() }
+    catch { toast.show("Failed") }
+  }
+  const handleUpdateStop = async (stopId, data) => {
+    try { await updateRouteStop(routeMeta.id, stopId, data); toast.show("Updated"); setEditingStop(null); load() }
+    catch { toast.show("Failed") }
+  }
+  const handleDragEnd = async () => {
+    if (dragFrom === null || dragOver === null || dragFrom === dragOver || !route?.stops) { setDragFrom(null); setDragOver(null); return }
+    const stops = [...route.stops]; const [m] = stops.splice(dragFrom, 1); stops.splice(dragOver, 0, m)
+    setRoute({ ...route, stops }); setDragFrom(null); setDragOver(null)
+    try { await reorderRouteStops(routeMeta.id, stops.map(s => s.id)) } catch { toast.show("Failed"); load() }
+  }
+
+  if (loading) return <div className={s.panelLoading}><LoadingSpinner /></div>
+
+  const existingIds = new Set((route?.stops || []).map(s => s.accountId))
+  const stops = route?.stops || []
+
+  return (
+    <div className={s.panelBody}>
+      {/* Route info bar */}
+      <div className={s.routePanelHeader}>
+        <div className={s.routePanelColorBar} style={{ background: routeMeta?.color || "var(--amb)" }} />
+        <div className={s.routePanelInfo}>
+          <div className={s.routePanelDay}>{route?.dayName || "Unscheduled"}</div>
+          {route?.crewName && <div className={s.routePanelCrew}><Users size={13} /> {route.crewName}</div>}
+          <div className={s.routePanelCount}>{stops.length} stop{stops.length !== 1 ? "s" : ""}</div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className={s.panelActions}>
+        <button onClick={() => setShowAdd(true)} className={s.panelBtnPrimary}>
+          <Plus size={16} /> Add Stop
+        </button>
+        <button onClick={onEdit} className={s.panelBtnSecondary}>
+          <Edit3 size={16} /> Edit Route
+        </button>
+      </div>
+
+      {/* Stop list */}
+      {stops.length === 0 ? (
+        <EmptyMessage text="No stops yet." />
+      ) : (
+        <div className={s.stopList}>
+          {stops.map((stop, i) => (
+            <div key={stop.id} draggable onDragStart={() => setDragFrom(i)} onDragEnter={() => setDragOver(i)}
+              onDragEnd={handleDragEnd} onDragOver={e => e.preventDefault()}
+              className={`${s.stopItem} ${dragOver === i && dragFrom !== i ? s.stopItemDragOver : ""}`}
+              style={{ opacity: dragFrom === i ? 0.5 : 1 }}>
+              <div className={s.stopDragHandle}><GripVertical size={16} /></div>
+              <div className={s.stopNumber} style={{ background: routeMeta?.color || "var(--amb)" }}>{i + 1}</div>
+              <div className={s.stopInfo}>
+                <div className={s.stopNameRow}>
+                  <span className={s.stopName}>{stop.account.name}</span>
+                  {stop.frequency && stop.frequency !== "weekly" && (
+                    <span className={s.stopBadge} style={{
+                      background: stop.frequency === "biweekly" ? "#3B82F610" : stop.frequency === "monthly" ? "#F59E0B10" : "#7C3AED10",
+                      color: stop.frequency === "biweekly" ? "#3B82F6" : stop.frequency === "monthly" ? "#F59E0B" : "#7C3AED",
+                    }}>{stop.frequency === "biweekly" ? "2wk" : stop.frequency === "monthly" ? "4wk" : `${stop.intervalWeeks}wk`}</span>
+                  )}
+                  {stop.seasonStart && (
+                    <span className={s.stopBadge} style={{ background: "#0891B210", color: "#0891B2" }}>Seasonal</span>
+                  )}
+                  {stop.serviceStatus === "paused" && (
+                    <span className={s.stopBadge} style={{ background: "#F59E0B15", color: "#F59E0B" }}>Paused</span>
+                  )}
+                </div>
+                <div className={s.stopAddress}>{stop.account.address}{stop.account.city && `, ${stop.account.city}`}</div>
+              </div>
+              <button onClick={e => { e.stopPropagation(); setEditingStop(stop) }} className={s.stopEditBtn} title="Edit frequency">
+                <Clock size={12} /><span className={s.monoTime}>{stop.account.estimatedMinutes || 30}m</span>
+              </button>
+              <button onClick={() => handleRemove(stop.id)} className={s.stopRemoveBtn}>
+                <Trash2 size={13} color="var(--red)" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add Stop Modal */}
+      {showAdd && (
+        <Modal title="Add Stop" onClose={() => setShowAdd(false)}>
+          <StopSearch accounts={accounts.filter(a => !existingIds.has(a.id))} onAdd={handleAdd} />
+        </Modal>
+      )}
+
+      {/* Stop Frequency Modal */}
+      {editingStop && (
+        <StopFrequencyModal stop={editingStop} onClose={() => setEditingStop(null)}
+          onSave={(data) => handleUpdateStop(editingStop.id, data)} />
+      )}
+    </div>
   )
 }
 
@@ -551,115 +782,6 @@ function RouteModal({ route, crews, onClose, onSave, onDelete }) {
       <ModalFooter onClose={onClose} onSave={handleSubmit} saving={saving} disabled={!name.trim()}
         onDelete={onDelete ? () => setConfirmDel(true) : undefined} />
     </Modal>
-  )
-}
-
-// ═══════════════════════════════════════════
-// Route Stop Manager
-// ═══════════════════════════════════════════
-function RouteStopManager({ routeId, routeName, route: routeMeta, accounts, toast, onBack, onEdit }) {
-  const [route, setRoute] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [showAdd, setShowAdd] = useState(false)
-  const [dragFrom, setDragFrom] = useState(null)
-  const [dragOver, setDragOver] = useState(null)
-  const [editingStop, setEditingStop] = useState(null)
-
-  const load = async () => { try { setRoute(await getRoute(routeId)) } catch { toast.show("Failed") } finally { setLoading(false) } }
-  useEffect(() => { load() }, [routeId])
-
-  const handleAdd = async (accountId) => {
-    try { await addRouteStop(routeId, { accountId }); toast.show("Added ✓"); setShowAdd(false); load() }
-    catch (err) { toast.show(err.message || "Already on route") }
-  }
-  const handleRemove = async (stopId) => {
-    try { await removeRouteStop(routeId, stopId); toast.show("Removed ✓"); load() }
-    catch { toast.show("Failed") }
-  }
-  const handleUpdateStop = async (stopId, data) => {
-    try { await updateRouteStop(routeId, stopId, data); toast.show("Updated ✓"); setEditingStop(null); load() }
-    catch { toast.show("Failed") }
-  }
-  const handleDragEnd = async () => {
-    if (dragFrom === null || dragOver === null || dragFrom === dragOver || !route?.stops) { setDragFrom(null); setDragOver(null); return }
-    const stops = [...route.stops]; const [m] = stops.splice(dragFrom, 1); stops.splice(dragOver, 0, m)
-    setRoute({ ...route, stops }); setDragFrom(null); setDragOver(null)
-    try { await reorderRouteStops(routeId, stops.map(s => s.id)) } catch { toast.show("Failed"); load() }
-  }
-
-  if (loading) return <LoadingSpinner />
-  const existingIds = new Set((route?.stops || []).map(s => s.accountId))
-
-  return (
-    <div>
-      <button onClick={onBack} className={s.backBtn}>
-        <ArrowLeft size={18} /> Back to Schedule
-      </button>
-      <div className={s.routeHeader}>
-        <div className={s.routeHeaderLeft}>
-          <div className={s.routeColorBar} style={{ background: routeMeta?.color || "var(--amb)" }} />
-          <div>
-            <div className={s.routeHeaderTitle}>{routeName}</div>
-            <div className={s.routeHeaderSubtext}>
-              {route?.dayName || "Unscheduled"}{route?.crewName && ` · ${route.crewName}`} · {(route?.stops || []).length} stops
-            </div>
-          </div>
-        </div>
-        <div className={s.routeActions}>
-          <AddButton label="Add Stop" icon={Plus} onClick={() => setShowAdd(true)} />
-          <IconButton icon={Edit3} onClick={onEdit} title="Edit" />
-        </div>
-      </div>
-
-      {(route?.stops || []).length === 0 ? <EmptyMessage text="No stops yet." /> : (
-        <div className={s.stopList}>
-          {(route?.stops || []).map((stop, i) => (
-            <div key={stop.id} draggable onDragStart={() => setDragFrom(i)} onDragEnter={() => setDragOver(i)}
-              onDragEnd={handleDragEnd} onDragOver={e => e.preventDefault()}
-              className={`${s.stopItem} ${dragOver === i && dragFrom !== i ? s.stopItemDragOver : ""}`}
-              style={{ opacity: dragFrom === i ? 0.5 : 1 }}>
-              <div className={s.stopDragHandle}><GripVertical size={18} /></div>
-              <div className={s.stopNumber} style={{ background: routeMeta?.color || "var(--amb)" }}>{i + 1}</div>
-              <div className={s.stopInfo}>
-                <div className={s.stopNameRow}>
-                  <span className={s.stopName}>{stop.account.name}</span>
-                  {stop.frequency && stop.frequency !== "weekly" && (
-                    <span className={s.stopBadge} style={{
-                      background: stop.frequency === "biweekly" ? "#3B82F610" : stop.frequency === "monthly" ? "#F59E0B10" : "#7C3AED10",
-                      color: stop.frequency === "biweekly" ? "#3B82F6" : stop.frequency === "monthly" ? "#F59E0B" : "#7C3AED",
-                    }}>{stop.frequency === "biweekly" ? "2wk" : stop.frequency === "monthly" ? "4wk" : `${stop.intervalWeeks}wk`}</span>
-                  )}
-                  {stop.seasonStart && (
-                    <span className={s.stopBadge} style={{ background: "#0891B210", color: "#0891B2" }}>Seasonal</span>
-                  )}
-                  {stop.serviceStatus === "paused" && (
-                    <span className={s.stopBadge} style={{ background: "#F59E0B15", color: "#F59E0B" }}>Paused</span>
-                  )}
-                </div>
-                <div className={s.stopAddress}>{stop.account.address}{stop.account.city && `, ${stop.account.city}`}</div>
-              </div>
-              <button onClick={e => { e.stopPropagation(); setEditingStop(stop) }} className={s.stopEditBtn} title="Edit frequency">
-                <Clock size={12} />{stop.account.estimatedMinutes || 30}m
-              </button>
-              <button onClick={() => handleRemove(stop.id)} className={s.stopRemoveBtn}>
-                <Trash2 size={13} color="var(--red)" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showAdd && (
-        <Modal title="Add Stop" onClose={() => setShowAdd(false)}>
-          <StopSearch accounts={accounts.filter(a => !existingIds.has(a.id))} onAdd={handleAdd} />
-        </Modal>
-      )}
-
-      {editingStop && (
-        <StopFrequencyModal stop={editingStop} onClose={() => setEditingStop(null)}
-          onSave={(data) => handleUpdateStop(editingStop.id, data)} />
-      )}
-    </div>
   )
 }
 

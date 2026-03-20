@@ -1,0 +1,187 @@
+/* ═══════════════════════════════════════════
+   WizardLayout — Multi-step form
+   ═══════════════════════════════════════════ */
+
+.wizard {
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+/* ── Step indicator ── */
+
+.steps {
+  display: flex;
+  align-items: center;
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--bd);
+  gap: 0;
+  overflow-x: auto;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.stepDot {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  flex-shrink: 0;
+}
+
+.stepLabel {
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+}
+
+.stepLine {
+  width: 32px;
+  height: 1px;
+  background: var(--bd);
+  flex-shrink: 0;
+  margin: 0 var(--space-2);
+}
+
+/* Active step */
+.stepActive .stepDot {
+  background: var(--amb);
+  color: var(--amb-text);
+}
+
+.stepActive .stepLabel {
+  color: var(--t1);
+}
+
+/* Completed step */
+.stepCompleted .stepDot {
+  background: var(--grn);
+  color: white;
+}
+
+.stepCompleted .stepLabel {
+  color: var(--t2);
+}
+
+.stepCompleted .stepLine {
+  background: var(--grn);
+}
+
+/* Future step — visually inert, not clickable */
+.stepFuture .stepDot {
+  background: var(--s3);
+  color: var(--t3);
+  cursor: default;
+}
+
+.stepFuture .stepLabel {
+  color: var(--t3);
+  cursor: default;
+}
+
+/* ── Content ── */
+
+.content {
+  flex: 1;
+  padding: var(--space-6);
+  overflow-y: auto;
+}
+
+/* ── Navigation ── */
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--bd);
+}
+
+.backBtn,
+.nextBtn,
+.submitBtn {
+  height: 36px;
+  padding: 0 var(--space-5);
+  font-size: var(--text-base);
+  font-family: var(--fn);
+  font-weight: var(--font-semibold);
+  border-radius: var(--r);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.backBtn {
+  background: transparent;
+  color: var(--t2);
+  border: 1px solid var(--bd2);
+}
+
+.backBtn:hover:not(:disabled) {
+  background: var(--s2);
+}
+
+.backBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.nextBtn {
+  background: var(--amb);
+  color: var(--amb-text);
+}
+
+.nextBtn:hover:not(:disabled) {
+  background: var(--amb2);
+}
+
+.nextBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.submitBtn {
+  background: var(--grn);
+  color: white;
+}
+
+.submitBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.submitBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 640px) {
+  .steps {
+    padding: var(--space-3);
+    gap: 0;
+  }
+
+  .stepLabel {
+    display: none;
+  }
+
+  .content {
+    padding: var(--space-4);
+  }
+
+  .nav {
+    padding: var(--space-3) var(--space-4);
+  }
+}

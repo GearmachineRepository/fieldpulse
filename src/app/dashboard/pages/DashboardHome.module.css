@@ -1,7 +1,6 @@
 /* ═══════════════════════════════════════════
-   DashboardHome — Command Center
-   Product: First screen every owner sees.
-   Data-dense, Procore-inspired density.
+   DashboardHome — Command Center (Phase 3A)
+   Uses design-system tokens throughout.
    ═══════════════════════════════════════════ */
 
 /* ── Header ── */
@@ -21,15 +20,6 @@
   font-size: var(--text-2xl);
   font-weight: var(--font-semibold);
   letter-spacing: -0.3px;
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  margin-top: var(--space-2);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* ── Alert banner ── */
@@ -77,7 +67,7 @@
   color: var(--amb);
 }
 
-.alertChevron {
+.flexShrink0 {
   flex-shrink: 0;
 }
 
@@ -97,6 +87,15 @@
   margin-bottom: var(--space-5);
 }
 
+/* ── Three-column layout ── */
+.threeCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+/* ── Card (shared) ── */
 .card {
   background: var(--s1);
   border-radius: var(--r);
@@ -141,67 +140,73 @@
   color: var(--amb2);
 }
 
-.loadingText {
-  text-align: center;
-  padding: var(--space-5);
-  color: var(--t3);
-  font-size: var(--text-sm);
+/* ── Skeleton loading ── */
+.skeletonCard {
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  height: 110px;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
-.emptyText {
-  text-align: center;
-  padding: var(--space-5);
-  color: var(--t3);
-  font-size: var(--text-sm);
-}
-
-/* ── Crew row ── */
-.crewRow {
+.skeletonRows {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skeletonRow {
+  height: 44px;
   background: var(--s2);
   border-radius: var(--r);
-  margin-bottom: var(--space-2);
-  cursor: pointer;
-  transition: background var(--transition-fast);
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
-.crewRow:hover {
-  background: var(--s3);
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.crewDot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
-  flex-shrink: 0;
+/* ── Empty state ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-2);
 }
 
-.crewInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.crewName {
+.emptyTitle {
   font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--t2);
+}
+
+.emptySub {
+  font-size: var(--text-sm);
+  color: var(--t3);
+  max-width: 240px;
+}
+
+.emptyCta {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  color: var(--amb);
+  background: none;
+  border: 1px solid var(--amb);
+  border-radius: var(--r);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.crewSub {
-  font-size: var(--text-xs);
-  color: var(--t3);
-}
-
-.crewCount {
-  font-family: var(--mono);
-  font-size: var(--text-xs);
-  color: var(--t3);
-}
-
-.flexShrink0 {
-  flex-shrink: 0;
+.emptyCta:hover {
+  background: var(--amb);
+  color: var(--s0);
 }
 
 /* ── Spray log row ── */
@@ -219,6 +224,10 @@
 
 .logRow:hover {
   background: var(--s3);
+}
+
+.logRow:last-child {
+  margin-bottom: 0;
 }
 
 .logIconWrap {
@@ -257,43 +266,63 @@
   flex-shrink: 0;
 }
 
-/* ── Quick actions ── */
-.quickActionsTitle {
-  font-size: var(--text-md);
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-3);
+/* ── Project card ── */
+.projectCard {
+  padding: var(--space-3);
+  background: var(--s2);
+  border-radius: var(--r);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+  transition: background var(--transition-fast);
 }
 
-.quickActionsGrid {
+.projectCard:hover {
+  background: var(--s3);
+}
+
+.projectCard:last-child {
+  margin-bottom: 0;
+}
+
+.projectName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  margin-bottom: 2px;
+}
+
+.projectAddress {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Quick actions (2x3 grid inside column) ── */
+.quickGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: var(--space-3);
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
 }
 
 .quickActionCard {
-  background: var(--s1);
+  background: var(--s2);
   border-radius: var(--r);
-  padding: var(--space-5) var(--space-4);
+  padding: var(--space-3);
   text-align: center;
-  border: 1px solid var(--bd);
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition: background var(--transition-fast);
 }
 
 .quickActionCard:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--bd2);
-}
-
-.quickActionIcon {
-  margin-bottom: var(--space-2);
+  background: var(--s3);
 }
 
 .quickActionLabel {
-  font-size: var(--text-base);
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  margin-bottom: 2px;
+  margin-top: var(--space-1);
 }
 
 .quickActionSub {
@@ -302,6 +331,12 @@
 }
 
 /* ── Responsive ── */
+@media (max-width: 1024px) {
+  .threeCol {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .greeting {
     font-size: var(--text-xl);
@@ -316,29 +351,15 @@
     grid-template-columns: 1fr;
   }
 
+  .threeCol {
+    grid-template-columns: 1fr;
+  }
+
   .card {
     padding: var(--space-4);
   }
 
-  .quickActionsGrid {
+  .quickGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-2);
-  }
-
-  .quickActionCard {
-    padding: var(--space-4) var(--space-2);
-  }
-
-  .quickActionIcon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .quickActionLabel {
-    font-size: var(--text-xs);
-  }
-
-  .quickActionSub {
-    display: none;
   }
 }

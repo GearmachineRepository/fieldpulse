@@ -7,10 +7,12 @@
 // ===============================================
 
 import {
-  LayoutDashboard, Calendar, Briefcase, Clock, Users,
-  UserCheck, UsersRound, Truck, Wrench, ShieldCheck,
-  GraduationCap, Award, AlertTriangle, BookOpen, FileText,
-  FlaskConical, BarChart3, TrendingUp, ClipboardCheck,
+  LayoutDashboard, Briefcase, Calendar, Clock, MapPin,
+  Users, UserCheck, UsersRound,
+  Truck, Wrench,
+  ShieldCheck, GraduationCap, Award, AlertTriangle,
+  BookOpen, FileText, FlaskConical,
+  BarChart3, TrendingUp, ClipboardCheck,
   Settings, Blocks,
 } from "lucide-react"
 import { ENABLED_MODULES } from "@/app/modules.js"
@@ -23,13 +25,21 @@ export const SECTIONS = [
     pages: [{ key: "dashboard", label: "Dashboard" }],
   },
   {
+    key: "projects",
+    label: "Projects",
+    icon: Briefcase,
+    pages: [
+      { key: "projects", label: "All Projects", icon: Briefcase },
+      { key: "schedule", label: "Schedule",      icon: Calendar },
+    ],
+  },
+  {
     key: "operations",
     label: "Operations",
-    icon: Calendar,
+    icon: Clock,
     pages: [
-      { key: "schedule", label: "Schedule",  icon: Calendar },
-      { key: "jobs",     label: "Jobs",      icon: Briefcase },
       { key: "clock-in", label: "Clock-In",  icon: Clock },
+      { key: "routes",   label: "Routes",    icon: MapPin, comingSoon: true },
     ],
   },
   {

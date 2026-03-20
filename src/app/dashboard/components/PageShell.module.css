@@ -1,0 +1,78 @@
+/* ═══════════════════════════════════════════
+   PageShell — Standard page wrapper
+   ═══════════════════════════════════════════ */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ── Skeleton loading ── */
+
+.skeletonWrap {
+  padding-top: var(--space-4);
+}
+
+/* ── Empty state ── */
+
+.emptyWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.emptyIcon {
+  color: var(--t3);
+  margin-bottom: var(--space-4);
+}
+
+.emptyTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-bottom: var(--space-2);
+}
+
+.emptyDesc {
+  font-size: var(--text-sm);
+  color: var(--t2);
+  max-width: 400px;
+  line-height: var(--leading-normal);
+  margin-bottom: var(--space-6);
+}
+
+.emptyCta {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  color: var(--amb-text);
+  background: var(--amb);
+  border: none;
+  border-radius: var(--r);
+  padding: var(--space-2) var(--space-5);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  min-height: 36px;
+}
+
+.emptyCta:hover {
+  background: var(--amb2);
+}

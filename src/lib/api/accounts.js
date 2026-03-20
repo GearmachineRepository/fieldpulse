@@ -12,6 +12,15 @@ export const geocodeAddress  = (address)     => request('/accounts/geocode', { m
 // Targeted update for estimated service time
 export const patchAccountTime = (id, estimatedMinutes) => request(`/accounts/${id}/estimated-time`, { method: 'PATCH', body: JSON.stringify({ estimatedMinutes }) })
 
+// ── Project aliases (client-side rename, server stays /accounts) ──
+export { getAccounts as getProjects }
+export { createAccount as createProject }
+export { updateAccount as updateProject }
+export { deleteAccount as deleteProject }
+export { getAccountResources as getProjectResources }
+export { linkAccountResource as linkProjectResource }
+export { unlinkAccountResource as unlinkProjectResource }
+
 // Account-linked resources
 export const getAccountResources   = (accountId) => request(`/accounts/${accountId}/resources`)
 export const linkAccountResource   = (accountId, resourceId) => request(`/accounts/${accountId}/resources`, { method: 'POST', body: JSON.stringify({ resourceId }) })

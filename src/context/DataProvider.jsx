@@ -1,5 +1,7 @@
 // ═══════════════════════════════════════════
 // DataProvider — Global data context
+// DEPRECATED: Use usePageData() per page instead.
+// Kept for backward compatibility during migration.
 // ═══════════════════════════════════════════
 
 import { createContext, useContext } from 'react'

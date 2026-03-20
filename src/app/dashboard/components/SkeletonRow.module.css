@@ -1,0 +1,58 @@
+/* ═══════════════════════════════════════════
+   SkeletonRow — Table loading skeleton
+   ═══════════════════════════════════════════ */
+
+.wrap {
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--s1);
+}
+
+.headerRow {
+  display: flex;
+  height: 40px;
+  border-bottom: 1px solid var(--bd);
+  background: var(--bg);
+}
+
+.headerCell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+}
+
+.row {
+  display: flex;
+  height: 48px;
+  border-bottom: 1px solid var(--bd);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.cell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+}
+
+.bar {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--s3);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.headerRow .bar {
+  height: 8px;
+  background: var(--bd);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

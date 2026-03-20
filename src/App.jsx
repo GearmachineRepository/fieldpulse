@@ -23,7 +23,7 @@ const FieldShell        = lazy(() => import("@/app/field/FieldShell.jsx"))
 // Dashboard pages
 const DashboardHome       = lazy(() => import("@/app/dashboard/pages/DashboardHome.jsx"))
 const SchedulePage        = lazy(() => import("@/app/dashboard/pages/SchedulePage.jsx"))
-const AccountsPage        = lazy(() => import("@/app/dashboard/pages/AccountsPage.jsx"))   // Jobs (route renamed)
+const ProjectsPage        = lazy(() => import("@/app/dashboard/pages/ProjectsPage.jsx"))
 const ClockInPage         = lazy(() => import("@/app/dashboard/pages/ClockInPage.jsx"))
 const EmployeesPage       = lazy(() => import("@/app/dashboard/pages/EmployeesPage.jsx"))
 const CrewsPage           = lazy(() => import("@/app/dashboard/pages/CrewsPage.jsx"))
@@ -75,9 +75,10 @@ export default function App() {
         {/* Dashboard — nested routes rendered via <Outlet /> in Shell */}
         <Route path="/dashboard" element={<DashboardShell />}>
           <Route index element={<DashboardHome />} />
-          {/* Operations */}
+          {/* Projects */}
+          <Route path="projects" element={<ProjectsPage />} />
           <Route path="schedule" element={<SchedulePage />} />
-          <Route path="jobs" element={<AccountsPage />} />
+          {/* Operations */}
           <Route path="clock-in" element={<ClockInPage />} />
           {/* People */}
           <Route path="employees" element={<EmployeesPage />} />
@@ -101,7 +102,8 @@ export default function App() {
           <Route path="mod-:moduleKey" element={<ModulePage />} />
           {/* Backward compat redirects for old routes */}
           <Route path="team" element={<Navigate to="/dashboard/employees" replace />} />
-          <Route path="accounts" element={<Navigate to="/dashboard/jobs" replace />} />
+          <Route path="jobs" element={<Navigate to="/dashboard/projects" replace />} />
+          <Route path="accounts" element={<Navigate to="/dashboard/projects" replace />} />
           <Route path="fleet" element={<Navigate to="/dashboard/vehicles" replace />} />
           <Route path="resources" element={<Navigate to="/dashboard/documents" replace />} />
           <Route path="field-docs" element={<Navigate to="/dashboard/documents" replace />} />

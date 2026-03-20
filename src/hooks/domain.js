@@ -52,6 +52,9 @@ export function useRoutes(opts = {}) {
   return useCrud({ fetchFn: getRoutes, createFn: createRoute, updateFn: updateRoute, deleteFn: deleteRoute, ...opts })
 }
 
+// Project alias (client-side rename of accounts)
+export const useProjects = useAccounts
+
 export function useAccountGroups(opts = {}) {
   return useCrud({ fetchFn: getAccountGroups, createFn: createAccountGroup, updateFn: updateAccountGroup, deleteFn: deleteAccountGroup, ...opts })
 }

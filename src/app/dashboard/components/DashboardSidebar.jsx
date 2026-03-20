@@ -80,6 +80,15 @@ export default function DashboardSidebar({ activePage, activeSection, onNavigate
           <div className={s.nav}>
             {pages.map(page => {
               const active = activePage === page.key
+              if (page.comingSoon) {
+                return (
+                  <div key={page.key} className={`${s.navItem} ${s.navItemDisabled}`}>
+                    {page.icon && <page.icon size={14} className={s.navIcon} />}
+                    {page.label}
+                    <span className={s.soonBadge}>Soon</span>
+                  </div>
+                )
+              }
               return (
                 <button
                   key={page.key}

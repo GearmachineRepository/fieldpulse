@@ -196,6 +196,24 @@
   letter-spacing: 0.3px;
 }
 
+.navItemDisabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
+.soonBadge {
+  font-size: var(--text-xs);
+  padding: 2px 5px;
+  border-radius: 2px;
+  background: hsla(30, 8%, 50%, 0.15);
+  color: var(--sb-section);
+  font-family: var(--mono);
+  margin-left: auto;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
 /* -- User footer -- */
 .userFooter {
   padding: 10px 12px;

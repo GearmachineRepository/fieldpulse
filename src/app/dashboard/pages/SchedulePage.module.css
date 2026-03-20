@@ -2,6 +2,7 @@
    Schedule Page — CSS Module
    Product: Daily/weekly/monthly planning tool.
    Calendar + route management for stop-based work.
+   Phase 3A: SlidePanel for route/event details.
    ═══════════════════════════════════════════ */
 
 /* ── Header bar ── */
@@ -232,6 +233,13 @@
   gap: 2px;
 }
 
+.cellLoading {
+  font-size: 10px;
+  color: var(--t3);
+  padding: 2px 5px;
+  font-family: var(--mono);
+}
+
 .calRouteBtn {
   display: flex;
   align-items: center;
@@ -260,6 +268,7 @@
   opacity: 0.7;
   flex-shrink: 0;
   margin-left: var(--space-1);
+  font-family: var(--mono);
 }
 
 .calEventBtn {
@@ -291,6 +300,7 @@
 .eventTime {
   color: var(--t3);
   margin-right: 2px;
+  font-family: var(--mono);
 }
 
 .moreItems {
@@ -475,6 +485,10 @@
   color: var(--t3);
 }
 
+.monoTime {
+  font-family: var(--mono);
+}
+
 .eventTypeBadge {
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
@@ -534,63 +548,174 @@
   transform: scale(1.1);
 }
 
-/* ═══ ROUTE STOP MANAGER ═══ */
-.backBtn {
+/* ═══ SLIDE PANEL — SHARED ═══ */
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.panelLoading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) 0;
+}
+
+.panelSection {
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--bd);
+}
+
+.panelSection:last-of-type {
+  border-bottom: none;
+}
+
+.panelRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.panelLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-1);
+}
+
+.panelValue {
+  font-size: var(--text-sm);
+  color: var(--t1);
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-family: var(--fn);
-  font-size: var(--text-base);
-  color: var(--t3);
-  font-weight: var(--font-medium);
-  padding: 0;
-  margin-bottom: var(--space-5);
-  transition: color var(--transition-fast);
 }
 
-.backBtn:hover {
+.panelValueMono {
+  font-size: var(--text-sm);
+  font-family: var(--mono);
   color: var(--t1);
 }
 
-.routeHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  margin-bottom: var(--space-5);
-  flex-wrap: wrap;
-  gap: var(--space-3);
+.panelIcon {
+  color: var(--t3);
+  flex-shrink: 0;
 }
 
-.routeHeaderLeft {
+.panelActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding-top: var(--space-2);
+}
+
+.panelBtnPrimary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: none;
+  cursor: pointer;
+  font-family: var(--fn);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  background: var(--amb);
+  color: var(--amb-text);
+  transition: opacity var(--transition-fast);
+}
+
+.panelBtnPrimary:hover {
+  opacity: 0.9;
+}
+
+.panelBtnSecondary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  cursor: pointer;
+  font-family: var(--fn);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  background: var(--s1);
+  color: var(--t2);
+  transition: background var(--transition-fast);
+}
+
+.panelBtnSecondary:hover {
+  background: var(--s2);
+}
+
+.panelBtnDanger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  cursor: pointer;
+  font-family: var(--fn);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  background: var(--s1);
+  color: var(--red);
+  transition: background var(--transition-fast);
+}
+
+.panelBtnDanger:hover {
+  background: var(--red-dim);
+  border-color: var(--red);
+}
+
+/* ═══ ROUTE PANEL ═══ */
+.routePanelHeader {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--bd);
 }
 
-.routeColorBar {
-  width: 6px;
-  height: 36px;
+.routePanelColorBar {
+  width: 5px;
+  height: 40px;
   border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
-.routeHeaderTitle {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-semibold);
+.routePanelInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.routeHeaderSubtext {
+.routePanelDay {
   font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.routePanelCrew {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.routePanelCount {
+  font-size: var(--text-xs);
+  font-family: var(--mono);
   color: var(--t3);
 }
 
-.routeActions {
-  display: flex;
-  gap: var(--space-2);
-}
-
+/* ═══ ROUTE STOP LIST (in panel) ═══ */
 .stopList {
   display: flex;
   flex-direction: column;
@@ -600,8 +725,8 @@
 .stopItem {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   background: var(--s1);
   border-radius: var(--r);
   border: 1px solid var(--bd);
@@ -620,14 +745,14 @@
 }
 
 .stopNumber {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: var(--r);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   font-family: var(--mono);
   flex-shrink: 0;
@@ -642,10 +767,11 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
+  flex-wrap: wrap;
 }
 
 .stopName {
-  font-size: var(--text-md);
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
 }
 
@@ -683,8 +809,8 @@
 }
 
 .stopRemoveBtn {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--r);
   border: 1px solid var(--bd);
   background: var(--s1);
@@ -842,4 +968,28 @@
 .searchItemAddress {
   font-size: var(--text-xs);
   color: var(--t3);
+}
+
+/* ═══ TOAST ═══ */
+.toast {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--t1);
+  color: var(--s1);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--r);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  box-shadow: var(--shadow-lg);
+  z-index: 400;
+  cursor: pointer;
+  animation: toastIn 0.2s ease-out;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }

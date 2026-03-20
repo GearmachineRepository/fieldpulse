@@ -18,7 +18,8 @@ import useAuth from "@/hooks/useAuth.jsx"
 import useNavigation from "@/hooks/useNavigation.js"
 import useShell from "@/hooks/useShell.js"
 import useTheme from "@/hooks/useTheme.js"
-import { useData } from "@/context/DataProvider.jsx"
+// DataProvider is deprecated — kept for backward compat during migration
+// import { useData } from "@/context/DataProvider.jsx"
 import DashboardRail from "@/app/dashboard/components/DashboardRail.jsx"
 import DashboardSidebar from "@/app/dashboard/components/DashboardSidebar.jsx"
 import CompanyQRModal from "@/app/dashboard/components/CompanyQRModal.jsx"
@@ -27,7 +28,6 @@ import s from "./DashboardShell.module.css"
 export default function DashboardShell() {
   const routerNavigate = useRouterNavigate()
   const { isAdmin, restoring } = useAuth()
-  const { refreshAll } = useData()
   const { activePage, activeSection, navigate, selectSection, breadcrumb } = useNavigation()
   const { sidebarOpen, openSidebar, closeSidebar, qrModalOpen, closeQrModal } = useShell()
 
@@ -35,7 +35,7 @@ export default function DashboardShell() {
   useTheme()
 
   useEffect(() => { if (!restoring && !isAdmin) routerNavigate("/login", { replace: true }) }, [isAdmin, restoring, routerNavigate])
-  useEffect(() => { if (isAdmin) refreshAll().catch(console.error) }, [isAdmin]) // eslint-disable-line react-hooks/exhaustive-deps
+  // DataProvider is deprecated — pages load their own data via usePageData
 
   if (restoring || !isAdmin) {
     return (
