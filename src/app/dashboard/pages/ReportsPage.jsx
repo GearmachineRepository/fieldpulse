@@ -8,7 +8,8 @@ import {
   BarChart3, Download, Printer, Calendar, Users, Droplets,
   FileText, CheckCircle2, Filter, ChevronDown, Loader2, X,
 } from "lucide-react"
-import { useData } from "@/context/DataProvider.jsx"
+import usePageData from "@/hooks/usePageData.js"
+import { getCrews } from "@/lib/api/crews.js"
 import {
   getPurReportRange, getRosterReport, getCompletionReport, getSprayLogsReport,
 } from "@/lib/api/reports.js"
@@ -44,7 +45,7 @@ function getMonthEnd(date) {
 function formatDate(d) { return new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) }
 
 export default function ReportsPage() {
-  const { crews } = useData()
+  const crews = usePageData("crews", { fetchFn: getCrews })
   const [activeTab, setActiveTab] = useState("spray")
   const [dateStart, setDateStart] = useState(() => getMonthStart(new Date()))
   const [dateEnd, setDateEnd] = useState(() => getMonthEnd(new Date()))
