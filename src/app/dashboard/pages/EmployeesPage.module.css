@@ -3,14 +3,16 @@
    ═══════════════════════════════════════════ */
 
 .page {
-  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* ── Sidebar ── */
 .sidebarInner {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .searchWrap {
@@ -190,10 +192,9 @@
   50% { opacity: 0.4; }
 }
 
-/* ── Sidebar footer ── */
-.sidebarFooter {
-  padding: var(--space-3);
-  border-top: 1px solid var(--bd);
+/* ── Sidebar action (above list) ── */
+.sidebarAction {
+  padding: 0 var(--space-3) var(--space-2);
 }
 
 .addBtn {
@@ -204,18 +205,18 @@
   width: 100%;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--r);
-  border: none;
-  background: var(--amb);
-  color: #fff;
+  border: 1px dashed var(--amb);
+  background: var(--amb-dim);
+  color: var(--amb);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   font-family: var(--fn);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: background var(--transition-fast);
 }
 
 .addBtn:hover {
-  opacity: 0.88;
+  background: var(--amb-mid);
 }
 
 /* ── Detail panel ── */
@@ -356,7 +357,44 @@
   font-family: var(--mono);
 }
 
-/* ── Certifications placeholder ── */
+/* ── Certifications Tab ── */
+.certTab {
+  padding: var(--space-5);
+}
+
+.certHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.certCount {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t2);
+}
+
+.certAddBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px dashed var(--amb);
+  background: var(--amb-dim);
+  color: var(--amb);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.certAddBtn:hover {
+  background: var(--amb-mid);
+}
+
 .certEmpty {
   display: flex;
   flex-direction: column;
@@ -364,16 +402,110 @@
   justify-content: center;
   padding: var(--space-8) var(--space-4);
   text-align: center;
+  gap: var(--space-3);
 }
 
 .certIcon {
   color: var(--t3);
-  margin-bottom: var(--space-3);
 }
 
 .certText {
   font-size: var(--text-sm);
   color: var(--t3);
+}
+
+.certLoading {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--t3);
+}
+
+.certList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.certCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--s2);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+}
+
+.certCardMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.certCardName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-bottom: 2px;
+}
+
+.certCardMeta {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--t2);
+  margin-bottom: var(--space-1);
+}
+
+.certCardNum {
+  font-family: var(--mono);
+}
+
+.certCardAuth {
+  color: var(--t3);
+}
+
+.certCardDates {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--t3);
+}
+
+.certDateIcon {
+  color: var(--t3);
+  flex-shrink: 0;
+}
+
+.certDateSep {
+  margin: 0 var(--space-1);
+  color: var(--bd);
+}
+
+.certCardRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  margin-left: var(--space-3);
+}
+
+.certDeleteBtn {
+  display: flex;
+  align-items: center;
+  padding: var(--space-1);
+  border: none;
+  background: none;
+  color: var(--t3);
+  cursor: pointer;
+  border-radius: var(--r);
+  transition: var(--transition-fast);
+}
+
+.certDeleteBtn:hover {
+  color: var(--red);
+  background: var(--s1);
 }
 
 /* ── Form styles ── */

@@ -152,8 +152,19 @@
   min-width: 0;
 }
 
+/* -- Tablet: collapse sidebar, keep rail -- */
+@media (max-width: 1023px) {
+  .hamburger {
+    display: flex;
+  }
+
+  .content {
+    padding: 16px 20px;
+  }
+}
+
 /* -- Mobile -- */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .hamburger {
     display: flex;
   }

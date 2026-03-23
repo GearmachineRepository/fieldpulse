@@ -1,0 +1,498 @@
+/* ═══════════════════════════════════════════
+   Settings Page — Two-column layout
+   ═══════════════════════════════════════════ */
+
+/* ── Layout ── */
+.layout {
+  display: flex;
+  gap: var(--space-5);
+  min-height: 400px;
+}
+
+/* ── Left Nav ── */
+.nav {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--r);
+  border: none;
+  background: none;
+  color: var(--t2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition-fast);
+}
+
+.navItem:hover {
+  background: var(--s2);
+  color: var(--t1);
+}
+
+.navItemActive {
+  background: var(--s2);
+  color: var(--t1);
+}
+
+.navAccent {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--amb);
+}
+
+.navChevron {
+  margin-left: auto;
+  color: var(--t3);
+}
+
+/* ── Right Content ── */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Section Headers ── */
+.sectionTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.sectionDesc {
+  font-size: var(--text-sm);
+  color: var(--t2);
+  margin-bottom: var(--space-5);
+}
+
+/* ── Form Card ── */
+.formCard {
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: var(--space-5);
+}
+
+.fieldRow {
+  margin-bottom: var(--space-4);
+}
+
+.fieldRow:last-child {
+  margin-bottom: 0;
+}
+
+.fieldRowGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.fieldLabel {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--mono);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-1);
+}
+
+.fieldInput {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.fieldInput:focus {
+  border-color: var(--amb);
+}
+
+/* ── Empty Section ── */
+.emptySection {
+  text-align: center;
+  padding: var(--space-10) var(--space-5);
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+}
+
+.emptyIcon {
+  color: var(--t3);
+  margin-bottom: var(--space-2);
+}
+
+.emptyTitle {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--t2);
+  margin-bottom: var(--space-1);
+}
+
+.emptyDesc {
+  font-size: var(--text-sm);
+  color: var(--t3);
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: var(--leading-relaxed);
+}
+
+/* ── Module Cards ── */
+.moduleGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.moduleCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4);
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  gap: var(--space-4);
+}
+
+.moduleTop {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.moduleIconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.moduleInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.moduleName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-bottom: 2px;
+}
+
+.moduleDesc {
+  font-size: var(--text-xs);
+  color: var(--t3);
+}
+
+.moduleToggle {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.toggleOn,
+.toggleOff {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── Integration Cards ── */
+.intGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.intCard {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: 3px;
+  gap: var(--space-4);
+}
+
+.intCardTop {
+  display: flex;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.intIconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.intInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.intNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.intName {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--t1);
+}
+
+.intDesc {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  margin-top: 2px;
+  line-height: var(--leading-relaxed);
+}
+
+.intCategory {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  text-transform: capitalize;
+  margin-top: var(--space-1);
+  opacity: 0.7;
+}
+
+.freeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: rgba(22, 163, 74, 0.12);
+  color: #16A34A;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.intCardActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.intConnectBtn {
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: 3px;
+  border: none;
+  background: var(--amb);
+  color: var(--amb-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.intConnectBtn:hover {
+  opacity: 0.9;
+}
+
+.intConnectBtnAlt {
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: 3px;
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  color: var(--t2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.intConnectBtnAlt:hover {
+  border-color: var(--amb);
+  color: var(--t1);
+}
+
+.intLearnMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-xs);
+  color: var(--t3);
+  text-decoration: none;
+  margin-left: auto;
+  transition: var(--transition-fast);
+}
+
+.intLearnMore:hover {
+  color: var(--amb);
+}
+
+/* ── Notification Toggles ── */
+.notifRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--bd);
+}
+
+.notifRow:last-child {
+  border-bottom: none;
+}
+
+.notifInfo {
+  flex: 1;
+}
+
+.notifLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.notifSub {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  margin-top: 2px;
+}
+
+.notifToggle {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: var(--space-1);
+  display: flex;
+  align-items: center;
+}
+
+/* ── Form Actions ── */
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+}
+
+.saveBtn {
+  height: 36px;
+  padding: 0 var(--space-5);
+  border-radius: var(--r);
+  border: none;
+  background: var(--amb);
+  color: var(--amb-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.saveBtn:hover {
+  opacity: 0.9;
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-5);
+  background: var(--t1);
+  color: var(--s1);
+  border-radius: var(--r);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .nav {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: var(--space-1);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--bd);
+  }
+
+  .navItem {
+    white-space: nowrap;
+  }
+
+  .navChevron {
+    display: none;
+  }
+
+  .navAccent {
+    top: auto;
+    bottom: 0;
+    left: 4px;
+    right: 4px;
+    width: auto;
+    height: 3px;
+  }
+
+  .fieldRowGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .moduleCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .intGrid {
+    grid-template-columns: 1fr;
+  }
+}

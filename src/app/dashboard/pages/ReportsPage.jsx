@@ -1,17 +1,18 @@
 // ═══════════════════════════════════════════
-// Reports Page — Spray Logs, PUR, Attendance, Work Log
+// Reports Page — Overview, Attendance, Work Log, Compliance, Crew Performance
 // Date range + crew filters, CSV/PDF export
 // ═══════════════════════════════════════════
 
 import { useState, useEffect, useRef } from "react"
 import {
-  BarChart3, Download, Printer, Calendar, Users, Droplets,
+  BarChart3, Download, Printer, Calendar, Users,
   FileText, CheckCircle2, Filter, ChevronDown, Loader2, X,
+  ShieldCheck, ArrowRight,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
 import { getCrews } from "@/lib/api/crews.js"
 import {
-  getPurReportRange, getRosterReport, getCompletionReport, getSprayLogsReport,
+  getRosterReport, getCompletionReport,
 } from "@/lib/api/reports.js"
 import {
   Modal, PageHeader, LoadingSpinner, EmptyMessage,
@@ -20,20 +21,11 @@ import {
 import { ENABLED_MODULES } from "@/app/modules.js"
 import s from "./ReportsPage.module.css"
 
-const CORE_TABS = [
+const REPORT_TABS = [
+  { key: "overview", label: "Overview", icon: BarChart3, color: "#D97706" },
   { key: "attendance", label: "Attendance", icon: Users, color: "#3B82F6" },
   { key: "work-log", label: "Work Log", icon: CheckCircle2, color: "#F59E0B" },
-]
-
-const MODULE_TABS = [
-  { key: "spray", label: "Spray Logs", icon: Droplets, color: "#7C3AED", module: "spray" },
-  { key: "pur", label: "PUR Report", icon: FileText, color: "#2F6FED", module: "spray" },
-  // Future: { key: "irrigation-log", label: "Irrigation Log", icon: Waves, color: "#0891B2", module: "irrigation" },
-]
-
-const REPORT_TABS = [
-  ...CORE_TABS,
-  ...MODULE_TABS.filter(t => ENABLED_MODULES.some(m => m.key === t.module)),
+  { key: "compliance", label: "Compliance", icon: ShieldCheck, color: "#059669" },
 ]
 
 // ── Date helpers ──
@@ -46,7 +38,7 @@ function formatDate(d) { return new Date(d + "T12:00:00").toLocaleDateString("en
 
 export default function ReportsPage() {
   const crews = usePageData("crews", { fetchFn: getCrews })
-  const [activeTab, setActiveTab] = useState("spray")
+  const [activeTab, setActiveTab] = useState("overview")
   const [dateStart, setDateStart] = useState(() => getMonthStart(new Date()))
   const [dateEnd, setDateEnd] = useState(() => getMonthEnd(new Date()))
   const [crewFilter, setCrewFilter] = useState("")
@@ -56,16 +48,16 @@ export default function ReportsPage() {
 
   // ── Fetch data when tab or filters change ──
   const fetchReport = async () => {
+    // Overview and compliance don't need data fetching
+    if (activeTab === "overview" || activeTab === "compliance") {
+      setData(null)
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setData(null)
     try {
       switch (activeTab) {
-        case "spray":
-          setData(await getSprayLogsReport({ start: dateStart, end: dateEnd, crewName: crewFilter || undefined, limit: 500 }))
-          break
-        case "pur":
-          setData(await getPurReportRange(dateStart, dateEnd))
-          break
         case "attendance":
           setData(await getRosterReport(dateStart, dateEnd))
           break
@@ -103,20 +95,6 @@ export default function ReportsPage() {
   const getCsvRows = () => {
     if (!data) return []
     switch (activeTab) {
-      case "spray":
-        return [
-          ["Date", "Time", "Property", "Crew", "Lead", "Products", "Equipment", "Mix Volume", "Weather"],
-          ...(data || []).map(l => [l.date, l.time, l.property, l.crewName, l.crewLead,
-            (l.products || []).map(p => `${p.name} ${p.ozConcentrate}`).join("; "),
-            l.equipment, l.totalMixVol,
-            l.weather ? `${l.weather.temp || ""}°F ${l.weather.humidity || ""}% ${l.weather.windSpeed || ""}mph` : ""
-          ])
-        ]
-      case "pur":
-        return [
-          ["Chemical", "EPA #", "Total Amount", "Unit", "Applications"],
-          ...(data?.products || []).map(p => [p.name, p.epa, p.totalAmount.toFixed(2), p.unit, p.appCount])
-        ]
       case "attendance":
         return [
           ["Crew", "Days Worked", "Unique Members", "Total Absences"],
@@ -136,6 +114,9 @@ export default function ReportsPage() {
 
   // ── Date range label ──
   const rangeLabel = `${formatDate(dateStart)} — ${formatDate(dateEnd)}`
+
+  // ── Check if current tab needs filters ──
+  const showFilters = activeTab === "attendance" || activeTab === "work-log"
 
   return (
     <div>
@@ -166,29 +147,31 @@ export default function ReportsPage() {
         ))}
       </div>
 
-      {/* Filters bar */}
-      <div className={s.filterBar}>
-        <div className={s.filterField}>
-          <label className={s.filterLabel}>From</label>
-          <input type="date" value={dateStart} onChange={e => setDateStart(e.target.value)} className={s.filterInput} />
+      {/* Filters bar — only for data-driven tabs */}
+      {showFilters && (
+        <div className={s.filterBar}>
+          <div className={s.filterField}>
+            <label className={s.filterLabel}>From</label>
+            <input type="date" value={dateStart} onChange={e => setDateStart(e.target.value)} className={s.filterInput} />
+          </div>
+          <div className={s.filterField}>
+            <label className={s.filterLabel}>To</label>
+            <input type="date" value={dateEnd} onChange={e => setDateEnd(e.target.value)} className={s.filterInput} />
+          </div>
+          <div className={s.filterField}>
+            <label className={s.filterLabel}>Crew</label>
+            <select value={crewFilter} onChange={e => setCrewFilter(e.target.value)} className={s.filterInput}>
+              <option value="">All Crews</option>
+              {crews.data.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className={s.presetGroup}>
+            <PresetBtn label="This Month" onClick={setThisMonth} />
+            <PresetBtn label="Last Month" onClick={setLastMonth} />
+            <PresetBtn label="This Year" onClick={setThisYear} />
+          </div>
         </div>
-        <div className={s.filterField}>
-          <label className={s.filterLabel}>To</label>
-          <input type="date" value={dateEnd} onChange={e => setDateEnd(e.target.value)} className={s.filterInput} />
-        </div>
-        <div className={s.filterField}>
-          <label className={s.filterLabel}>Crew</label>
-          <select value={crewFilter} onChange={e => setCrewFilter(e.target.value)} className={s.filterInput}>
-            <option value="">All Crews</option>
-            {crews.data.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </select>
-        </div>
-        <div className={s.presetGroup}>
-          <PresetBtn label="This Month" onClick={setThisMonth} />
-          <PresetBtn label="Last Month" onClick={setLastMonth} />
-          <PresetBtn label="This Year" onClick={setThisYear} />
-        </div>
-      </div>
+      )}
 
       {/* Report content */}
       <div ref={printRef} id="report-printable">
@@ -202,18 +185,21 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        {loading ? <LoadingSpinner /> : !data ? (
+        {activeTab === "overview" ? (
+          <OverviewReport dateStart={dateStart} dateEnd={dateEnd} rangeLabel={rangeLabel} />
+        ) : activeTab === "compliance" ? (
+          <ComplianceReport />
+        ) : loading ? <LoadingSpinner /> : !data ? (
           <EmptyMessage text="Select a date range to generate a report." />
-        ) : activeTab === "spray" ? (
-          <SprayReport data={data} crewFilter={crewFilter} />
-        ) : activeTab === "pur" ? (
-          <PurReport data={data} />
         ) : activeTab === "attendance" ? (
           <AttendanceReport data={data} />
         ) : activeTab === "work-log" ? (
           <WorkLogReport data={data} />
         ) : null}
       </div>
+
+      {/* Module Reports section */}
+      <ModuleReportsSection />
     </div>
   )
 }
@@ -234,125 +220,104 @@ function StatCard({ label, value, color }) {
 }
 
 // ═══════════════════════════════════════════
-// Spray Log Report
+// Overview Report — summary dashboard
 // ═══════════════════════════════════════════
-function SprayReport({ data, crewFilter }) {
-  const logs = Array.isArray(data) ? data : []
-  const filtered = crewFilter ? logs.filter(l => l.crewName === crewFilter) : logs
-
-  const totalProducts = filtered.reduce((sum, l) => sum + (l.products?.length || 0), 0)
-  const uniqueProperties = new Set(filtered.map(l => l.property)).size
-
+function OverviewReport({ dateStart, dateEnd, rangeLabel }) {
   return (
     <div>
-      {/* Summary cards */}
       <div className={s.statsRow}>
-        <StatCard label="Total Applications" value={filtered.length} color="#7C3AED" />
-        <StatCard label="Products Applied" value={totalProducts} color="#3B82F6" />
-        <StatCard label="Properties Served" value={uniqueProperties} color="#2F6FED" />
+        <StatCard label="Report Types" value={REPORT_TABS.length} color="#D97706" />
+        <StatCard label="Date Range" value={rangeLabel} color="#3B82F6" />
+        <StatCard label="Active Modules" value={ENABLED_MODULES.length} color="#059669" />
       </div>
 
-      {/* Table */}
-      {filtered.length === 0 ? (
-        <EmptyMessage text="No spray logs found for this period." />
-      ) : (
-        <div className={s.tableWrap}>
-          <table className={s.table}>
-            <thead>
-              <tr className={s.tableHeadRow}>
-                {["Date", "Property", "Crew", "Products", "Equipment", "Mix Vol", "Weather"].map(h => (
-                  <th key={h} className={s.th}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((log, i) => (
-                <tr key={log.id || i} className={s.tableRow}>
-                  <td className={s.cell}>
-                    <div className={s.cellBold}>{log.date}</div>
-                    <div className={s.cellSub}>{log.time}</div>
-                  </td>
-                  <td className={s.cell}>
-                    <div className={s.cellBold}>{log.property}</div>
-                  </td>
-                  <td className={s.cell}>
-                    <div>{log.crewName}</div>
-                    <div className={s.cellSub}>{log.crewLead}</div>
-                  </td>
-                  <td className={s.cell}>
-                    {(log.products || []).map((p, j) => (
-                      <div key={j} className={s.productLine}>
-                        <span className={s.productName}>{p.name}</span>
-                        <span className={s.productDetail}> — {p.ozConcentrate}</span>
-                      </div>
-                    ))}
-                  </td>
-                  <td className={`${s.cell} ${s.cellSmall}`}>{log.equipment || "—"}</td>
-                  <td className={`${s.cell} ${s.cellSmall}`}>{log.totalMixVol || "—"}</td>
-                  <td className={`${s.cell} ${s.cellMuted}`}>
-                    {log.weather ? `${log.weather.temp || ""}°F · ${log.weather.humidity || ""}% · ${log.weather.windSpeed || ""}mph` : "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className={s.overviewInfo}>
+        <div className={s.overviewCard}>
+          <div className={s.overviewCardTitle}>Available Reports</div>
+          <div className={s.overviewList}>
+            {REPORT_TABS.filter(t => t.key !== "overview").map(tab => (
+              <div key={tab.key} className={s.overviewListItem}>
+                <tab.icon size={14} style={{ color: tab.color }} />
+                <span className={s.overviewListLabel}>{tab.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
+
+        <div className={s.overviewCard}>
+          <div className={s.overviewCardTitle}>Module Reports</div>
+          <div className={s.overviewList}>
+            {ENABLED_MODULES.filter(m => m.key === "spray" || m.key === "pest" || m.key === "irrigation").map(mod => (
+              <div key={mod.key} className={s.overviewListItem}>
+                <mod.icon size={14} style={{ color: mod.color }} />
+                <span className={s.overviewListLabel}>{mod.label}</span>
+                <span className={s.overviewListSub}>Modules &gt; {mod.label} &gt; Reports</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
 // ═══════════════════════════════════════════
-// PUR Report — Chemical usage summary
+// Compliance Report — placeholder
 // ═══════════════════════════════════════════
-function PurReport({ data }) {
-  const products = data?.products || []
-  const totalApps = data?.totalApplications || 0
-
+function ComplianceReport() {
   return (
     <div>
       <div className={s.statsRow}>
-        <StatCard label="Chemicals Used" value={products.length} color="#2F6FED" />
-        <StatCard label="Total Applications" value={totalApps} color="#7C3AED" />
+        <StatCard label="Data Sources" value="3" color="#059669" />
+        <StatCard label="Status" value="Coming Soon" color="#D97706" />
       </div>
 
-      {products.length === 0 ? (
-        <EmptyMessage text="No chemical applications found for this period." />
-      ) : (
-        <div className={s.cardList}>
-          {products.map((p, i) => (
-            <div key={i} className={s.card}>
-              {/* Chemical header */}
-              <div className={s.cardHeader}>
-                <div>
-                  <div className={s.cardTitle}>{p.name}</div>
-                  <div className={s.cardSubtitle}>EPA# {p.epa || "N/A"}</div>
-                </div>
-                <div className={s.textRight}>
-                  <div className={s.purAmount}>
-                    {p.totalAmount.toFixed(2)} {p.unit}
-                  </div>
-                  <div className={s.purAppCount}>
-                    {p.appCount} application{p.appCount !== 1 ? "s" : ""}
-                  </div>
-                </div>
-              </div>
+      <div className={s.compliancePlaceholder}>
+        <ShieldCheck size={32} className={s.complianceIcon} />
+        <div className={s.complianceTitle}>Compliance Reporting</div>
+        <div className={s.complianceDesc}>
+          Compliance reporting will pull from certifications, training, and incident data.
+        </div>
+      </div>
+    </div>
+  )
+}
 
-              {/* Application details */}
-              <div className={s.cardBody}>
-                {(p.applications || []).map((app, j) => (
-                  <div key={j} className={j < p.applications.length - 1 ? s.purAppRowBorder : s.purAppRow}>
-                    <div className={s.purAppDate}>{app.date}</div>
-                    <div className={s.purAppProperty}>{app.property}</div>
-                    <div className={s.purAppCrew}>{app.crew}</div>
-                    <div className={s.purAppAmount}>{app.amount}</div>
-                  </div>
-                ))}
+// ═══════════════════════════════════════════
+// Module Reports Section — bottom of page
+// ═══════════════════════════════════════════
+function ModuleReportsSection() {
+  const modulesWithReports = ENABLED_MODULES.filter(m =>
+    ["spray", "pest", "irrigation"].includes(m.key)
+  )
+
+  if (modulesWithReports.length === 0) return null
+
+  return (
+    <div className={s.moduleReportsSection}>
+      <div className={s.card}>
+        <div className={s.cardHeader}>
+          <div>
+            <div className={s.cardTitle}>Module Reports</div>
+            <div className={s.cardSubtitle}>
+              Module-specific reports are accessed from within each module.
+            </div>
+          </div>
+        </div>
+        <div className={s.cardBody}>
+          {modulesWithReports.map((mod, i) => (
+            <div key={mod.key} className={i < modulesWithReports.length - 1 ? s.moduleReportRowBorder : s.moduleReportRow}>
+              <div className={s.moduleReportLabel}>
+                <mod.icon size={14} style={{ color: mod.color }} />
+                <span>{mod.label} Reports</span>
+              </div>
+              <div className={s.moduleReportPath}>
+                Modules <ArrowRight size={10} /> {mod.label} <ArrowRight size={10} /> Reports
               </div>
             </div>
           ))}
         </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -451,7 +416,7 @@ function WorkLogReport({ data }) {
             <tbody>
               {completions.map((c, i) => (
                 <tr key={c.id || i} className={s.tableRow}>
-                  <td className={s.cell}>
+                  <td className={`${s.cell} ${s.cellMono}`}>
                     <div className={s.cellBold}>
                       {new Date(c.workDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </div>
@@ -470,7 +435,7 @@ function WorkLogReport({ data }) {
                       {c.status}
                     </span>
                   </td>
-                  <td className={`${s.cell} ${s.cellTextMed}`}>
+                  <td className={`${s.cell} ${s.cellTextMed} ${s.cellMono}`}>
                     {c.timeSpentMinutes ? `${c.timeSpentMinutes}m` : "—"}
                   </td>
                 </tr>

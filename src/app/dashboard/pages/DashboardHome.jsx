@@ -9,13 +9,14 @@
 import { useState, useEffect } from "react"
 import {
   Users, AlertTriangle, Clock, Briefcase,
-  ChevronRight, Droplets, ShieldCheck, BookOpen,
-  Truck, MapPin, FileText, Inbox,
+  ChevronRight, ShieldCheck, BookOpen,
+  Truck, MapPin, FileText, Inbox, Settings,
 } from "lucide-react"
 import useNavigation from "@/hooks/useNavigation.js"
 import usePageData from "@/hooks/usePageData.js"
-import { getCrews, getEmployees, getVehicles, getSprayLogs, getAccounts } from "@/lib/api/index.js"
+import { getCrews, getEmployees, getVehicles, getAccounts } from "@/lib/api/index.js"
 import { getAttendanceToday } from "@/lib/api/rosters.js"
+import AddressLink from "../components/AddressLink.jsx"
 import StatCard from "../components/StatCard.jsx"
 import DataTable from "../components/DataTable.jsx"
 import StatusBadge from "../components/StatusBadge.jsx"
@@ -30,7 +31,6 @@ export default function DashboardHome() {
   const crews = usePageData("crews", { fetchFn: getCrews })
   const employees = usePageData("employees", { fetchFn: getEmployees })
   const vehicles = usePageData("vehicles", { fetchFn: getVehicles })
-  const sprayLogs = usePageData("sprayLogs", { fetchFn: getSprayLogs })
   const accounts = usePageData("accounts", { fetchFn: getAccounts })
 
   // ── Attendance (specialized endpoint) ──
@@ -69,11 +69,10 @@ export default function DashboardHome() {
     members: [],
   }))
 
-  const recentLogs = sprayLogs.data.slice(0, 5)
   const recentProjects = accounts.data.slice(0, 3)
 
   const isLoading = crews.loading || employees.loading || vehicles.loading
-    || sprayLogs.loading || accounts.loading
+    || accounts.loading
 
   // ── Stat cards config ──
   const statCards = [
@@ -114,7 +113,6 @@ export default function DashboardHome() {
     { icon: Truck, label: "Fleet", sub: "Inspections", page: "vehicles" },
     { icon: ShieldCheck, label: "Compliance", sub: "Certs & training", page: "training" },
     { icon: BookOpen, label: "Resources", sub: "SDS & docs", page: "documents" },
-    { icon: FileText, label: "Spray Logs", sub: "Field records", page: "mod-spray" },
   ]
 
   // ── Crew table ──
@@ -133,6 +131,10 @@ export default function DashboardHome() {
           <div className={s.dateStr}>{dateStr}</div>
           <div className={s.greeting}>{greeting}</div>
         </div>
+        <button className={s.customizeBtn}>
+          <Settings size={14} />
+          Customize
+        </button>
       </div>
 
       {/* ── Alert — crews not clocked in ── */}
@@ -217,46 +219,19 @@ export default function DashboardHome() {
           )}
         </div>
 
-        {/* Recent Activity (spray logs) */}
+        {/* GPS Overview (placeholder) */}
         <div className={s.card}>
           <div className={s.cardHeader}>
             <div className={s.cardTitleWrap}>
-              <Droplets size={18} color="var(--t2)" />
-              <span className={s.cardTitle}>Recent Activity</span>
+              <MapPin size={18} color="var(--t2)" />
+              <span className={s.cardTitle}>GPS Overview</span>
             </div>
-            <button onClick={() => onNavigate?.("mod-spray")} className={s.cardLink}>
-              All Logs <ChevronRight size={14} />
-            </button>
           </div>
-
-          {sprayLogs.loading ? (
-            <div className={s.skeletonRows}>
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className={s.skeletonRow} />
-              ))}
-            </div>
-          ) : recentLogs.length === 0 ? (
-            <div className={s.emptyState}>
-              <Droplets size={32} color="var(--t3)" strokeWidth={1.2} />
-              <div className={s.emptyTitle}>No recent activity</div>
-              <div className={s.emptySub}>Spray logs from the field will appear here.</div>
-            </div>
-          ) : (
-            recentLogs.map((log) => (
-              <div key={log.id} className={s.logRow}>
-                <div className={s.logIconWrap}>
-                  <Droplets size={16} color="var(--blu)" />
-                </div>
-                <div className={s.logInfo}>
-                  <div className={s.logProperty}>{log.property}</div>
-                  <div className={s.logSub}>
-                    {log.crewName} · {log.products.length} product{log.products.length !== 1 ? "s" : ""}
-                  </div>
-                </div>
-                <div className={s.logDate}>{log.date}</div>
-              </div>
-            ))
-          )}
+          <div className={s.emptyState}>
+            <MapPin size={32} color="var(--t3)" strokeWidth={1.2} />
+            <div className={s.emptyTitle}>GPS tracking coming soon</div>
+            <div className={s.emptySub}>Real-time crew locations will appear here.</div>
+          </div>
         </div>
       </div>
 
@@ -293,7 +268,9 @@ export default function DashboardHome() {
             recentProjects.map((proj) => (
               <div key={proj.id} className={s.projectCard} onClick={() => onNavigate?.("projects")}>
                 <div className={s.projectName}>{proj.name}</div>
-                <div className={s.projectAddress}>{proj.address || "No address"}</div>
+                <div className={s.projectAddress}>
+                  {proj.address ? <AddressLink address={proj.address} city={proj.city} state={proj.state} /> : "No address"}
+                </div>
                 <StatusBadge variant={proj.status === "active" ? "green" : "gray"}>
                   {proj.status || "Active"}
                 </StatusBadge>

@@ -4,6 +4,10 @@
 
 .page {
   position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* ── Sidebar inner (left panel) ── */
@@ -11,7 +15,6 @@
 .sidebarInner {
   display: flex;
   flex-direction: column;
-  height: 100%;
   min-height: 0;
 }
 
@@ -56,15 +59,35 @@
   color: var(--t3);
 }
 
-/* ── Filter pills ── */
+/* ── Group filter ── */
 
-.pillRow {
+.filterRow {
   display: flex;
-  gap: var(--space-1);
-  flex-wrap: wrap;
+  gap: var(--space-2);
   padding: 0 var(--space-3) var(--space-3);
   align-items: center;
   flex-shrink: 0;
+}
+
+.filterSelect {
+  flex: 1;
+  height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd2);
+  background: var(--s2);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.filterSelect:focus {
+  border-color: var(--amb);
+  box-shadow: 0 0 0 2px var(--amb-dim);
 }
 
 .manageGroupsBtn {
@@ -169,12 +192,10 @@
   flex-shrink: 0;
 }
 
-/* ── Sidebar footer ── */
+/* ── Sidebar action (above list) ── */
 
-.sidebarFooter {
-  padding: var(--space-3);
-  border-top: 1px solid var(--bd);
-  flex-shrink: 0;
+.sidebarAction {
+  padding: 0 var(--space-3) var(--space-2);
 }
 
 .addBtn {
@@ -886,7 +907,7 @@
   border-radius: var(--r);
   border: none;
   background: var(--amb);
-  color: #fff;
+  color: var(--amb-text);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   cursor: pointer;

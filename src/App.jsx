@@ -38,6 +38,7 @@ const ReportsPage         = lazy(() => import("@/app/dashboard/pages/ReportsPage
 const CrewPerformancePage = lazy(() => import("@/app/dashboard/pages/CrewPerformancePage.jsx"))
 const ComplianceReportPage = lazy(() => import("@/app/dashboard/pages/ComplianceReportPage.jsx"))
 const ModulePage          = lazy(() => import("@/app/dashboard/pages/ModulePage.jsx"))
+const SettingsPage        = lazy(() => import("@/app/dashboard/pages/SettingsPage.jsx"))
 const PlaceholderPage     = lazy(() => import("@/app/dashboard/pages/PlaceholderPage.jsx"))
 
 function ShellLoader() {
@@ -98,7 +99,7 @@ export default function App() {
           <Route path="crew-performance" element={<CrewPerformancePage />} />
           <Route path="compliance-report" element={<ComplianceReportPage />} />
           {/* Other */}
-          <Route path="settings" element={<PlaceholderPage title="Settings" />} />
+          <Route path="settings" element={<SettingsPage />} />
           <Route path="mod-:moduleKey" element={<ModulePage />} />
           {/* Backward compat redirects for old routes */}
           <Route path="team" element={<Navigate to="/dashboard/employees" replace />} />

@@ -78,25 +78,25 @@ export default function PricingPage() {
           background: "none", cursor: "pointer", fontFamily: T.font,
         }}>
           <div style={{
-            width: 34, height: 34, borderRadius: 10, background: T.accent,
+            width: 34, height: 34, borderRadius: 3, background: T.accent,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <Leaf size={18} color="#fff" />
           </div>
-          <span style={{ fontSize: 18, fontWeight: 800, color: T.text }}>CruPoint</span>
+          <span style={{ fontSize: 18, fontWeight: 600, color: T.text }}>CruPoint</span>
         </button>
         <div style={{ display: "flex", gap: 12 }}>
           <button onClick={() => navigate("/login")} style={{
-            padding: "10px 20px", borderRadius: 10, border: `1.5px solid ${T.border}`,
+            padding: "10px 20px", borderRadius: 3, border: `1.5px solid ${T.border}`,
             background: T.card, cursor: "pointer", fontFamily: T.font,
             fontSize: 14, fontWeight: 600, color: T.text,
           }}>
             Sign In
           </button>
           <button onClick={() => navigate("/signup")} style={{
-            padding: "10px 20px", borderRadius: 10, border: "none",
+            padding: "10px 20px", borderRadius: 3, border: "none",
             background: T.accent, cursor: "pointer", fontFamily: T.font,
-            fontSize: 14, fontWeight: 700, color: "#fff",
+            fontSize: 14, fontWeight: 600, color: "#fff",
           }}>
             Get Started
           </button>
@@ -105,7 +105,7 @@ export default function PricingPage() {
 
       {/* Header */}
       <div style={{ textAlign: "center", padding: "60px 20px 40px", maxWidth: 600, margin: "0 auto" }}>
-        <h1 style={{ fontSize: 40, fontWeight: 800, marginBottom: 12, letterSpacing: "-1px", lineHeight: 1.1 }}>
+        <h1 style={{ fontSize: 40, fontWeight: 600, marginBottom: 12, letterSpacing: "-1px", lineHeight: 1.1 }}>
           Simple, transparent pricing
         </h1>
         <p style={{ fontSize: 18, color: T.textLight, lineHeight: 1.6, marginBottom: 32 }}>
@@ -114,11 +114,11 @@ export default function PricingPage() {
 
         {/* Billing toggle */}
         <div style={{
-          display: "inline-flex", background: T.card, borderRadius: 12,
+          display: "inline-flex", background: T.card, borderRadius: 3,
           border: `1px solid ${T.border}`, padding: 4,
         }}>
           <button onClick={() => setBilling("monthly")} style={{
-            padding: "10px 24px", borderRadius: 10, border: "none", cursor: "pointer",
+            padding: "10px 24px", borderRadius: 3, border: "none", cursor: "pointer",
             fontFamily: T.font, fontSize: 14, fontWeight: 600,
             background: billing === "monthly" ? T.accent : "transparent",
             color: billing === "monthly" ? "#fff" : T.textMed,
@@ -127,7 +127,7 @@ export default function PricingPage() {
             Monthly
           </button>
           <button onClick={() => setBilling("annual")} style={{
-            padding: "10px 24px", borderRadius: 10, border: "none", cursor: "pointer",
+            padding: "10px 24px", borderRadius: 3, border: "none", cursor: "pointer",
             fontFamily: T.font, fontSize: 14, fontWeight: 600,
             background: billing === "annual" ? T.accent : "transparent",
             color: billing === "annual" ? "#fff" : T.textMed,
@@ -146,7 +146,7 @@ export default function PricingPage() {
         <style>{`@media (max-width: 900px) { .pricing-grid { grid-template-columns: 1fr !important; max-width: 440px !important; } }`}</style>
         {PLANS.map(plan => (
           <div key={plan.name} style={{
-            background: T.card, borderRadius: 20, padding: 36,
+            background: T.card, borderRadius: 3, padding: 36,
             border: plan.popular ? `2px solid ${T.accent}` : `1px solid ${T.border}`,
             position: "relative", display: "flex", flexDirection: "column",
             boxShadow: plan.popular ? "0 8px 30px rgba(47,111,237,0.12)" : "none",
@@ -154,19 +154,19 @@ export default function PricingPage() {
             {plan.popular && (
               <div style={{
                 position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
-                background: T.accent, color: "#fff", padding: "4px 16px", borderRadius: 20,
-                fontSize: 12, fontWeight: 700, letterSpacing: "0.5px",
+                background: T.accent, color: "#fff", padding: "4px 16px", borderRadius: 3,
+                fontSize: 12, fontWeight: 600, letterSpacing: "0.5px",
               }}>
                 MOST POPULAR
               </div>
             )}
 
-            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>{plan.name}</div>
+            <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 6 }}>{plan.name}</div>
             <div style={{ fontSize: 14, color: T.textLight, marginBottom: 24 }}>{plan.description}</div>
 
             {plan.price ? (
               <div style={{ marginBottom: 28 }}>
-                <span style={{ fontSize: 44, fontWeight: 800, letterSpacing: "-2px" }}>
+                <span style={{ fontSize: 44, fontWeight: 600, letterSpacing: "-2px" }}>
                   ${billing === "monthly" ? plan.price.monthly : plan.price.annual}
                 </span>
                 <span style={{ fontSize: 16, color: T.textLight }}>/month</span>
@@ -178,7 +178,7 @@ export default function PricingPage() {
               </div>
             ) : (
               <div style={{ marginBottom: 28 }}>
-                <span style={{ fontSize: 36, fontWeight: 800 }}>Custom</span>
+                <span style={{ fontSize: 36, fontWeight: 600 }}>Custom</span>
                 <div style={{ fontSize: 13, color: T.textLight, marginTop: 4 }}>
                   Tailored to your organization
                 </div>
@@ -186,8 +186,8 @@ export default function PricingPage() {
             )}
 
             <button onClick={() => plan.price ? navigate("/signup") : null} style={{
-              width: "100%", padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
-              fontFamily: T.font, fontSize: 15, fontWeight: 700,
+              width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
+              fontFamily: T.font, fontSize: 15, fontWeight: 600,
               background: plan.popular ? T.accent : T.bg,
               color: plan.popular ? "#fff" : T.text,
               marginBottom: 28,

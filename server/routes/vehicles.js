@@ -15,7 +15,7 @@ const router = Router()
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
   const r = await db.query(
-    'SELECT id, name, crew_name, license_plate, vin, make_model, year, truck_number FROM vehicles WHERE active = true AND org_id = $1 ORDER BY name',
+    'SELECT id, name, crew_name, license_plate, vin, make_model, year, truck_number, status FROM vehicles WHERE active = true AND org_id = $1 ORDER BY name',
     [orgId]
   )
   res.json(r.rows)
@@ -27,12 +27,13 @@ router.post('/',
   validateBody({ name: { required: true, type: 'string', maxLength: 100 } }),
   asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
-    const { name, crewName, licensePlate, vin, makeModel, year, truckNumber } = req.body
+    const { name, crewName, licensePlate, vin, makeModel, year, truckNumber, status } = req.body
+    const parsedYear = year && !isNaN(parseInt(year)) ? parseInt(year) : null
     const r = await db.query(
-      `INSERT INTO vehicles (name, crew_name, license_plate, vin, make_model, year, truck_number, org_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, name, crew_name`,
+      `INSERT INTO vehicles (name, crew_name, license_plate, vin, make_model, year, truck_number, pin_hash, status, org_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id, name, crew_name, license_plate, vin, make_model, year, truck_number, status`,
       [name, crewName || null, licensePlate || null, vin || null,
-       makeModel || null, year ? parseInt(year) : null, truckNumber || null, orgId]
+       makeModel || null, parsedYear, truckNumber || null, '0000', status || 'Active', orgId]
     )
     res.json(r.rows[0])
   })
@@ -45,13 +46,14 @@ router.put('/:id',
   validateBody({ name: { required: true, type: 'string', maxLength: 100 } }),
   asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
-    const { name, crewName, licensePlate, vin, makeModel, year, truckNumber } = req.body
+    const { name, crewName, licensePlate, vin, makeModel, year, truckNumber, status } = req.body
+    const parsedYear = year && !isNaN(parseInt(year)) ? parseInt(year) : null
     await db.query(
       `UPDATE vehicles
-       SET name=$1, crew_name=$2, license_plate=$3, vin=$4, make_model=$5, year=$6, truck_number=$7
-       WHERE id=$8 AND org_id=$9`,
+       SET name=$1, crew_name=$2, license_plate=$3, vin=$4, make_model=$5, year=$6, truck_number=$7, status=$8
+       WHERE id=$9 AND org_id=$10`,
       [name, crewName || null, licensePlate || null, vin || null,
-       makeModel || null, year ? parseInt(year) : null, truckNumber || null, req.params.id, orgId]
+       makeModel || null, parsedYear, truckNumber || null, status || 'Active', req.params.id, orgId]
     )
     res.json({ success: true })
   })

@@ -15,7 +15,7 @@
 
 .modal {
   background: var(--color-card);
-  border-radius: 16px;
+  border-radius: 4px;
   width: 100%;
   max-width: 400px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
@@ -35,7 +35,7 @@
   align-items: center;
   gap: 10px;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text);
 }
 
@@ -44,7 +44,7 @@
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: 8px;
+  border-radius: 3px;
   color: var(--color-text-light);
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@
   justify-content: center;
   padding: 20px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 3px;
   border: 1px solid var(--color-card-border);
   margin-bottom: 20px;
 }
@@ -105,12 +105,12 @@
 
 .codeValue {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-text);
   letter-spacing: 1px;
   background: var(--color-bg);
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 3px;
   border: 1px solid var(--color-card-border);
 }
 
@@ -119,7 +119,7 @@
   align-items: center;
   gap: 4px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 3px;
   border: 1px solid var(--color-card-border);
   background: var(--color-card);
   cursor: pointer;

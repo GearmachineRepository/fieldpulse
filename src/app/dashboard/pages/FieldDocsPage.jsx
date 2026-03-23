@@ -12,6 +12,7 @@ import {
   Thermometer, ChevronDown, ChevronUp, Download, Users,
   Eye, Calendar, Filter,
 } from "lucide-react"
+import AddressLink from "../components/AddressLink.jsx"
 import { useData } from "@/context/DataProvider.jsx"
 import {
   Modal, PageHeader, SearchBar, LoadingSpinner, EmptyMessage,
@@ -155,7 +156,7 @@ function LogDetailModal({ log, onClose }) {
         <InfoCell icon={Users} label="Crew" value={log.crewName} />
         <InfoCell icon={Users} label="Lead" value={log.crewLead} />
         <InfoCell icon={FileText} label="License" value={log.license || "—"} />
-        <InfoCell icon={MapPin} label="Location" value={log.location || "—"} />
+        <InfoCell icon={MapPin} label="Location" value={log.location ? <AddressLink location={log.location} /> : "—"} />
       </div>
 
       {/* Weather */}

@@ -39,7 +39,7 @@ export function BottomSheet({ open, onClose, title, children }) {
       {/* Sheet */}
       <div ref={sheetRef} style={{
         position: "relative", width: "100%", maxWidth: 430,
-        background: T.card, borderRadius: "20px 20px 0 0",
+        background: T.card, borderRadius: "4px 4px 0 0",
         maxHeight: "75vh", display: "flex", flexDirection: "column",
         animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)",
         boxShadow: "0 -10px 40px rgba(0,0,0,0.15)",
@@ -51,9 +51,9 @@ export function BottomSheet({ open, onClose, title, children }) {
             margin: "0 auto 14px",
           }} />
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: T.text }}>{title}</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: T.text }}>{title}</div>
             <button onClick={onClose} style={{
-              width: 32, height: 32, borderRadius: 8, border: "none",
+              width: 32, height: 32, borderRadius: 3, border: "none",
               background: T.bg, cursor: "pointer", display: "flex",
               alignItems: "center", justifyContent: "center",
             }}>
@@ -80,7 +80,7 @@ export function BottomSheetOption({ label, count, color, icon: Icon, active, onC
   return (
     <button onClick={onClick} style={{
       display: "flex", alignItems: "center", gap: 12, width: "100%",
-      padding: "14px 16px", borderRadius: 12, border: "none", cursor: "pointer",
+      padding: "14px 16px", borderRadius: 3, border: "none", cursor: "pointer",
       background: active ? `${color || T.accent}08` : "transparent",
       fontFamily: T.font, textAlign: "left", marginBottom: 4,
       transition: "background 0.1s",
@@ -124,7 +124,7 @@ export function FilterButton({ label, activeLabel, onClick }) {
   return (
     <button onClick={onClick} style={{
       display: "flex", alignItems: "center", gap: 8, padding: "10px 14px",
-      borderRadius: 10, border: `1.5px solid ${hasFilter ? T.accent : T.border}`,
+      borderRadius: 3, border: `1.5px solid ${hasFilter ? T.accent : T.border}`,
       background: hasFilter ? T.accentLight : T.card, cursor: "pointer",
       fontFamily: T.font, fontSize: 13, fontWeight: 600,
       color: hasFilter ? T.accent : T.textMed, whiteSpace: "nowrap",

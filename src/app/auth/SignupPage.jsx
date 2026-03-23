@@ -59,22 +59,22 @@ export default function SignupPage() {
         {/* Brand */}
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <div style={{
-            width: 52, height: 52, borderRadius: 14, background: T.accent, margin: "0 auto 14px",
+            width: 52, height: 52, borderRadius: 3, background: T.accent, margin: "0 auto 14px",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <Leaf size={28} color="#fff" />
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: T.text, letterSpacing: "-0.5px" }}>CruPoint</div>
+          <div style={{ fontSize: 26, fontWeight: 600, color: T.text, letterSpacing: "-0.5px" }}>CruPoint</div>
           <div style={{ fontSize: 14, color: T.textLight, marginTop: 4 }}>Create your account</div>
         </div>
 
         <div style={{
-          background: T.card, borderRadius: 16, padding: 32,
+          background: T.card, borderRadius: 3, padding: 32,
           border: `1px solid ${T.border}`, boxShadow: T.shadowMd,
         }}>
           {error && (
             <div style={{
-              padding: "12px 16px", background: T.redLight, borderRadius: 10,
+              padding: "12px 16px", background: T.redLight, borderRadius: 3,
               color: T.red, fontSize: 14, fontWeight: 600, marginBottom: 20,
               border: "1px solid #FECACA",
             }}>
@@ -89,7 +89,7 @@ export default function SignupPage() {
             </label>
             <div style={{
               display: "flex", alignItems: "center", gap: 10, padding: "0 14px",
-              background: T.bg, borderRadius: 12, border: `1.5px solid ${T.border}`,
+              background: T.bg, borderRadius: 3, border: `1.5px solid ${T.border}`,
             }}>
               <User size={18} color={T.textLight} />
               <input
@@ -111,7 +111,7 @@ export default function SignupPage() {
             </label>
             <div style={{
               display: "flex", alignItems: "center", gap: 10, padding: "0 14px",
-              background: T.bg, borderRadius: 12, border: `1.5px solid ${T.border}`,
+              background: T.bg, borderRadius: 3, border: `1.5px solid ${T.border}`,
             }}>
               <Mail size={18} color={T.textLight} />
               <input
@@ -133,7 +133,7 @@ export default function SignupPage() {
             </label>
             <div style={{
               display: "flex", alignItems: "center", gap: 10, padding: "0 14px",
-              background: T.bg, borderRadius: 12, border: `1.5px solid ${T.border}`,
+              background: T.bg, borderRadius: 3, border: `1.5px solid ${T.border}`,
             }}>
               <Lock size={18} color={T.textLight} />
               <input
@@ -161,8 +161,8 @@ export default function SignupPage() {
             onClick={handleSubmit}
             disabled={submitting || !canSubmit}
             style={{
-              width: "100%", padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
-              background: T.accent, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: T.font,
+              width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
+              background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
               opacity: (submitting || !canSubmit) ? 0.5 : 1,
               transition: "opacity 0.15s",
               boxShadow: "0 4px 14px rgba(47,111,237,0.2)",

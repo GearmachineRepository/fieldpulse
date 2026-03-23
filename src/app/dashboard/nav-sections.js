@@ -15,7 +15,7 @@ import {
   BarChart3, TrendingUp, ClipboardCheck,
   Settings, Blocks,
 } from "lucide-react"
-import { ENABLED_MODULES } from "@/app/modules.js"
+import { ALL_MODULES } from "@/app/modules.js"
 
 export const SECTIONS = [
   {
@@ -76,7 +76,7 @@ export const SECTIONS = [
     icon: BookOpen,
     pages: [
       { key: "documents", label: "Documents",   icon: FileText },
-      { key: "sds",       label: "SDS Library", icon: FlaskConical },
+      { key: "sds",       label: "SDS Library", icon: FlaskConical, module: "spray" },
     ],
   },
   {
@@ -112,7 +112,7 @@ for (const section of SECTIONS) {
   }
 }
 // Add module pages dynamically
-ENABLED_MODULES.forEach(m => {
+ALL_MODULES.forEach(m => {
   PAGE_TO_SECTION[`mod-${m.key}`] = "modules"
 })
 
@@ -126,10 +126,11 @@ export function getSectionPages(sectionKey) {
   const section = SECTIONS.find(s => s.key === sectionKey)
   if (!section) return []
   if (section.dynamic) {
-    return ENABLED_MODULES.map(m => ({
+    return ALL_MODULES.map(m => ({
       key: `mod-${m.key}`,
       label: m.label,
       icon: m.icon,
+      module: m.key,
       modBadge: true,
     }))
   }
@@ -140,7 +141,7 @@ export function getSectionPages(sectionKey) {
 export function resolvePageTitle(pageKey) {
   if (pageKey === "dashboard") return "Dashboard"
   if (pageKey?.startsWith("mod-")) {
-    const mod = ENABLED_MODULES.find(m => `mod-${m.key}` === pageKey)
+    const mod = ALL_MODULES.find(m => `mod-${m.key}` === pageKey)
     return mod?.label || "Module"
   }
   for (const section of SECTIONS) {

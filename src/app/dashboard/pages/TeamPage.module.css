@@ -34,7 +34,7 @@
 .tabButtonActive {
   composes: tabButton;
   background: var(--amb);
-  color: #fff;
+  color: var(--amb-text);
 }
 
 /* ── Lists ── */

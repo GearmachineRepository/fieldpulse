@@ -92,15 +92,15 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
             <div style={{ fontSize: 13, color: "#64748B" }}>{greeting}</div>
-            <div style={{ fontSize: 22, fontWeight: 800 }}>{firstName}</div>
+            <div style={{ fontSize: 22, fontWeight: 600 }}>{firstName}</div>
             <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>
               {crewName}{employee?.isCrewLead ? " · Crew Lead" : ""}
             </div>
           </div>
           <div style={{
-            width: 44, height: 44, borderRadius: 12, background: T.accent,
+            width: 44, height: 44, borderRadius: 3, background: T.accent,
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 18, fontWeight: 700,
+            fontSize: 18, fontWeight: 600,
           }}>
             {(employee?.firstName?.[0] || "")}{(employee?.lastName?.[0] || "")}
           </div>
@@ -108,10 +108,10 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
 
         {/* Weather */}
         {weather && (
-          <div style={{ display: "flex", gap: 16, background: "#1E293B", borderRadius: 12, padding: "12px 16px" }}>
+          <div style={{ display: "flex", gap: 16, background: "#1E293B", borderRadius: 3, padding: "12px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <Sun size={16} color="#FDE68A" />
-              <span style={{ fontSize: 14, fontWeight: 700 }}>{weather.temp || "--"}°F</span>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>{weather.temp || "--"}°F</span>
             </div>
             {weather.conditions && (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -133,23 +133,23 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
         {/* Quick actions */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
           <button onClick={onNewDoc} style={{
-            padding: "16px 18px", borderRadius: 14, border: "none", cursor: "pointer",
+            padding: "16px 18px", borderRadius: 3, border: "none", cursor: "pointer",
             background: T.accent, color: "#fff", fontFamily: T.font, display: "flex", alignItems: "center", gap: 10,
           }}>
             <Plus size={20} />
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 15, fontWeight: 700 }}>New Doc</div>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>New Doc</div>
               <div style={{ fontSize: 11, opacity: 0.7 }}>Field documentation</div>
             </div>
           </button>
           <button onClick={() => onNavigate?.("profile")} style={{
-            padding: "16px 18px", borderRadius: 14, cursor: "pointer",
+            padding: "16px 18px", borderRadius: 3, cursor: "pointer",
             background: T.card, border: `1.5px solid ${T.border}`, fontFamily: T.font,
             display: "flex", alignItems: "center", gap: 10,
           }}>
             <Clock size={20} color={todayRoster ? T.accent : T.blue} />
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.text }}>
                 {todayRoster ? "Clocked In" : "Clock In"}
               </div>
               <div style={{ fontSize: 11, color: T.textLight }}>
@@ -162,7 +162,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
         {/* Today's Route */}
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>Today's Route</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Today's Route</div>
             {totalStops > 0 && (
               <span style={{ fontSize: 12, color: T.textLight }}>
                 {completedStops}/{totalStops} done
@@ -176,7 +176,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
             </div>
           ) : todayStops.length === 0 ? (
             <div style={{
-              padding: "20px 16px", background: T.card, borderRadius: 12,
+              padding: "20px 16px", background: T.card, borderRadius: 3,
               border: `1px dashed ${T.border}`, textAlign: "center", color: T.textLight, fontSize: 14,
             }}>
               No stops scheduled today
@@ -185,26 +185,26 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
             todayStops.map((stop, i) => (
               <button key={stop.id} onClick={() => onNavigate?.("schedule")} style={{
                 display: "flex", gap: 12, padding: "14px 16px", background: T.card, width: "100%",
-                borderRadius: 12, border: `1.5px solid ${stop.isDone ? T.accentBorder : T.border}`,
+                borderRadius: 3, border: `1.5px solid ${stop.isDone ? T.accentBorder : T.border}`,
                 marginBottom: 8, alignItems: "center", cursor: "pointer", fontFamily: T.font, textAlign: "left",
               }}>
                 <div style={{
-                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  width: 36, height: 36, borderRadius: 3, flexShrink: 0,
                   background: stop.isDone ? T.accentLight : T.bg,
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   {stop.isDone
                     ? <CheckCircle2 size={18} color={T.accent} />
                     : <div style={{
-                        width: 22, height: 22, borderRadius: 6, background: stop.routeColor || T.accent,
+                        width: 22, height: 22, borderRadius: 3, background: stop.routeColor || T.accent,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 11, fontWeight: 800, color: "#fff",
+                        fontSize: 11, fontWeight: 600, color: "#fff",
                       }}>{i + 1}</div>
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontSize: 14, fontWeight: 700,
+                    fontSize: 14, fontWeight: 600,
                     color: stop.isDone ? T.textLight : T.text,
                     textDecoration: stop.isDone ? "line-through" : "none",
                   }}>{stop.account.name}</div>
@@ -222,7 +222,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
           {totalStops > 0 && (
             <button onClick={() => onNavigate?.("schedule")} style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-              padding: "10px", borderRadius: 10, border: "none", background: "transparent",
+              padding: "10px", borderRadius: 3, border: "none", background: "transparent",
               cursor: "pointer", fontFamily: T.font, color: T.accent, fontSize: 13, fontWeight: 600,
               width: "100%",
             }}>
@@ -235,7 +235,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
         {recentLogs.length > 0 && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>Recent Docs</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: T.text }}>Recent Docs</div>
               <button onClick={() => onNavigate?.("docs")} style={{
                 border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
                 fontSize: 13, color: T.accent, fontWeight: 600, display: "flex", alignItems: "center", gap: 4,
@@ -246,10 +246,10 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
             {recentLogs.slice(0, 3).map(log => (
               <div key={log.id} style={{
                 display: "flex", gap: 12, padding: "14px 16px", background: T.card,
-                borderRadius: 12, border: `1px solid ${T.border}`, marginBottom: 8, alignItems: "center",
+                borderRadius: 3, border: `1px solid ${T.border}`, marginBottom: 8, alignItems: "center",
               }}>
                 <div style={{
-                  width: 36, height: 36, borderRadius: 10, background: `${T.purple}10`,
+                  width: 36, height: 36, borderRadius: 3, background: `${T.purple}10`,
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                 }}>
                   <Droplets size={18} color={T.purple} />

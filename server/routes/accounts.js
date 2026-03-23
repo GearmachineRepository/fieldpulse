@@ -12,10 +12,14 @@ import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam, sanitizeQueryInt } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { AppError } from '../utils/AppError.js'
 import { logger } from '../utils/logger.js'
 import { getOrgId } from '../utils/db.js'
+import { createUpload, uploadToStorage } from '../middleware/upload.js'
+import supabase from '../lib/supabase.js'
 
 const router = Router()
+const upload = createUpload('uploads')
 
 // ── Generic HTTPS GET helper ──
 function httpsGet(url, label) {
@@ -348,6 +352,104 @@ router.delete('/:id/resources/:resourceId', requireAuth, validateIdParam, asyncH
     'DELETE FROM account_resources WHERE account_id = $1 AND resource_id = $2',
     [req.params.id, resourceId]
   )
+  res.json({ success: true })
+}))
+
+// ═══════════════════════════════════════════
+// Account Photos — Property/job site photos
+// ═══════════════════════════════════════════
+
+/** @route GET /api/accounts/:id/photos — List photos for an account */
+router.get('/:id/photos', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
+  const acct = await db.query('SELECT id FROM accounts WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
+  if (acct.rows.length === 0) throw new AppError('Account not found', 404)
+
+  const r = await db.query(
+    `SELECT ap.*,
+            e.first_name AS uploader_first_name,
+            e.last_name AS uploader_last_name
+     FROM account_photos ap
+     LEFT JOIN employees e ON e.id = ap.uploaded_by
+     WHERE ap.account_id = $1 AND ap.org_id = $2
+     ORDER BY ap.created_at DESC`,
+    [req.params.id, orgId]
+  )
+
+  res.json(r.rows.map(row => ({
+    id: row.id,
+    filename: row.filename,
+    originalName: row.original_name,
+    mimeType: row.mime_type,
+    sizeBytes: row.size_bytes,
+    storagePath: row.storage_path,
+    caption: row.caption,
+    uploadedBy: row.uploaded_by,
+    uploaderName: row.uploader_first_name && row.uploader_last_name
+      ? `${row.uploader_first_name} ${row.uploader_last_name}` : null,
+    createdAt: row.created_at,
+  })))
+}))
+
+/** @route POST /api/accounts/:id/photos — Upload photo(s) to an account */
+router.post('/:id/photos', requireAuth, validateIdParam, upload.single('photo'), uploadToStorage, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
+  const acct = await db.query('SELECT id FROM accounts WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
+  if (acct.rows.length === 0) throw new AppError('Account not found', 404)
+
+  if (!req.file) throw new AppError('No photo uploaded', 400)
+
+  const { caption, uploadedBy } = req.body
+  const storagePath = req.file.filename
+
+  const r = await db.query(
+    `INSERT INTO account_photos (
+       org_id, account_id, filename, original_name, mime_type,
+       size_bytes, storage_path, caption, uploaded_by
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+    [
+      orgId, req.params.id, req.file.originalname, req.file.originalname,
+      req.file.mimetype, req.file.size,
+      storagePath, caption || null,
+      uploadedBy ? parseInt(uploadedBy) : null,
+    ]
+  )
+
+  res.json({
+    id: r.rows[0].id,
+    filename: r.rows[0].filename,
+    storagePath: r.rows[0].storage_path,
+    caption: r.rows[0].caption,
+    uploadedBy: r.rows[0].uploaded_by,
+    createdAt: r.rows[0].created_at,
+  })
+}))
+
+/** @route DELETE /api/accounts/:id/photos/:photoId — Delete a photo */
+router.delete('/:id/photos/:photoId', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+  const orgId = getOrgId(req)
+  const photoId = parseInt(req.params.photoId, 10)
+  if (isNaN(photoId) || photoId < 1) throw new AppError('Invalid photo ID', 400)
+
+  const photo = await db.query(
+    'SELECT * FROM account_photos WHERE id = $1 AND account_id = $2 AND org_id = $3',
+    [photoId, req.params.id, orgId]
+  )
+  if (photo.rows.length === 0) throw new AppError('Photo not found', 404)
+
+  if (supabase && photo.rows[0].storage_path) {
+    try {
+      await supabase.storage.from('uploads').remove([photo.rows[0].storage_path])
+    } catch (err) {
+      logger.error('Failed to delete photo from storage:', err.message)
+    }
+  }
+
+  await db.query(
+    'DELETE FROM account_photos WHERE id = $1 AND org_id = $2',
+    [photoId, orgId]
+  )
+
   res.json({ success: true })
 }))
 

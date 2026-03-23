@@ -3,18 +3,20 @@
 // + Resource linking via edit modal "Resources" tab
 // ═══════════════════════════════════════════
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import {
   MapPinned, Plus, Edit3, MapPin, Phone as PhoneIcon, Navigation,
   BookOpen, Link2, X, Search, ExternalLink, Download, FileText, Loader2,
-  Settings, Trash2,
+  Settings, Trash2, Camera, Upload, Image as ImageIcon,
 } from "lucide-react"
+import AddressLink from "../components/AddressLink.jsx"
 import s from "./AccountsPage.module.css"
 import { useData } from "@/context/DataProvider.jsx"
 import {
   getAccountResources, linkAccountResource, unlinkAccountResource,
 } from "@/lib/api/accounts.js"
 import { getResources } from "@/lib/api/resources.js"
+import { getAccountPhotos, uploadAccountPhoto, deleteAccountPhoto } from "@/lib/api/accountPhotos.js"
 import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField, TextareaField,
   PageHeader, AddButton, SearchBar, ClickableCard, IconButton,
@@ -124,10 +126,14 @@ export default function AccountsPage() {
                 </div>
 
                 <div className={s.addressRow}>
-                  <MapPin size={14} color="var(--t3)" className={s.addressIcon} />
-                  <div className={s.addressText}>
-                    {acct.address}{acct.city && <>, {acct.city}</>}{acct.state && <>, {acct.state}</>}{acct.zip && <> {acct.zip}</>}
-                  </div>
+                  <AddressLink
+                    icon
+                    address={acct.address}
+                    city={acct.city}
+                    state={acct.state}
+                    zip={acct.zip}
+                    className={s.addressText}
+                  />
                 </div>
 
                 {(acct.contactName || acct.contactPhone) && (
@@ -218,7 +224,10 @@ function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
 
   const tabs = [
     { key: "details", label: "Details" },
-    ...(!isEdit ? [] : [{ key: "resources", label: "Resources" }]),
+    ...(!isEdit ? [] : [
+      { key: "photos", label: "Photos" },
+      { key: "resources", label: "Resources" },
+    ]),
   ]
 
   return (
@@ -281,6 +290,11 @@ function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
         </>
       )}
 
+      {/* Photos tab */}
+      {tab === "photos" && account.id && (
+        <AccountPhotosTab accountId={account.id} toast={toast} onClose={onClose} />
+      )}
+
       {/* Resources tab */}
       {tab === "resources" && account.id && (
         <AccountResourcesTab accountId={account.id} toast={toast} onClose={onClose} />
@@ -289,6 +303,119 @@ function AccountModal({ account, groups, onSave, onDelete, onClose, toast }) {
   )
 }
 
+
+// ═══════════════════════════════════════════
+// Account Photos Tab — Property/jobsite photos
+// ═══════════════════════════════════════════
+function AccountPhotosTab({ accountId, toast, onClose }) {
+  const [photos, setPhotos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [confirmDel, setConfirmDel] = useState(null)
+  const fileRef = useRef(null)
+
+  const load = useCallback(async () => {
+    try {
+      const data = await getAccountPhotos(accountId)
+      setPhotos(data)
+    } catch { /* empty */ }
+    setLoading(false)
+  }, [accountId])
+
+  useEffect(() => { load() }, [load])
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      await uploadAccountPhoto(accountId, file)
+      toast.show("Photo uploaded")
+      await load()
+    } catch (err) {
+      toast.show(err.message || "Upload failed")
+    }
+    setUploading(false)
+    if (fileRef.current) fileRef.current.value = ""
+  }
+
+  const handleDelete = async (photoId) => {
+    try {
+      await deleteAccountPhoto(accountId, photoId)
+      toast.show("Photo removed")
+      setConfirmDel(null)
+      await load()
+    } catch {
+      toast.show("Failed to remove")
+    }
+  }
+
+  if (loading) return <LoadingSpinner />
+
+  return (
+    <div>
+      <div className={s.resourcesHeader}>
+        <div>
+          <div className={s.resourcesCount}>
+            {photos.length} photo{photos.length !== 1 ? "s" : ""}
+          </div>
+          <div className={s.resourcesSub}>
+            Crews can preview the job site before arriving
+          </div>
+        </div>
+        <button onClick={() => fileRef.current?.click()} className={s.attachBtn} disabled={uploading}>
+          {uploading ? <Loader2 size={14} className={s.spin} /> : <Upload size={14} />}
+          {uploading ? "Uploading..." : "Upload Photo"}
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} hidden />
+      </div>
+
+      {photos.length === 0 ? (
+        <div className={s.emptyResources}>
+          <Camera size={28} color="var(--t3)" className={s.emptyResourcesIcon} />
+          <div>No photos yet</div>
+          <div className={s.emptyResourcesSub}>
+            Upload photos of the property so field crews can see what to expect
+          </div>
+        </div>
+      ) : (
+        <div className={s.photoGrid}>
+          {photos.map(p => (
+            <div key={p.id} className={s.photoCard}>
+              <div className={s.photoThumb}>
+                <ImageIcon size={24} color="var(--t3)" />
+              </div>
+              <div className={s.photoInfo}>
+                <div className={s.photoName}>{p.originalName || p.filename}</div>
+                {p.caption && <div className={s.photoCaption}>{p.caption}</div>}
+                <div className={s.photoMeta}>
+                  {p.uploaderName && <span>{p.uploaderName}</span>}
+                  {p.createdAt && <span>{new Date(p.createdAt).toLocaleDateString()}</span>}
+                </div>
+              </div>
+              <button onClick={() => setConfirmDel(p)} className={s.unlinkBtn} title="Delete photo">
+                <Trash2 size={14} color="var(--red)" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={s.resourcesFooter}>
+        <button onClick={onClose} className={s.doneBtn}>Done</button>
+      </div>
+
+      {confirmDel && (
+        <ConfirmModal
+          title="Delete photo?"
+          message={`Remove "${confirmDel.originalName || confirmDel.filename}"?`}
+          onConfirm={() => handleDelete(confirmDel.id)}
+          onCancel={() => setConfirmDel(null)}
+        />
+      )}
+    </div>
+  )
+}
 
 // ═══════════════════════════════════════════
 // Account Resources Tab — Link/unlink resources

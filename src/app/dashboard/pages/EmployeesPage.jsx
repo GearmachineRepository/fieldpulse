@@ -6,12 +6,15 @@
 import { useState, useEffect } from "react"
 import {
   UserPlus, Edit3, Shield, Eye, EyeOff, Search,
-  ChevronRight, Trash2, Phone, Mail, Hash, Award,
+  ChevronRight, Trash2, Phone, Mail, Hash, Award, Plus, Calendar, AlertTriangle,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
 import useToast from "@/hooks/useToast.js"
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from "@/lib/api/employees.js"
 import { getCrews } from "@/lib/api/crews.js"
+import {
+  getEmployeeCertifications, createCertification, deleteCertification,
+} from "@/lib/api/certifications.js"
 import DetailLayout from "../components/DetailLayout.jsx"
 import StatusBadge from "../components/StatusBadge.jsx"
 import {
@@ -88,6 +91,12 @@ export default function EmployeesPage() {
         />
       </div>
 
+      <div className={s.sidebarAction}>
+        <button className={s.addBtn} onClick={() => setEditing({})}>
+          <UserPlus size={15} /> Add Employee
+        </button>
+      </div>
+
       <div className={s.listScroll}>
         {employees.loading && !employees.data.length ? (
           Array.from({ length: 5 }).map((_, i) => (
@@ -143,11 +152,6 @@ export default function EmployeesPage() {
         )}
       </div>
 
-      <div className={s.sidebarFooter}>
-        <button className={s.addBtn} onClick={() => setEditing({})}>
-          <UserPlus size={15} /> Add Employee
-        </button>
-      </div>
     </div>
   )
 
@@ -171,10 +175,10 @@ export default function EmployeesPage() {
           />
         )}
         {selectedEmployee && activeTab === "certifications" && (
-          <div className={s.certEmpty}>
-            <Award size={28} className={s.certIcon} />
-            <div className={s.certText}>Certification tracking coming soon.</div>
-          </div>
+          <CertificationsTab
+            employee={selectedEmployee}
+            toast={toast}
+          />
         )}
       </DetailLayout>
 
@@ -275,6 +279,188 @@ function ReadField({ icon: Icon, label, value, mono }) {
         </div>
       </div>
     </div>
+  )
+}
+
+
+// ===================================================
+// Certifications Tab — Employee cert list + add modal
+// ===================================================
+function CertificationsTab({ employee, toast }) {
+  const [certs, setCerts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showAdd, setShowAdd] = useState(false)
+
+  const fetchCerts = async () => {
+    try {
+      setLoading(true)
+      const data = await getEmployeeCertifications(employee.id)
+      setCerts(data)
+    } catch {
+      toast.show("Failed to load certifications")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchCerts() }, [employee.id])
+
+  const handleAdd = async (data) => {
+    try {
+      await createCertification({ ...data, employeeId: employee.id })
+      await fetchCerts()
+      toast.show("Certification added")
+      setShowAdd(false)
+    } catch (err) {
+      toast.show(err.message || "Failed to add certification")
+    }
+  }
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteCertification(id)
+      await fetchCerts()
+      toast.show("Certification removed")
+    } catch {
+      toast.show("Failed to remove certification")
+    }
+  }
+
+  const getExpiryStatus = (expiryDate) => {
+    if (!expiryDate) return { variant: "gray", label: "No Expiry" }
+    const now = new Date()
+    const expiry = new Date(expiryDate)
+    const daysUntil = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24))
+    if (daysUntil < 0) return { variant: "red", label: "Expired" }
+    if (daysUntil <= 30) return { variant: "amber", label: "Expiring Soon" }
+    return { variant: "green", label: "Valid" }
+  }
+
+  const formatDate = (d) => {
+    if (!d) return "\u2014"
+    return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  }
+
+  if (loading) {
+    return (
+      <div className={s.certLoading}>Loading certifications...</div>
+    )
+  }
+
+  return (
+    <div className={s.certTab}>
+      <div className={s.certHeader}>
+        <div className={s.certCount}>
+          {certs.length} certification{certs.length !== 1 ? "s" : ""}
+        </div>
+        <button className={s.certAddBtn} onClick={() => setShowAdd(true)}>
+          <Plus size={14} /> Add Certification
+        </button>
+      </div>
+
+      {certs.length === 0 ? (
+        <div className={s.certEmpty}>
+          <Award size={28} className={s.certIcon} />
+          <div className={s.certText}>No certifications recorded yet.</div>
+          <button className={s.certAddBtn} onClick={() => setShowAdd(true)}>
+            <Plus size={14} /> Add First Certification
+          </button>
+        </div>
+      ) : (
+        <div className={s.certList}>
+          {certs.map(cert => {
+            const expiry = getExpiryStatus(cert.expiry_date)
+            return (
+              <div key={cert.id} className={s.certCard}>
+                <div className={s.certCardMain}>
+                  <div className={s.certCardName}>{cert.name}</div>
+                  <div className={s.certCardMeta}>
+                    {cert.cert_number && (
+                      <span className={s.certCardNum}>#{cert.cert_number}</span>
+                    )}
+                    {cert.issuing_authority && (
+                      <span className={s.certCardAuth}>{cert.issuing_authority}</span>
+                    )}
+                  </div>
+                  <div className={s.certCardDates}>
+                    <Calendar size={12} className={s.certDateIcon} />
+                    <span>Issued: {formatDate(cert.issued_date)}</span>
+                    <span className={s.certDateSep}>/</span>
+                    <span>Expires: {formatDate(cert.expiry_date)}</span>
+                  </div>
+                </div>
+                <div className={s.certCardRight}>
+                  <StatusBadge variant={expiry.variant}>{expiry.label}</StatusBadge>
+                  <button
+                    className={s.certDeleteBtn}
+                    onClick={() => handleDelete(cert.id)}
+                    title="Remove certification"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {showAdd && (
+        <AddCertificationModal
+          onClose={() => setShowAdd(false)}
+          onSave={handleAdd}
+        />
+      )}
+    </div>
+  )
+}
+
+
+// ===================================================
+// Add Certification Modal
+// ===================================================
+function AddCertificationModal({ onClose, onSave }) {
+  const [name, setName] = useState("")
+  const [certNumber, setCertNumber] = useState("")
+  const [issuingAuthority, setIssuingAuthority] = useState("")
+  const [issuedDate, setIssuedDate] = useState("")
+  const [expiryDate, setExpiryDate] = useState("")
+  const [notes, setNotes] = useState("")
+  const [saving, setSaving] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!name.trim()) return
+    setSaving(true)
+    await onSave({
+      name: name.trim(),
+      certNumber: certNumber || undefined,
+      issuingAuthority: issuingAuthority || undefined,
+      issuedDate: issuedDate || undefined,
+      expiryDate: expiryDate || undefined,
+      notes: notes || undefined,
+    })
+    setSaving(false)
+  }
+
+  return (
+    <Modal title="Add Certification" onClose={onClose}>
+      <FormField label="Certification Name *" value={name} onChange={setName} autoFocus />
+      <div className={s.formGrid}>
+        <FormField label="Cert Number" value={certNumber} onChange={setCertNumber} />
+        <FormField label="Issuing Authority" value={issuingAuthority} onChange={setIssuingAuthority} />
+      </div>
+      <div className={s.formGrid}>
+        <FormField label="Issued Date" value={issuedDate} onChange={setIssuedDate} type="date" />
+        <FormField label="Expiry Date" value={expiryDate} onChange={setExpiryDate} type="date" />
+      </div>
+      <FormField label="Notes" value={notes} onChange={setNotes} />
+      <ModalFooter
+        onClose={onClose}
+        onSave={handleSubmit}
+        saving={saving}
+        disabled={!name.trim()}
+      />
+    </Modal>
   )
 }
 

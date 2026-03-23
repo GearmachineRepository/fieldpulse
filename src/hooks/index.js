@@ -10,6 +10,8 @@ export { default as useWeather }    from './useWeather.js'
 export { default as useTheme }      from './useTheme.js'
 export { default as useNavigation } from './useNavigation.js'
 export { default as useShell }      from './useShell.js'
+export { default as useModules }    from './useModules.jsx'
+export { default as useRole }       from './useRole.js'
 
 export {
   useChemicals,

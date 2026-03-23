@@ -96,7 +96,7 @@ export function Modal({ title, onClose, children, size = "md" }) {
     })
 
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") { onClose(); return }
+      if (e.key === "Escape") { e.stopPropagation(); onClose(); return }
       if (e.key !== "Tab") return
 
       const focusable = dialog.querySelectorAll(
@@ -163,9 +163,9 @@ export function ModalFooter({ onClose, onSave, onDelete, saving, disabled, delet
 export function ConfirmModal({ title, message, onConfirm, onCancel, confirmLabel = "Remove", confirmColor }) {
   // Escape to cancel
   useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") onCancel() }
-    document.addEventListener("keydown", handler)
-    return () => document.removeEventListener("keydown", handler)
+    const handler = (e) => { if (e.key === "Escape") { e.stopImmediatePropagation(); onCancel() } }
+    document.addEventListener("keydown", handler, true)
+    return () => document.removeEventListener("keydown", handler, true)
   }, [onCancel])
 
   return (

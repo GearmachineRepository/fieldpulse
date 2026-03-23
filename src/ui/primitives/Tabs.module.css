@@ -20,7 +20,7 @@
   font-weight: var(--font-bold);
   font-family: var(--font-sans);
   cursor: pointer;
-  border-radius: 9px;
+  border-radius: 3px;
   border: none;
   background: transparent;
   color: var(--color-text-light);

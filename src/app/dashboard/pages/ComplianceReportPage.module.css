@@ -1,0 +1,426 @@
+/* ═══════════════════════════════════════════
+   Compliance Report Page
+   ═══════════════════════════════════════════ */
+
+/* ── Export Bar ── */
+.exportBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.exportBarLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.exportActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.csvBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.csvBtn:hover {
+  border-color: var(--t3);
+  color: var(--t1);
+}
+
+.pdfBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: none;
+  background: var(--amb);
+  color: var(--amb-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.pdfBtn:hover {
+  opacity: 0.88;
+}
+
+/* ── Compliance Score Banner ── */
+.scoreBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  margin-bottom: var(--space-5);
+}
+
+.scoreRing {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.scoreSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.scoreTrack {
+  fill: none;
+  stroke: var(--s2);
+  stroke-width: 3;
+}
+
+.scoreFill {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease;
+}
+
+.scoreValue {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.scoreInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.scoreTitle {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-bottom: var(--space-1);
+}
+
+.scoreDesc {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  line-height: var(--leading-relaxed);
+}
+
+.scoreWarn {
+  color: var(--red);
+  font-weight: var(--font-semibold);
+}
+
+/* ── Stats Row ── */
+.statsRow {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.statsRow > * {
+  flex: 1;
+  min-width: 140px;
+}
+
+/* ── Sections ── */
+.section {
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--bd);
+}
+
+.sectionTitle {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin: 0;
+  flex: 1;
+}
+
+.sectionCount {
+  font-family: var(--mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
+  background: var(--s2);
+  padding: 2px 8px;
+  border-radius: var(--r);
+}
+
+.sectionContent {
+  padding: var(--space-4);
+}
+
+/* ── Mini Stats (inline stat row within sections) ── */
+.miniStats {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--bd);
+  flex-wrap: wrap;
+}
+
+.miniStat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.miniStatLabel {
+  font-size: var(--text-xs);
+  color: var(--t3);
+}
+
+.miniStatValue {
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+/* ── Cert List ── */
+.certList {
+  display: flex;
+  flex-direction: column;
+}
+
+.certRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--bd);
+}
+
+.certRow:last-child {
+  border-bottom: none;
+}
+
+.certName {
+  flex: 1;
+  min-width: 0;
+}
+
+.certTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  display: block;
+}
+
+.certEmployee {
+  font-size: var(--text-xs);
+  color: var(--t3);
+}
+
+.certExpiry {
+  font-family: var(--mono);
+  font-size: var(--text-xs);
+  color: var(--t2);
+  white-space: nowrap;
+}
+
+/* ── Severity Grid ── */
+.severityGrid {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.severityItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--s2);
+  border-radius: var(--r);
+}
+
+.severityCount {
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+/* ── Empty Section State ── */
+.emptySection {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.emptySectionIcon {
+  color: var(--t3);
+  margin-bottom: var(--space-2);
+}
+
+.emptySectionTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t2);
+  margin-bottom: var(--space-1);
+}
+
+.emptySectionDesc {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  max-width: 360px;
+  margin: 0 auto;
+  line-height: var(--leading-relaxed);
+}
+
+/* ── Progress Bars (for training completion) ── */
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--bd);
+}
+
+.progressRow:last-child {
+  border-bottom: none;
+}
+
+.progressLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.progressLabel span:first-child {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  display: block;
+}
+
+.progressSub {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  font-weight: normal;
+}
+
+.progressBarWrap {
+  flex: 2;
+  height: 6px;
+  background: var(--s2);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: var(--amb);
+  border-radius: var(--r);
+  transition: width 0.3s ease;
+}
+
+.progressPercent {
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  color: var(--t2);
+  min-width: 52px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── Print Styles ── */
+@media print {
+  .exportBar {
+    display: none;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .exportBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .exportActions {
+    width: 100%;
+  }
+
+  .statsRow {
+    flex-direction: column;
+  }
+
+  .scoreBanner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .miniStats {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .progressRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+
+  .progressBarWrap {
+    width: 100%;
+  }
+
+  .certRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+
+  .severityGrid {
+    flex-direction: column;
+  }
+}

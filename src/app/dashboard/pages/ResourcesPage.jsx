@@ -129,6 +129,7 @@ export default function ResourcesPage() {
   }
 
   return (
+    <>
     <PageShell
       title="Resources"
       count={resources.data.length}
@@ -139,11 +140,8 @@ export default function ResourcesPage() {
       emptyIcon={BookOpen}
       emptyTitle="No resources yet"
       emptyDescription="Add your first document, SDS sheet, or link."
-      emptyCta={
-        <button className={s.addBtn} onClick={() => setShowAddChoice(true)}>
-          <Plus size={14} /> Add Resource
-        </button>
-      }
+      emptyCta="Add Resource"
+      onEmptyCta={() => setShowAddChoice(true)}
       actions={
         <button className={s.addBtn} onClick={() => setShowAddChoice(true)}>
           <Plus size={15} /> Add Resource
@@ -220,6 +218,8 @@ export default function ResourcesPage() {
         </div>
       )}
 
+    </PageShell>
+
       {/* Add choice modal */}
       {showAddChoice && (
         <Modal title="Add Resource" onClose={() => setShowAddChoice(false)} size="sm">
@@ -281,7 +281,7 @@ export default function ResourcesPage() {
           {toast.message}
         </div>
       )}
-    </PageShell>
+    </>
   )
 }
 

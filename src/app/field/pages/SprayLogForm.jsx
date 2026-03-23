@@ -149,7 +149,7 @@ export default function SprayLogForm({ onClose, onSubmitted }) {
               background: i <= step ? T.accent : T.border,
               transition: "background 0.3s",
             }} />
-            <span style={{ fontSize: 10, fontWeight: 700, color: i <= step ? T.accent : T.textLight }}>{s}</span>
+            <span style={{ fontSize: 10, fontWeight: 600, color: i <= step ? T.accent : T.textLight }}>{s}</span>
           </div>
         ))}
       </div>
@@ -201,7 +201,7 @@ export default function SprayLogForm({ onClose, onSubmitted }) {
       }}>
         {step > 0 && (
           <button onClick={prev} style={{
-            flex: 1, padding: "14px", borderRadius: 12, cursor: "pointer",
+            flex: 1, padding: "14px", borderRadius: 3, cursor: "pointer",
             background: "transparent", border: `1.5px solid ${T.border}`,
             color: T.textMed, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
@@ -211,16 +211,16 @@ export default function SprayLogForm({ onClose, onSubmitted }) {
         )}
         {step < 3 ? (
           <button onClick={next} disabled={!canAdvance()} style={{
-            flex: 2, padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: T.font,
+            flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
+            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: canAdvance() ? 1 : 0.4, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             Next <ArrowRight size={18} />
           </button>
         ) : (
           <button onClick={handleSubmit} disabled={submitting} style={{
-            flex: 2, padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: T.font,
+            flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
+            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: submitting ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             {submitting ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> Submitting...</> : <><Check size={18} /> Submit Log</>}
@@ -251,7 +251,7 @@ function FullScreenPage({ onClose, title, children }) {
           border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
           fontSize: 14, color: T.textLight, fontWeight: 600, padding: 0,
         }}>Cancel</button>
-        <div style={{ fontSize: 16, fontWeight: 800 }}>{title}</div>
+        <div style={{ fontSize: 16, fontWeight: 600 }}>{title}</div>
         <div style={{ width: 50 }} />
       </div>
       {children}
@@ -284,7 +284,7 @@ function StepProperty({ property, setProperty, accountId, setAccountId, accounts
 
   return (
     <div>
-      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Property & Crew</div>
+      <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Property & Crew</div>
       <div style={{ fontSize: 13, color: T.textLight, marginBottom: 20 }}>Where is this application?</div>
 
       {/* Property selector */}
@@ -293,11 +293,11 @@ function StepProperty({ property, setProperty, accountId, setAccountId, accounts
         {property ? (
           <div style={{
             display: "flex", alignItems: "center", gap: 12, padding: "14px 16px",
-            background: T.accentLight, borderRadius: 12, border: `1.5px solid ${T.accentBorder}`,
+            background: T.accentLight, borderRadius: 3, border: `1.5px solid ${T.accentBorder}`,
           }}>
             <MapPin size={18} color={T.accent} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: T.accent }}>{property}</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.accent }}>{property}</div>
             </div>
             <button onClick={() => { setProperty(""); setAccountId(null) }} style={{
               border: "none", background: "none", cursor: "pointer", padding: 4,
@@ -305,7 +305,7 @@ function StepProperty({ property, setProperty, accountId, setAccountId, accounts
           </div>
         ) : (
           <button onClick={() => setShowSearch(true)} style={{
-            width: "100%", padding: "14px 16px", borderRadius: 12,
+            width: "100%", padding: "14px 16px", borderRadius: 3,
             border: `1.5px dashed ${T.border}`, background: T.card, cursor: "pointer",
             fontFamily: T.font, fontSize: 14, color: T.textLight, textAlign: "left",
             display: "flex", alignItems: "center", gap: 10,
@@ -322,7 +322,7 @@ function StepProperty({ property, setProperty, accountId, setAccountId, accounts
             <button onClick={() => setShowSearch(false)} style={{ border: "none", background: "none", cursor: "pointer", fontFamily: T.font, color: T.textLight, fontWeight: 600 }}>Cancel</button>
             <div style={{
               display: "flex", alignItems: "center", gap: 8, flex: 1, background: T.bg,
-              borderRadius: 10, padding: "10px 14px", border: `1px solid ${T.border}`,
+              borderRadius: 3, padding: "10px 14px", border: `1px solid ${T.border}`,
             }}>
               <Search size={16} color={T.textLight} />
               <input value={searchQ} onChange={e => setSearchQ(e.target.value)} autoFocus placeholder="Search properties..."
@@ -338,7 +338,7 @@ function StepProperty({ property, setProperty, accountId, setAccountId, accounts
               }}>
                 <MapPin size={16} color={T.accent} style={{ flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{a.name}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{a.name}</div>
                   <div style={{ fontSize: 12, color: T.textLight }}>{a.address}{a.city && `, ${a.city}`}</div>
                 </div>
               </button>
@@ -411,19 +411,19 @@ function StepProducts({ products, setProducts, chemicals, equipmentList, selecte
 
   return (
     <div>
-      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Products & Equipment</div>
+      <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Products & Equipment</div>
       <div style={{ fontSize: 13, color: T.textLight, marginBottom: 20 }}>What was applied?</div>
 
       {/* Products */}
       <label style={lbl}>Products Applied *</label>
       {products.map((p, i) => (
         <div key={p.id || p.name} style={{
-          padding: "12px 14px", background: T.card, borderRadius: 12,
+          padding: "12px 14px", background: T.card, borderRadius: 3,
           border: `1px solid ${T.border}`, marginBottom: 8,
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 8 }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{p.name}</div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</div>
               <div style={{ fontSize: 11, color: T.textLight }}>EPA: {p.epa}</div>
             </div>
             <button onClick={() => removeProduct(i)} style={{ border: "none", background: "none", cursor: "pointer", padding: 4 }}>
@@ -448,7 +448,7 @@ function StepProducts({ products, setProducts, chemicals, equipmentList, selecte
       ))}
 
       <button onClick={() => setShowChemSearch(true)} style={{
-        width: "100%", padding: "12px", borderRadius: 12, border: `1.5px dashed ${T.border}`,
+        width: "100%", padding: "12px", borderRadius: 3, border: `1.5px dashed ${T.border}`,
         background: T.card, cursor: "pointer", fontFamily: T.font, fontSize: 14, fontWeight: 600,
         color: T.accent, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 20,
       }}>
@@ -460,7 +460,7 @@ function StepProducts({ products, setProducts, chemicals, equipmentList, selecte
         <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 110, display: "flex", flexDirection: "column" }}>
           <div style={{ padding: "14px 20px", display: "flex", gap: 10, alignItems: "center", borderBottom: `1px solid ${T.border}`, background: T.card }}>
             <button onClick={() => { setShowChemSearch(false); setChemSearchQ("") }} style={{ border: "none", background: "none", cursor: "pointer", fontFamily: T.font, color: T.textLight, fontWeight: 600 }}>Cancel</button>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, background: T.bg, borderRadius: 10, padding: "10px 14px", border: `1px solid ${T.border}` }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, background: T.bg, borderRadius: 3, padding: "10px 14px", border: `1px solid ${T.border}` }}>
               <Search size={16} color={T.textLight} />
               <input value={chemSearchQ} onChange={e => setChemSearchQ(e.target.value)} autoFocus placeholder="Search chemicals..."
                 style={{ flex: 1, border: "none", outline: "none", fontSize: 16, fontFamily: T.font, background: "transparent", color: T.text }} />
@@ -476,7 +476,7 @@ function StepProducts({ products, setProducts, chemicals, equipmentList, selecte
               }}>
                 <Droplets size={16} color={T.purple} />
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{c.name}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{c.name}</div>
                   <div style={{ fontSize: 12, color: T.textLight }}>EPA: {c.epa || "N/A"}{c.restricted ? " · RESTRICTED" : ""}</div>
                 </div>
               </button>
@@ -542,17 +542,17 @@ function StepConditions({ weather, setWeather, notes, setNotes, photos, setPhoto
 
   return (
     <div>
-      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Conditions & Photos</div>
+      <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Conditions & Photos</div>
       <div style={{ fontSize: 13, color: T.textLight, marginBottom: 20 }}>Weather at time of application</div>
 
       {/* Weather card */}
       {weather && (
         <div style={{
-          padding: "16px", background: T.card, borderRadius: 14,
+          padding: "16px", background: T.card, borderRadius: 3,
           border: `1.5px solid ${windHigh ? T.red : T.border}`, marginBottom: 16,
         }}>
           {windHigh && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 13, fontWeight: 700, color: T.red }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 13, fontWeight: 600, color: T.red }}>
               <AlertTriangle size={14} /> High wind — application may drift
             </div>
           )}
@@ -578,17 +578,17 @@ function StepConditions({ weather, setWeather, notes, setNotes, photos, setPhoto
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 8 }}>
         {photoPreviews.map((p, i) => (
-          <div key={p.name} style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "1", background: T.bg }}>
+          <div key={p.name} style={{ position: "relative", borderRadius: 3, overflow: "hidden", aspectRatio: "1", background: T.bg }}>
             <img src={p.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             <button onClick={() => removePhoto(i)} style={{
-              position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: 11,
+              position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%",
               background: "rgba(0,0,0,0.6)", border: "none", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}><X size={12} color="#fff" /></button>
           </div>
         ))}
         <button onClick={() => fileRef.current?.click()} style={{
-          aspectRatio: "1", borderRadius: 10, border: `2px dashed ${T.border}`,
+          aspectRatio: "1", borderRadius: 3, border: `2px dashed ${T.border}`,
           background: T.card, cursor: "pointer", display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center", gap: 4,
         }}>
@@ -606,12 +606,12 @@ function StepConditions({ weather, setWeather, notes, setNotes, photos, setPhoto
 function StepReview({ property, crewLead, crewName, license, equipmentName, totalMixVol, mixUnit, targetPest, products, weather, notes, photos, location, error }) {
   return (
     <div>
-      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Review & Submit</div>
+      <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Review & Submit</div>
       <div style={{ fontSize: 13, color: T.textLight, marginBottom: 20 }}>Confirm everything looks correct</div>
 
       {error && (
         <div style={{
-          padding: "12px 16px", background: T.redLight, borderRadius: 12,
+          padding: "12px 16px", background: T.redLight, borderRadius: 3,
           border: `1px solid #FECACA`, marginBottom: 16, fontSize: 14, fontWeight: 600, color: T.red,
         }}>{error}</div>
       )}
@@ -628,10 +628,10 @@ function StepReview({ property, crewLead, crewName, license, equipmentName, tota
         {products.map((p, i) => (
           <div key={p.id || p.name} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: i < products.length - 1 ? `1px solid ${T.border}` : "none" }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>{p.name}</div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</div>
               <div style={{ fontSize: 11, color: T.textLight }}>EPA: {p.epa}</div>
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.accent }}>{p.amount} {p.unit}</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: T.accent }}>{p.amount} {p.unit}</div>
           </div>
         ))}
       </ReviewSection>
@@ -658,7 +658,7 @@ function StepReview({ property, crewLead, crewName, license, equipmentName, tota
       {photos.length > 0 && (
         <ReviewSection title={`Photos (${photos.length})`}>
           <div style={{ display: "flex", gap: 6 }}>
-            {photos.map((_, i) => <div key={i} style={{ width: 40, height: 40, borderRadius: 8, background: T.bg, display: "flex", alignItems: "center", justifyContent: "center" }}><Camera size={16} color={T.textLight} /></div>)}
+            {photos.map((_, i) => <div key={i} style={{ width: 40, height: 40, borderRadius: 3, background: T.bg, display: "flex", alignItems: "center", justifyContent: "center" }}><Camera size={16} color={T.textLight} /></div>)}
           </div>
         </ReviewSection>
       )}
@@ -669,13 +669,13 @@ function StepReview({ property, crewLead, crewName, license, equipmentName, tota
 // ═══════════════════════════════════════════
 // Shared helpers
 // ═══════════════════════════════════════════
-const lbl = { display: "block", fontSize: 12, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }
-const inp = { width: "100%", padding: "12px 14px", borderRadius: 10, background: T.card, border: `1.5px solid ${T.border}`, color: T.text, fontSize: 16, fontFamily: T.font, outline: "none", boxSizing: "border-box", marginBottom: 12 }
+const lbl = { display: "block", fontSize: 12, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }
+const inp = { width: "100%", padding: "12px 14px", borderRadius: 3, background: T.card, border: `1.5px solid ${T.border}`, color: T.text, fontSize: 16, fontFamily: T.font, outline: "none", boxSizing: "border-box", marginBottom: 12 }
 
 function ReadOnly({ label, value, color }) {
   return (
-    <div style={{ padding: "10px 14px", background: T.card, borderRadius: 10, border: `1px solid ${T.border}` }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 2 }}>{label}</div>
+    <div style={{ padding: "10px 14px", background: T.card, borderRadius: 3, border: `1px solid ${T.border}` }}>
+      <div style={{ fontSize: 10, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 2 }}>{label}</div>
       <div style={{ fontSize: 13, fontWeight: 600, color: color || T.text }}>{value}</div>
     </div>
   )
@@ -686,8 +686,8 @@ function WeatherField({ icon: Icon, label, value, warn }) {
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <Icon size={16} color={warn ? T.red : T.textLight} />
       <div>
-        <div style={{ fontSize: 10, color: T.textLight, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
-        <div style={{ fontSize: 14, fontWeight: 700, color: warn ? T.red : T.text }}>{value}</div>
+        <div style={{ fontSize: 10, color: T.textLight, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: warn ? T.red : T.text }}>{value}</div>
       </div>
     </div>
   )
@@ -695,8 +695,8 @@ function WeatherField({ icon: Icon, label, value, warn }) {
 
 function ReviewSection({ title, children }) {
   return (
-    <div style={{ marginBottom: 16, padding: "14px 16px", background: T.card, borderRadius: 12, border: `1px solid ${T.border}` }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>{title}</div>
+    <div style={{ marginBottom: 16, padding: "14px 16px", background: T.card, borderRadius: 3, border: `1px solid ${T.border}` }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 }}>{title}</div>
       {children}
     </div>
   )

@@ -128,9 +128,23 @@
 }
 
 /* ===================================================
+   Tablet: rail stays visible as icon-only (48px)
+   =================================================== */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .rail:hover {
+    width: var(--rail-width);
+    box-shadow: none;
+  }
+
+  .rail:hover .itemLabel {
+    opacity: 0;
+  }
+}
+
+/* ===================================================
    Mobile: hide rail, use hamburger instead
    =================================================== */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .wrapper {
     display: none;
   }

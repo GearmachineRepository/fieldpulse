@@ -1,0 +1,455 @@
+/* ═══════════════════════════════════════════
+   Training Page — Sessions, Signoffs, Compliance
+   ═══════════════════════════════════════════ */
+
+/* ── Filter Bar ── */
+.filterBar {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+  max-width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t3);
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) 32px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+  box-sizing: border-box;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.searchInput:focus {
+  border-color: var(--amb);
+}
+
+.filterSelect {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+  cursor: pointer;
+}
+
+.filterSelect:focus {
+  border-color: var(--amb);
+}
+
+/* ── Name cell with icon ── */
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.nameIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r);
+  background: var(--amb-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nameText {
+  font-weight: var(--font-semibold);
+}
+
+/* ── SlidePanel detail ── */
+.detailContent {
+  padding: var(--space-4);
+}
+
+.detailActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.editBtn:hover {
+  border-color: var(--t3);
+  color: var(--t1);
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t3);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.deleteBtn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ── Detail fields ── */
+.fieldList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fieldRow {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--s2);
+  border-radius: var(--r);
+}
+
+.fieldIcon {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.fieldLabel {
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: 2px;
+}
+
+.fieldValue {
+  font-size: var(--text-sm);
+  color: var(--t1);
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+/* ── Notes ── */
+.notesSection {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  background: var(--s2);
+  border-radius: var(--r);
+}
+
+.notesLabel {
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-1);
+}
+
+.notesLabel + .notesLabel {
+  margin-top: var(--space-3);
+}
+
+.notesText {
+  font-size: var(--text-sm);
+  color: var(--t1);
+  line-height: var(--leading-relaxed);
+  white-space: pre-wrap;
+  margin-bottom: var(--space-2);
+}
+
+/* ── Sign-offs section ── */
+.signoffSection {
+  margin-top: var(--space-5);
+}
+
+.signoffHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.signoffTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.signoffBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.signoffBtn:hover {
+  border-color: var(--amb);
+  color: var(--amb);
+}
+
+.signoffEmpty {
+  text-align: center;
+  padding: var(--space-5) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--t3);
+}
+
+.signoffList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.signoffRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--s2);
+  border-radius: var(--r);
+  border-left: 3px solid var(--grn);
+}
+
+.signoffName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.signoffDate {
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  color: var(--t3);
+}
+
+.signoffNote {
+  width: 100%;
+  font-size: var(--text-xs);
+  color: var(--t2);
+}
+
+/* ── Signoff Modal ── */
+.signoffModalDesc {
+  font-size: var(--text-sm);
+  color: var(--t2);
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-relaxed);
+}
+
+.signoffModalEmpty {
+  text-align: center;
+  padding: var(--space-5) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--t3);
+}
+
+.signoffSearchWrap {
+  position: relative;
+  margin-bottom: var(--space-3);
+}
+
+.signoffSearchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t3);
+}
+
+.signoffSearchInput {
+  width: 100%;
+  padding: var(--space-2) var(--space-3) var(--space-2) 32px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.signoffSearchInput:focus {
+  border-color: var(--amb);
+}
+
+.signoffPickList {
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.signoffPickItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: left;
+}
+
+.signoffPickItem:hover {
+  border-color: var(--amb);
+  background: var(--s2);
+}
+
+.signoffPickItem:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.signoffPickName {
+  font-weight: var(--font-semibold);
+}
+
+.signoffModalFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--bd);
+}
+
+.cancelBtn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.cancelBtn:hover {
+  border-color: var(--t3);
+  color: var(--t1);
+}
+
+/* ── Buttons ── */
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: none;
+  background: var(--amb);
+  color: var(--amb-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.addBtn:hover {
+  opacity: 0.88;
+}
+
+/* ── Form ── */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-5);
+  background: var(--t1);
+  color: var(--s1);
+  border-radius: var(--r);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .searchWrap {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .filterSelect {
+    min-width: 0;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}

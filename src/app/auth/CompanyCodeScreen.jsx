@@ -50,12 +50,12 @@ export default function CompanyCodeScreen({ onRegistered }) {
       {/* Header */}
       <div style={{ background: T.sidebar, padding: "40px 20px 36px", textAlign: "center" }}>
         <div style={{
-          width: 56, height: 56, borderRadius: 16, background: T.accent, margin: "0 auto 14px",
+          width: 56, height: 56, borderRadius: 3, background: T.accent, margin: "0 auto 14px",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           <Leaf size={30} color="#fff" />
         </div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#fff" }}>CruPoint</div>
+        <div style={{ fontSize: 24, fontWeight: 600, color: "#fff" }}>CruPoint</div>
         <div style={{ fontSize: 14, color: "#64748B", marginTop: 6 }}>Field App</div>
       </div>
 
@@ -63,12 +63,12 @@ export default function CompanyCodeScreen({ onRegistered }) {
         {/* Welcome message */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{
-            width: 48, height: 48, borderRadius: 14, background: T.blueLight, margin: "0 auto 14px",
+            width: 48, height: 48, borderRadius: 3, background: T.blueLight, margin: "0 auto 14px",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <Building2 size={24} color={T.blue} />
           </div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: T.text, marginBottom: 6 }}>
+          <div style={{ fontSize: 20, fontWeight: 600, color: T.text, marginBottom: 6 }}>
             Connect to your company
           </div>
           <div style={{ fontSize: 14, color: T.textLight, lineHeight: 1.5 }}>
@@ -80,7 +80,7 @@ export default function CompanyCodeScreen({ onRegistered }) {
         {error && (
           <div style={{
             display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
-            background: T.redLight, borderRadius: 12, marginBottom: 16,
+            background: T.redLight, borderRadius: 3, marginBottom: 16,
             border: "1px solid #FECACA",
           }}>
             <AlertCircle size={18} color={T.red} style={{ flexShrink: 0 }} />
@@ -105,9 +105,9 @@ export default function CompanyCodeScreen({ onRegistered }) {
             autoCapitalize="characters"
             autoComplete="off"
             style={{
-              width: "100%", padding: "16px 18px", borderRadius: 12,
+              width: "100%", padding: "16px 18px", borderRadius: 3,
               background: T.card, border: `1.5px solid ${error ? T.red : T.border}`,
-              color: T.text, fontSize: 18, fontWeight: 700, fontFamily: T.font,
+              color: T.text, fontSize: 18, fontWeight: 600, fontFamily: T.font,
               letterSpacing: 1, textAlign: "center", outline: "none",
               boxSizing: "border-box",
               transition: "border-color 0.15s",
@@ -120,8 +120,8 @@ export default function CompanyCodeScreen({ onRegistered }) {
           onClick={handleSubmit}
           disabled={submitting || !code.trim()}
           style={{
-            width: "100%", padding: "16px", borderRadius: 12, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: T.font,
+            width: "100%", padding: "16px", borderRadius: 3, border: "none", cursor: "pointer",
+            background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
             opacity: (submitting || !code.trim()) ? 0.5 : 1,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             boxShadow: "0 4px 14px rgba(47,111,237,0.2)",
@@ -154,9 +154,9 @@ export default function CompanyCodeScreen({ onRegistered }) {
         <button
           onClick={() => setScannerOpen(true)}
           style={{
-            width: "100%", padding: "16px", borderRadius: 12, cursor: "pointer",
+            width: "100%", padding: "16px", borderRadius: 3, cursor: "pointer",
             background: T.card, border: `1.5px solid ${T.border}`,
-            color: T.text, fontSize: 15, fontWeight: 700, fontFamily: T.font,
+            color: T.text, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
           }}
         >
@@ -169,10 +169,10 @@ export default function CompanyCodeScreen({ onRegistered }) {
 
         {/* Help text */}
         <div style={{
-          marginTop: 32, padding: "16px 18px", background: T.card, borderRadius: 12,
+          marginTop: 32, padding: "16px 18px", background: T.card, borderRadius: 3,
           border: `1px solid ${T.border}`,
         }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 6 }}>
             Don't have a code?
           </div>
           <div style={{ fontSize: 13, color: T.textLight, lineHeight: 1.5 }}>

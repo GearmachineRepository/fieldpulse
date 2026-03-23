@@ -108,14 +108,14 @@ export default function QRScanner({ open, onClose, onScan }) {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "16px 20px", background: "rgba(0,0,0,0.8)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#fff", fontWeight: 700, fontSize: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#fff", fontWeight: 600, fontSize: 16 }}>
           <Camera size={20} />
           Scan QR Code
         </div>
         <button
           onClick={() => { stopCamera(); onClose() }}
           style={{
-            background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 8,
+            background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 3,
             padding: 8, cursor: "pointer", display: "flex",
           }}
         >
@@ -134,8 +134,8 @@ export default function QRScanner({ open, onClose, onScan }) {
             <button
               onClick={() => { stopCamera(); onClose() }}
               style={{
-                marginTop: 20, padding: "14px 28px", borderRadius: 12, border: "none",
-                background: T.accent, color: "#fff", fontSize: 15, fontWeight: 700,
+                marginTop: 20, padding: "14px 28px", borderRadius: 3, border: "none",
+                background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -154,7 +154,7 @@ export default function QRScanner({ open, onClose, onScan }) {
             <div style={{
               position: "absolute", width: 240, height: 240,
               border: "3px solid rgba(255,255,255,0.8)",
-              borderRadius: 20, pointerEvents: "none",
+              borderRadius: 3, pointerEvents: "none",
             }} />
           </>
         )}

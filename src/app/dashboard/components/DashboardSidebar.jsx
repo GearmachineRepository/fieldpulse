@@ -8,13 +8,14 @@
 import { useCallback, useMemo } from "react"
 import { ChevronDown } from "lucide-react"
 import { SECTIONS, getSectionPages, isSinglePage } from "@/app/dashboard/nav-sections.js"
-import { ENABLED_MODULES } from "@/app/modules.js"
+import useModules from "@/hooks/useModules.jsx"
 import useAuth from "@/hooks/useAuth.jsx"
 import { APP } from "@/config/app.js"
 import s from "./DashboardSidebar.module.css"
 
 export default function DashboardSidebar({ activePage, activeSection, onNavigate, onSelectSection, open, onClose }) {
   const { admin } = useAuth()
+  const { isEnabled, enabledModules } = useModules()
 
   const section = useMemo(
     () => SECTIONS.find(sec => sec.key === activeSection),
@@ -22,14 +23,15 @@ export default function DashboardSidebar({ activePage, activeSection, onNavigate
   )
 
   const pages = useMemo(
-    () => getSectionPages(activeSection),
-    [activeSection]
+    () => getSectionPages(activeSection)
+      .filter(page => !page.module || isEnabled(page.module)),
+    [activeSection, isEnabled]
   )
 
   // For mobile: all sections with their pages
   const allSections = useMemo(
-    () => SECTIONS.filter(sec => !(sec.dynamic && ENABLED_MODULES.length === 0)),
-    []
+    () => SECTIONS.filter(sec => !(sec.dynamic && enabledModules.length === 0)),
+    [enabledModules]
   )
 
   const handleNav = useCallback((key) => {
@@ -114,6 +116,7 @@ export default function DashboardSidebar({ activePage, activeSection, onNavigate
         <div className={s.mobileNav}>
           {allSections.map(sec => {
             const secPages = getSectionPages(sec.key)
+              .filter(page => !page.module || isEnabled(page.module))
             const isSingle = isSinglePage(sec)
             return (
               <div key={sec.key} className={s.group}>

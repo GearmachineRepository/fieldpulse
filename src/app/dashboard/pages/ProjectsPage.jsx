@@ -1,6 +1,6 @@
 // ===================================================
 // Projects Page — Phase 3A: List-Detail Split Layout
-// Uses DetailLayout, usePageData, FilterPill, StatusBadge
+// Uses DetailLayout, usePageData, StatusBadge
 // ===================================================
 
 import { useState, useEffect } from "react"
@@ -8,6 +8,7 @@ import {
   Plus, Edit3, Search, ChevronRight, Settings, Trash2,
   Link2, X, ExternalLink, FileText, BookOpen, Clock,
 } from "lucide-react"
+import AddressLink from "../components/AddressLink.jsx"
 import s from "./ProjectsPage.module.css"
 import usePageData from "@/hooks/usePageData.js"
 import useToast from "@/hooks/useToast.js"
@@ -21,7 +22,6 @@ import {
 import { getResources } from "@/lib/api/resources.js"
 import DetailLayout from "../components/DetailLayout.jsx"
 import StatusBadge from "../components/StatusBadge.jsx"
-import FilterPill from "../components/FilterPill.jsx"
 import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField, TextareaField,
   LoadingSpinner,
@@ -195,34 +195,35 @@ export default function ProjectsPage() {
         />
       </div>
 
-      {/* Filter pills */}
-      <div className={s.pillRow}>
-        <FilterPill
-          label="All"
-          count={projects.data.length}
-          color="var(--amb)"
-          active={!filterGroup}
-          onClick={() => setFilterGroup("")}
-        />
-        {groups.data.map(g => {
-          const count = projects.data.filter(a => a.group_id === g.id).length
-          return (
-            <FilterPill
-              key={g.id}
-              label={g.name}
-              count={count}
-              color={g.color}
-              active={filterGroup === g.id}
-              onClick={() => setFilterGroup(filterGroup === g.id ? "" : g.id)}
-            />
-          )
-        })}
+      {/* Group filter */}
+      <div className={s.filterRow}>
+        <select
+          value={filterGroup}
+          onChange={e => setFilterGroup(e.target.value)}
+          className={s.filterSelect}
+        >
+          <option value="">All Groups ({projects.data.length})</option>
+          {groups.data.map(g => {
+            const count = projects.data.filter(a => a.group_id === g.id).length
+            return (
+              <option key={g.id} value={g.id}>
+                {g.name} ({count})
+              </option>
+            )
+          })}
+        </select>
         <button
           onClick={() => setManagingGroups(true)}
           className={s.manageGroupsBtn}
           title="Manage Groups"
         >
           <Settings size={14} color="var(--t3)" />
+        </button>
+      </div>
+
+      <div className={s.sidebarAction}>
+        <button className={s.addBtn} onClick={() => setEditing({})}>
+          <Plus size={15} /> New Project
         </button>
       </div>
 
@@ -249,7 +250,7 @@ export default function ProjectsPage() {
                 <div className={s.listItemContent}>
                   <div className={s.listItemName}>{acct.name}</div>
                   <div className={s.listItemAddr}>
-                    {[acct.address, acct.city, acct.state].filter(Boolean).join(", ")}
+                    <AddressLink address={acct.address} city={acct.city} state={acct.state} />
                   </div>
                 </div>
                 <div className={s.listItemRight}>
@@ -266,12 +267,6 @@ export default function ProjectsPage() {
         )}
       </div>
 
-      {/* Bottom add button */}
-      <div className={s.sidebarFooter}>
-        <button className={s.addBtn} onClick={() => setEditing({})}>
-          <Plus size={15} /> New Project
-        </button>
-      </div>
     </div>
   )
 
@@ -426,10 +421,10 @@ function DetailsTab({ project, groups, isEditMode, onEdit, onCancel, onSave, onD
         </div>
 
         <div className={s.fieldGrid}>
-          <ReadField label="Address" value={project.address} />
-          <ReadField label="City" value={project.city} />
-          <ReadField label="State" value={project.state} />
-          <ReadField label="ZIP" value={project.zip} mono />
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={{ fontSize: "var(--text-xs)", color: "var(--t3)", marginBottom: "var(--space-1)" }}>Address</div>
+            <AddressLink icon address={project.address} city={project.city} state={project.state} zip={project.zip} />
+          </div>
           <ReadField label="Contact Name" value={project.contactName} />
           <ReadField label="Contact Phone" value={project.contactPhone} mono />
           <ReadField label="Contact Email" value={project.contactEmail} />

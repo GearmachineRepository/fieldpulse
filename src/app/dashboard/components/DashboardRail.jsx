@@ -7,12 +7,13 @@
 
 import { Fragment } from "react"
 import { SECTIONS } from "@/app/dashboard/nav-sections.js"
-import { ENABLED_MODULES } from "@/app/modules.js"
+import useModules from "@/hooks/useModules.jsx"
 import s from "./DashboardRail.module.css"
 
 export default function DashboardRail({ activeSection, onSelectSection }) {
+  const { enabledModules } = useModules()
   const sections = SECTIONS.filter(sec =>
-    !(sec.dynamic && ENABLED_MODULES.length === 0)
+    !(sec.dynamic && enabledModules.length === 0)
   )
 
   return (

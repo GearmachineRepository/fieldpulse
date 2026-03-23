@@ -5,7 +5,7 @@
 .wrapper {
   background: var(--color-card);
   border: 1px solid var(--color-card-border);
-  border-radius: 12px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
@@ -23,7 +23,7 @@
   padding: 12px 16px;
   text-align: left;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-light);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -114,7 +114,7 @@
 
 .pageBtn {
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 3px;
   border: 1px solid var(--color-card-border);
   background: var(--color-card);
   cursor: pointer;
@@ -137,7 +137,20 @@
 
 /* ── Responsive ── */
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+  .wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table th:first-child,
+  .table td:first-child {
+    position: sticky;
+    left: 0;
+    background: inherit;
+    z-index: 1;
+  }
+
   .th, .td {
     padding: 10px 12px;
   }

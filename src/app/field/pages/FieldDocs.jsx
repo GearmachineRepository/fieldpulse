@@ -36,10 +36,10 @@ export default function FieldDocs() {
   return (
     <div>
       <div style={{ padding: "20px 20px 0" }}>
-        <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 16, color: T.text }}>My Docs</div>
+        <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 16, color: T.text }}>My Docs</div>
         <div style={{
           display: "flex", alignItems: "center", gap: 8, background: T.card,
-          borderRadius: 12, padding: "12px 14px", border: `1px solid ${T.border}`, marginBottom: 16,
+          borderRadius: 3, padding: "12px 14px", border: `1px solid ${T.border}`, marginBottom: 16,
         }}>
           <Search size={18} color={T.textLight} />
           <input value={searchQ} onChange={e => setSearchQ(e.target.value)}
@@ -55,11 +55,11 @@ export default function FieldDocs() {
           </div>
         ) : filtered.length === 0 ? (
           <div style={{
-            padding: "32px 16px", background: T.card, borderRadius: 14,
+            padding: "32px 16px", background: T.card, borderRadius: 3,
             border: `1px dashed ${T.border}`, textAlign: "center",
           }}>
             <FileText size={32} color={T.textLight} strokeWidth={1} style={{ margin: "0 auto 12px" }} />
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 4 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 4 }}>
               {searchQ ? "No matches" : "No docs yet"}
             </div>
             <div style={{ fontSize: 13, color: T.textLight }}>
@@ -70,18 +70,18 @@ export default function FieldDocs() {
           filtered.map(log => (
             <button key={log.id} onClick={() => setViewing(log)} style={{
               display: "flex", gap: 14, padding: 16, background: T.card,
-              borderRadius: 14, border: `1px solid ${T.border}`, marginBottom: 10,
+              borderRadius: 3, border: `1px solid ${T.border}`, marginBottom: 10,
               width: "100%", cursor: "pointer", fontFamily: T.font, textAlign: "left",
             }}>
               <div style={{
-                width: 42, height: 42, borderRadius: 10, background: `${T.purple}10`,
+                width: 42, height: 42, borderRadius: 3, background: `${T.purple}10`,
                 display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
               }}>
                 <Droplets size={20} color={T.purple} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>{log.property}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: T.text }}>{log.property}</div>
                   <div style={{ fontSize: 12, color: T.textLight, flexShrink: 0 }}>{log.date}</div>
                 </div>
                 <div style={{ fontSize: 13, color: T.textMed, marginTop: 2 }}>
@@ -123,12 +123,12 @@ function DocDetail({ log, onClose }) {
           border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
           fontSize: 14, color: T.accent, fontWeight: 600,
         }}>← Back</button>
-        <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Spray Log</div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: T.text }}>Spray Log</div>
         <div style={{ width: 60 }} />
       </div>
 
       <div style={{ padding: 20 }}>
-        <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 4, color: T.text }}>{log.property}</div>
+        <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 4, color: T.text }}>{log.property}</div>
         <div style={{ fontSize: 13, color: T.textLight, marginBottom: 20 }}>{log.date} at {log.time}</div>
 
         {/* Info cards */}
@@ -143,7 +143,7 @@ function DocDetail({ log, onClose }) {
         {log.weather && (log.weather.temp || log.weather.windSpeed) && (
           <div style={{
             display: "flex", gap: 12, padding: "12px 16px", background: T.card,
-            borderRadius: 12, border: `1px solid ${T.border}`, marginBottom: 20, flexWrap: "wrap",
+            borderRadius: 3, border: `1px solid ${T.border}`, marginBottom: 20, flexWrap: "wrap",
           }}>
             {log.weather.temp && <span style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 4 }}><Thermometer size={14} color={T.textLight} /> {log.weather.temp}°F</span>}
             {log.weather.humidity && <span style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 4 }}><Droplets size={14} color={T.textLight} /> {log.weather.humidity}%</span>}
@@ -154,17 +154,17 @@ function DocDetail({ log, onClose }) {
 
         {/* Products */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, color: T.text }}>Products ({log.products?.length || 0})</div>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: T.text }}>Products ({log.products?.length || 0})</div>
           {(log.products || []).map((p) => (
             <div key={p.id || p.name} style={{
               display: "flex", justifyContent: "space-between", padding: "12px 16px",
-              background: T.card, borderRadius: 10, border: `1px solid ${T.border}`, marginBottom: 6,
+              background: T.card, borderRadius: 3, border: `1px solid ${T.border}`, marginBottom: 6,
             }}>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{p.name}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{p.name}</div>
                 {p.epa && <div style={{ fontSize: 12, color: T.textLight }}>EPA: {p.epa}</div>}
               </div>
-              {p.ozConcentrate && <div style={{ fontSize: 14, fontWeight: 700, color: T.accent }}>{p.ozConcentrate}</div>}
+              {p.ozConcentrate && <div style={{ fontSize: 14, fontWeight: 600, color: T.accent }}>{p.ozConcentrate}</div>}
             </div>
           ))}
         </div>
@@ -172,11 +172,11 @@ function DocDetail({ log, onClose }) {
         {/* Photos */}
         {log.photos && log.photos.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, color: T.text }}>Photos ({log.photos.length})</div>
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: T.text }}>Photos ({log.photos.length})</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
               {log.photos.map((p) => (
                 <a key={p.id || p.filename} href={`/uploads/${p.filename}`} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1", background: T.bg }}>
+                  style={{ display: "block", borderRadius: 3, overflow: "hidden", aspectRatio: "1", background: T.bg }}>
                   <img src={`/uploads/${p.filename}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </a>
               ))}
@@ -187,7 +187,7 @@ function DocDetail({ log, onClose }) {
         {/* Notes */}
         {log.notes && (
           <div style={{
-            padding: "12px 16px", background: T.card, borderRadius: 12,
+            padding: "12px 16px", background: T.card, borderRadius: 3,
             border: `1px solid ${T.border}`, fontSize: 14, color: T.textMed, lineHeight: 1.6,
           }}>{log.notes}</div>
         )}
@@ -198,10 +198,10 @@ function DocDetail({ log, onClose }) {
 
 function InfoChip({ icon: Icon, label, value }) {
   return (
-    <div style={{ padding: "10px 14px", background: T.card, borderRadius: 10, border: `1px solid ${T.border}` }}>
+    <div style={{ padding: "10px 14px", background: T.card, borderRadius: 3, border: `1px solid ${T.border}` }}>
       <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
         <Icon size={12} color={T.textLight} />
-        <span style={{ fontSize: 10, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.3 }}>{label}</span>
+        <span style={{ fontSize: 10, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.3 }}>{label}</span>
       </div>
       <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{value || "—"}</div>
     </div>

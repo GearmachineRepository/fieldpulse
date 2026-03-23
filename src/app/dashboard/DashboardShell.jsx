@@ -15,6 +15,7 @@ import { Outlet, Link, useNavigate as useRouterNavigate } from "react-router-dom
 import { Loader2, Menu, Plus } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
+import { ModulesProvider } from "@/hooks/useModules.jsx"
 import useNavigation from "@/hooks/useNavigation.js"
 import useShell from "@/hooks/useShell.js"
 import useTheme from "@/hooks/useTheme.js"
@@ -50,6 +51,7 @@ export default function DashboardShell() {
   const dateStr = today.toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" }).toUpperCase()
 
   return (
+    <ModulesProvider>
     <div className={s.shell}>
       {/* Section rail */}
       <DashboardRail
@@ -103,5 +105,6 @@ export default function DashboardShell() {
         </main>
       </div>
     </div>
+    </ModulesProvider>
   )
 }

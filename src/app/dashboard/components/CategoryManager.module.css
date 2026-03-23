@@ -1,0 +1,138 @@
+/* ═══════════════════════════════════════════
+   CategoryManager — Modal for managing categories
+   ═══════════════════════════════════════════ */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-4);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.empty {
+  text-align: center;
+  padding: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--t3);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--bd);
+  gap: var(--space-2);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.catName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  flex: 1;
+  min-width: 0;
+}
+
+.rowActions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--t3);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.iconBtn:hover {
+  background: var(--s2);
+  color: var(--t1);
+}
+
+.deleteBtn:hover {
+  color: var(--red);
+}
+
+/* ── Inline edit ── */
+.editRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.editInput {
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--r);
+  border: 1px solid var(--amb);
+  background: var(--s2);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+}
+
+/* ── Add row ── */
+.addRow {
+  display: flex;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--bd);
+}
+
+.addInput {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+}
+
+.addInput:focus {
+  border-color: var(--amb);
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: none;
+  background: var(--amb);
+  color: var(--amb-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.addBtn:hover {
+  opacity: 0.88;
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

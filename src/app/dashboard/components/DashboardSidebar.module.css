@@ -280,9 +280,37 @@
 .mobileNav::-webkit-scrollbar-thumb { background: var(--sb-divider); }
 
 /* ===================================================
+   Tablet: hide sidebar, keep rail visible
+   =================================================== */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .sidebar.open {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 50;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .backdrop {
+    display: none;
+  }
+
+  .backdropOpen {
+    display: block;
+  }
+}
+
+/* ===================================================
    Mobile: overlay mode — full width from left edge
    =================================================== */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .desktopNav {
     display: none;
   }

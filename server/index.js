@@ -32,6 +32,13 @@ import accountGroupRoutes from './routes/accountGroups.js'
 import scheduleEventRoutes from './routes/scheduleEvents.js'
 import resourceRoutes from './routes/resources.js'
 import servicePlanRoutes from './routes/servicePlans.js'
+import categoryRoutes from './routes/categories.js'
+import moduleRoutes from './routes/modules.js'
+import certificationRoutes from './routes/certifications.js'
+import trainingRoutes from './routes/training.js'
+import incidentRoutes from './routes/incidents.js'
+import sdsRoutes from './routes/sds.js'
+import organizationRoutes from './routes/organization.js'
 
 import { createUpload, uploadToStorage } from './middleware/upload.js'
 import { notFound, errorHandler } from './middleware/error.js'
@@ -149,6 +156,13 @@ app.use('/api/account-groups', accountGroupRoutes)
 app.use('/api/schedule-events', scheduleEventRoutes)
 app.use('/api/resources', resourceRoutes)
 app.use('/api/service-plans', servicePlanRoutes)
+app.use('/api/categories', categoryRoutes)
+app.use('/api/modules', moduleRoutes)
+app.use('/api/certifications', certificationRoutes)
+app.use('/api/training', trainingRoutes)
+app.use('/api/incidents', incidentRoutes)
+app.use('/api/sds', sdsRoutes)
+app.use('/api/organization', organizationRoutes)
 
 // ── Health check ──
 app.get('/api/health', async (req, res) => {

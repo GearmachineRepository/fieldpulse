@@ -76,22 +76,22 @@ export default function AdminLoginPage() {
         {/* Brand */}
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <div style={{
-            width: 52, height: 52, borderRadius: 14, background: T.accent, margin: "0 auto 14px",
+            width: 52, height: 52, borderRadius: 3, background: T.accent, margin: "0 auto 14px",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <Leaf size={28} color="#fff" />
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: T.text, letterSpacing: "-0.5px" }}>CruPoint</div>
+          <div style={{ fontSize: 26, fontWeight: 600, color: T.text, letterSpacing: "-0.5px" }}>CruPoint</div>
           <div style={{ fontSize: 14, color: T.textLight, marginTop: 4 }}>Sign in to your dashboard</div>
         </div>
 
         <div style={{
-          background: T.card, borderRadius: 16, padding: 32,
+          background: T.card, borderRadius: 3, padding: 32,
           border: `1px solid ${T.border}`, boxShadow: T.shadowMd,
         }}>
           {error && (
             <div style={{
-              padding: "12px 16px", background: T.redLight, borderRadius: 10,
+              padding: "12px 16px", background: T.redLight, borderRadius: 3,
               color: T.red, fontSize: 14, fontWeight: 600, marginBottom: 20,
               border: `1px solid #FECACA`,
             }}>
@@ -107,7 +107,7 @@ export default function AdminLoginPage() {
             </label>
             <div style={{
               display: "flex", alignItems: "center", gap: 10, padding: "0 14px",
-              background: T.bg, borderRadius: 12, border: `1.5px solid ${T.border}`,
+              background: T.bg, borderRadius: 3, border: `1.5px solid ${T.border}`,
               transition: "border-color 0.15s",
             }}>
               <Mail size={18} color={T.textLight} />
@@ -135,7 +135,7 @@ export default function AdminLoginPage() {
             </label>
             <div style={{
               display: "flex", alignItems: "center", gap: 10, padding: "0 14px",
-              background: T.bg, borderRadius: 12, border: `1.5px solid ${T.border}`,
+              background: T.bg, borderRadius: 3, border: `1.5px solid ${T.border}`,
               transition: "border-color 0.15s",
             }}>
               <Lock size={18} color={T.textLight} />
@@ -163,8 +163,8 @@ export default function AdminLoginPage() {
             onClick={handleSubmit}
             disabled={submitting || !email.trim() || !password}
             style={{
-              width: "100%", padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
-              background: T.accent, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: T.font,
+              width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
+              background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
               opacity: (submitting || !email.trim() || !password) ? 0.5 : 1,
               transition: "opacity 0.15s",
               boxShadow: "0 4px 14px rgba(47,111,237,0.2)",
@@ -190,26 +190,26 @@ export default function AdminLoginPage() {
             display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
           }}>
             <div style={{
-              width: "100%", maxWidth: 400, background: T.card, borderRadius: 16, padding: 32,
+              width: "100%", maxWidth: 400, background: T.card, borderRadius: 4, padding: 32,
               border: `1px solid ${T.border}`, boxShadow: T.shadowMd,
             }}>
               {forgotSent ? (
                 <>
                   <div style={{ textAlign: "center", marginBottom: 20 }}>
                     <div style={{
-                      width: 48, height: 48, borderRadius: 12, background: T.accentLight, margin: "0 auto 12px",
+                      width: 48, height: 48, borderRadius: 3, background: T.accentLight, margin: "0 auto 12px",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
                       <Check size={24} color={T.accent} />
                     </div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: T.text, marginBottom: 6 }}>Check your email</div>
+                    <div style={{ fontSize: 18, fontWeight: 600, color: T.text, marginBottom: 6 }}>Check your email</div>
                     <div style={{ fontSize: 14, color: T.textLight, lineHeight: 1.5 }}>
                       If an account exists for <strong style={{ color: T.text }}>{forgotEmail}</strong>, we sent a password reset link.
                     </div>
                   </div>
                   <button onClick={() => setShowForgot(false)} style={{
-                    width: "100%", padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
-                    background: T.accent, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: T.font,
+                    width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
+                    background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
                   }}>
                     Back to Sign In
                   </button>
@@ -217,13 +217,13 @@ export default function AdminLoginPage() {
               ) : (
                 <>
                   <div style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: T.text, marginBottom: 6 }}>Reset your password</div>
+                    <div style={{ fontSize: 18, fontWeight: 600, color: T.text, marginBottom: 6 }}>Reset your password</div>
                     <div style={{ fontSize: 14, color: T.textLight }}>Enter your email and we'll send a reset link.</div>
                   </div>
                   <div style={{ marginBottom: 20 }}>
                     <div style={{
                       display: "flex", alignItems: "center", gap: 10, padding: "0 14px",
-                      background: T.bg, borderRadius: 12, border: `1.5px solid ${T.border}`,
+                      background: T.bg, borderRadius: 3, border: `1.5px solid ${T.border}`,
                     }}>
                       <Mail size={18} color={T.textLight} />
                       <input
@@ -239,15 +239,15 @@ export default function AdminLoginPage() {
                   </div>
                   <div style={{ display: "flex", gap: 10 }}>
                     <button onClick={() => setShowForgot(false)} style={{
-                      flex: 1, padding: "14px", borderRadius: 12, cursor: "pointer",
+                      flex: 1, padding: "14px", borderRadius: 3, cursor: "pointer",
                       background: "transparent", border: `1.5px solid ${T.border}`,
                       color: T.textMed, fontSize: 15, fontWeight: 600, fontFamily: T.font,
                     }}>
                       Cancel
                     </button>
                     <button onClick={handleForgot} disabled={forgotSubmitting || !forgotEmail.trim()} style={{
-                      flex: 2, padding: "14px", borderRadius: 12, border: "none", cursor: "pointer",
-                      background: T.accent, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: T.font,
+                      flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
+                      background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
                       opacity: (forgotSubmitting || !forgotEmail.trim()) ? 0.5 : 1,
                     }}>
                       {forgotSubmitting ? "Sending..." : "Send Reset Link"}

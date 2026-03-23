@@ -29,17 +29,17 @@ export default function FieldProfile() {
       {/* Profile card */}
       <div style={{
         display: "flex", alignItems: "center", gap: 16, marginBottom: 24,
-        padding: 20, background: T.card, borderRadius: 16, border: `1px solid ${T.border}`,
+        padding: 20, background: T.card, borderRadius: 3, border: `1px solid ${T.border}`,
       }}>
         <div style={{
-          width: 56, height: 56, borderRadius: 14, background: T.accent,
+          width: 56, height: 56, borderRadius: 3, background: T.accent,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 22, fontWeight: 800, color: "#fff", flexShrink: 0,
+          fontSize: 22, fontWeight: 600, color: "#fff", flexShrink: 0,
         }}>
           {(employee?.firstName?.[0] || "")}{(employee?.lastName?.[0] || "")}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: T.text }}>
+          <div style={{ fontSize: 18, fontWeight: 600, color: T.text }}>
             {employee?.firstName} {employee?.lastName}
           </div>
           <div style={{ fontSize: 13, color: T.textLight }}>
@@ -72,14 +72,14 @@ function InfoCard({ icon: Icon, label, value, placeholder, color }) {
   const hasValue = !!value
   return (
     <div style={{
-      padding: "14px 16px", background: T.card, borderRadius: 12,
+      padding: "14px 16px", background: T.card, borderRadius: 3,
       border: `1px solid ${T.border}`,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
         <Icon size={14} color={hasValue ? color : T.textLight} />
-        <span style={{ fontSize: 10, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</span>
+        <span style={{ fontSize: 10, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</span>
       </div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: hasValue ? T.text : T.textLight }}>
+      <div style={{ fontSize: 14, fontWeight: 600, color: hasValue ? T.text : T.textLight }}>
         {value || placeholder}
       </div>
     </div>
@@ -90,7 +90,7 @@ function MenuButton({ icon: Icon, label, sublabel, color, onClick }) {
   return (
     <button onClick={onClick} style={{
       display: "flex", alignItems: "center", gap: 14, width: "100%",
-      padding: "16px 18px", background: T.card, borderRadius: 12,
+      padding: "16px 18px", background: T.card, borderRadius: 3,
       border: `1px solid ${T.border}`, cursor: "pointer", fontFamily: T.font,
     }}>
       <Icon size={20} color={color} />
@@ -120,7 +120,7 @@ function CertsView({ employee, onBack }) {
         padding: 0, marginBottom: 16,
       }}>← Back</button>
 
-      <div style={{ fontSize: 22, fontWeight: 800, color: T.text, marginBottom: 6 }}>My Certifications</div>
+      <div style={{ fontSize: 22, fontWeight: 600, color: T.text, marginBottom: 6 }}>My Certifications</div>
       <div style={{ fontSize: 13, color: T.textLight, marginBottom: 20 }}>
         Contact your admin to update certification details.
       </div>
@@ -128,15 +128,15 @@ function CertsView({ employee, onBack }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {certs.map((cert, i) => (
           <div key={i} style={{
-            padding: "18px 20px", background: T.card, borderRadius: 14,
+            padding: "18px 20px", background: T.card, borderRadius: 3,
             border: `1px solid ${T.border}`,
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <cert.icon size={18} color={cert.value ? cert.color : T.textLight} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5 }}>{cert.label}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5 }}>{cert.label}</span>
             </div>
             {cert.value ? (
-              <div style={{ fontSize: 18, fontWeight: 800, color: T.text }}>{cert.value}</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: T.text }}>{cert.value}</div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <AlertCircle size={14} color={T.amber} />
@@ -148,7 +148,7 @@ function CertsView({ employee, onBack }) {
       </div>
 
       <div style={{
-        marginTop: 24, padding: "14px 18px", background: T.blueLight, borderRadius: 12,
+        marginTop: 24, padding: "14px 18px", background: T.blueLight, borderRadius: 3,
         border: `1px solid ${T.blue}20`, fontSize: 13, color: T.blue, lineHeight: 1.5,
       }}>
         Training records and certification renewals will be tracked here in a future update.
@@ -228,22 +228,22 @@ function ClockInView({ crew, employee, onBack }) {
       }}>← Back</button>
 
       <div style={{ fontSize: 14, color: T.textLight, marginBottom: 4 }}>{today}</div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: T.text, marginBottom: 20 }}>
+      <div style={{ fontSize: 22, fontWeight: 600, color: T.text, marginBottom: 20 }}>
         {crew?.name || "My Crew"} — Clock In
       </div>
 
       {todayRoster && (
         <div style={{
           display: "flex", alignItems: "center", gap: 12, padding: "14px 18px",
-          background: T.accentLight, borderRadius: 12, border: `1px solid ${T.accentBorder}`, marginBottom: 20,
+          background: T.accentLight, borderRadius: 3, border: `1px solid ${T.accentBorder}`, marginBottom: 20,
         }}>
           <CheckCircle2 size={22} color={T.accent} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.accent }}>Crew Clocked In</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: T.accent }}>Crew Clocked In</div>
             <div style={{ fontSize: 12, color: "#047857" }}>{selected.length} members today</div>
           </div>
           <button onClick={() => setTodayRoster(null)} style={{
-            padding: "6px 14px", borderRadius: 8, border: `1px solid ${T.accentBorder}`,
+            padding: "6px 14px", borderRadius: 3, border: `1px solid ${T.accentBorder}`,
             background: "#fff", cursor: "pointer", fontFamily: T.font, fontSize: 12,
             fontWeight: 600, color: T.accent,
           }}>Edit</button>
@@ -252,28 +252,28 @@ function ClockInView({ crew, employee, onBack }) {
 
       {!todayRoster && (
         <>
-          <div style={{ fontSize: 13, fontWeight: 700, color: T.textLight, marginBottom: 10 }}>Who's working today?</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: T.textLight, marginBottom: 10 }}>Who's working today?</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
             {crewMembers.map(emp => {
               const isSelected = selected.some(m => m.id === emp.id)
               return (
                 <button key={emp.id} onClick={() => toggleMember(emp)} style={{
                   display: "flex", alignItems: "center", gap: 12, padding: "14px 16px",
-                  background: T.card, borderRadius: 12,
+                  background: T.card, borderRadius: 3,
                   border: `1.5px solid ${isSelected ? T.accent : T.border}`,
                   cursor: "pointer", fontFamily: T.font, width: "100%", textAlign: "left",
                 }}>
                   <div style={{
-                    width: 22, height: 22, borderRadius: 6,
+                    width: 22, height: 22, borderRadius: 3,
                     border: `2px solid ${isSelected ? T.accent : T.border}`,
                     background: isSelected ? T.accent : "transparent",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>{isSelected && <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>✓</span>}</div>
+                  }}>{isSelected && <span style={{ color: "#fff", fontSize: 12, fontWeight: 600 }}>✓</span>}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{emp.first_name} {emp.last_name}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{emp.first_name} {emp.last_name}</div>
                   </div>
                   {emp.is_crew_lead && (
-                    <span style={{ fontSize: 10, fontWeight: 700, background: T.accentLight, color: T.accent, padding: "2px 6px", borderRadius: 4 }}>Lead</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, background: T.accentLight, color: T.accent, padding: "2px 6px", borderRadius: 4 }}>Lead</span>
                   )}
                 </button>
               )
@@ -283,15 +283,15 @@ function ClockInView({ crew, employee, onBack }) {
           <div style={{ marginBottom: 16 }}>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)"
               style={{
-                width: "100%", padding: "12px 14px", borderRadius: 10, background: T.bg,
+                width: "100%", padding: "12px 14px", borderRadius: 3, background: T.bg,
                 border: `1.5px solid ${T.border}`, color: T.text, fontSize: 14, fontFamily: T.font,
                 outline: "none", resize: "vertical", boxSizing: "border-box",
               }} />
           </div>
 
           <button onClick={handleSubmit} disabled={submitting || selected.length === 0} style={{
-            width: "100%", padding: "16px", borderRadius: 12, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: T.font,
+            width: "100%", padding: "16px", borderRadius: 3, border: "none", cursor: "pointer",
+            background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
             opacity: (submitting || selected.length === 0) ? 0.5 : 1,
           }}>
             {submitting ? "Submitting..." : `Clock In ${selected.length} Member${selected.length !== 1 ? "s" : ""}`}
@@ -337,13 +337,13 @@ function ResourcesView({ onBack }) {
         padding: 0, marginBottom: 16,
       }}>← Back</button>
 
-      <div style={{ fontSize: 22, fontWeight: 800, color: T.text, marginBottom: 16 }}>Safety & Resources</div>
+      <div style={{ fontSize: 22, fontWeight: 600, color: T.text, marginBottom: 16 }}>Safety & Resources</div>
 
       {/* Search + filter button */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <div style={{
           display: "flex", alignItems: "center", gap: 8, background: T.card, flex: 1,
-          borderRadius: 12, padding: "12px 14px", border: `1px solid ${T.border}`,
+          borderRadius: 3, padding: "12px 14px", border: `1px solid ${T.border}`,
         }}>
           <Search size={18} color={T.textLight} />
           <input value={searchQ} onChange={e => setSearchQ(e.target.value)}
@@ -378,11 +378,11 @@ function ResourcesView({ onBack }) {
         </div>
       ) : filtered.length === 0 ? (
         <div style={{
-          padding: "32px 16px", background: T.card, borderRadius: 14,
+          padding: "32px 16px", background: T.card, borderRadius: 3,
           border: `1px dashed ${T.border}`, textAlign: "center",
         }}>
           <BookOpen size={32} color={T.textLight} strokeWidth={1} style={{ margin: "0 auto 12px" }} />
-          <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 4 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 4 }}>
             {searchQ || activeCategory ? "No matches" : "No resources"}
           </div>
           <div style={{ fontSize: 13, color: T.textLight }}>
@@ -399,10 +399,10 @@ function ResourcesView({ onBack }) {
                 target="_blank" rel="noopener noreferrer"
                 style={{
                   display: "flex", gap: 14, padding: "14px 16px", background: T.card,
-                  borderRadius: 12, border: `1px solid ${T.border}`, textDecoration: "none",
+                  borderRadius: 3, border: `1px solid ${T.border}`, textDecoration: "none",
                 }}>
                 <div style={{
-                  width: 42, height: 42, borderRadius: 10, flexShrink: 0,
+                  width: 42, height: 42, borderRadius: 3, flexShrink: 0,
                   background: isFile ? `${T.accent}10` : `${T.blue}10`,
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
@@ -410,7 +410,7 @@ function ResourcesView({ onBack }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: T.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {r.title}
                     </div>
                     {r.pinned && <Pin size={11} color={T.amber} />}
@@ -422,7 +422,7 @@ function ResourcesView({ onBack }) {
                   )}
                   <div style={{ display: "flex", gap: 8, marginTop: 4, alignItems: "center" }}>
                     {r.categoryName && (
-                      <span style={{ fontSize: 10, fontWeight: 700, color: r.categoryColor || T.textLight }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: r.categoryColor || T.textLight }}>
                         {r.categoryName}
                       </span>
                     )}

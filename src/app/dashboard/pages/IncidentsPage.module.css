@@ -1,0 +1,567 @@
+/* ═══════════════════════════════════════════
+   Incidents Page
+   ═══════════════════════════════════════════ */
+
+/* ── Stats Row ── */
+.statsRow {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.statCard {
+  flex: 1;
+  min-width: 160px;
+  padding: var(--space-4);
+  background: var(--s1);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-1);
+}
+
+.statValue {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.statDanger {
+  color: var(--red);
+}
+
+/* ── Filter Bar ── */
+.filterBar {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+  max-width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t3);
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) 32px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+  box-sizing: border-box;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.searchInput:focus {
+  border-color: var(--amb);
+}
+
+.filterSelect {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  outline: none;
+  cursor: pointer;
+}
+
+.filterSelect:focus {
+  border-color: var(--amb);
+}
+
+/* ── Name cell with icon ── */
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.nameIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r);
+  background: var(--amb-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.titleText {
+  font-weight: var(--font-semibold);
+}
+
+/* ── Locked badge ── */
+.lockedBadge {
+  display: inline-flex;
+  align-items: center;
+  color: var(--t3);
+}
+
+/* ── SlidePanel detail ── */
+.detailContent {
+  padding: var(--space-4);
+}
+
+.detailActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  align-items: center;
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.editBtn:hover {
+  border-color: var(--t3);
+  color: var(--t1);
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t3);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.deleteBtn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.lockBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t3);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  margin-left: auto;
+}
+
+.lockBtn:hover {
+  border-color: var(--amb);
+  color: var(--amb);
+}
+
+.lockedIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r);
+  background: var(--amb-dim);
+  color: var(--amb);
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-left: auto;
+}
+
+/* ── Detail fields ── */
+.fieldList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.fieldRow {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--s2);
+  border-radius: var(--r);
+}
+
+.fieldIcon {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.fieldLabel {
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: 2px;
+}
+
+.fieldValue {
+  font-size: var(--text-sm);
+  color: var(--t1);
+  white-space: pre-wrap;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+/* ── Empty tab state ── */
+.emptyTab {
+  text-align: center;
+  padding: var(--space-10) var(--space-4);
+  color: var(--t3);
+}
+
+.emptyTabIcon {
+  color: var(--t3);
+  margin-bottom: var(--space-3);
+}
+
+.emptyTabTitle {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--t2);
+  margin-bottom: var(--space-1);
+}
+
+.emptyTabDesc {
+  font-size: var(--text-sm);
+  color: var(--t3);
+}
+
+/* ── Buttons ── */
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: none;
+  background: var(--amb);
+  color: var(--amb-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.addBtn:hover {
+  opacity: 0.88;
+}
+
+/* ── Form ── */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.checkRow {
+  margin: var(--space-3) 0;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--amb);
+  cursor: pointer;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-5);
+  background: var(--t1);
+  color: var(--s1);
+  border-radius: var(--r);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+
+/* ── Photos Tab ── */
+.photosTab {
+  margin-top: var(--space-4);
+}
+
+.lockedNotice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--amb-dim);
+  color: var(--amb);
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  border-radius: var(--r);
+  margin-bottom: var(--space-3);
+}
+
+.photoUploadBar {
+  margin-bottom: var(--space-4);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.uploadBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: 1px dashed var(--bd);
+  background: var(--s2);
+  color: var(--t2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.uploadBtn:hover {
+  border-color: var(--amb);
+  color: var(--amb);
+}
+
+.uploadBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.uploadingIcon {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Photo Grid ── */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-3);
+}
+
+.photoCard {
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  overflow: hidden;
+}
+
+.photoThumb {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--s2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: var(--transition-fast);
+}
+
+.photoThumb:hover .photoImage {
+  opacity: 0.85;
+}
+
+.photoInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  min-height: 32px;
+}
+
+.photoName {
+  flex: 1;
+  font-size: var(--text-xs);
+  color: var(--t3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photoDeleteBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--r);
+  background: transparent;
+  color: var(--t3);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.photoDeleteBtn:hover {
+  background: var(--s2);
+  color: var(--red);
+}
+
+/* ── Lightbox ── */
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 999);
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.lightboxContent {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: -36px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--r);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.lightboxClose:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--r);
+}
+
+.lightboxCaption {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: #fff;
+  text-align: center;
+}
+
+.lightboxMeta {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .statsRow {
+    flex-direction: column;
+  }
+
+  .searchWrap {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .filterSelect {
+    min-width: 0;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}

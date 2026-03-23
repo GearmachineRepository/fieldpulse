@@ -681,7 +681,7 @@
   border-radius: var(--r);
   border: none;
   background: var(--amb);
-  color: #fff;
+  color: var(--amb-text);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   cursor: pointer;
@@ -690,4 +690,70 @@
 
 .saveBtn:disabled {
   opacity: 0.5;
+}
+
+/* ── Photos Tab ── */
+.photoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.photoCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  background: var(--s2);
+}
+
+.photoThumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r);
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.photoInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.photoName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.photoCaption {
+  font-size: var(--text-xs);
+  color: var(--t2);
+  margin-top: 2px;
+}
+
+.photoMeta {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--t3);
+  margin-top: 2px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
 }

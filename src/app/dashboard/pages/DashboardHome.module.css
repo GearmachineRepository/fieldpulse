@@ -13,6 +13,7 @@
 
 .dateStr {
   font-size: var(--text-sm);
+  font-family: var(--mono);
   color: var(--t3);
 }
 
@@ -20,6 +21,28 @@
   font-size: var(--text-2xl);
   font-weight: var(--font-semibold);
   letter-spacing: -0.3px;
+}
+
+/* ── Customize button ── */
+.customizeBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-family: var(--fn);
+  color: var(--t3);
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.customizeBtn:hover {
+  color: var(--t1);
+  border-color: var(--t3);
 }
 
 /* ── Alert banner ── */
@@ -331,13 +354,18 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
   .threeCol {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .greeting {
     font-size: var(--text-xl);
   }
@@ -360,6 +388,12 @@
   }
 
   .quickGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 375px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
   }
 }

@@ -9,6 +9,7 @@
   background: var(--s1);
   box-shadow: var(--shadow-sm);
   min-height: 500px;
+  flex: 1;
   overflow: hidden;
 }
 
@@ -98,9 +99,29 @@
     border-bottom: 1px solid var(--bd);
     max-height: none;
   }
+}
+
+/* ── Mobile: list-detail navigation stack ── */
+
+@media (max-width: 767px) {
+  .layout {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: none;
+  }
 
   .sidebarHideMobile {
     display: none;
+  }
+
+  .detail {
+    width: 100%;
   }
 
   .detailHideMobile {
@@ -109,5 +130,6 @@
 
   .backBtn {
     display: flex;
+    min-height: 48px;
   }
 }
