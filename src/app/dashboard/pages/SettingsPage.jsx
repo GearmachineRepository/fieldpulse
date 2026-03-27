@@ -6,14 +6,24 @@
 import { useState, useEffect } from "react"
 import {
   Building2, Users, Blocks, Link2, CreditCard,
-  Bell, Settings, ChevronRight, ToggleLeft, ToggleRight,
-  Calculator, FileText, FlaskConical, ExternalLink,
+  Bell, ChevronRight, ExternalLink, Search,
+  FlaskConical, Eye, EyeOff, LogOut, Plus, X,
+  Copy, UserPlus, Mail, Shield, Loader2, QrCode, Smartphone,
 } from "lucide-react"
+import { useNavigate as useRouterNavigate } from "react-router-dom"
+import useAuth from "@/hooks/useAuth.jsx"
 import useModules from "@/hooks/useModules.jsx"
 import useToast from "@/hooks/useToast.js"
+import useNavigation from "@/hooks/useNavigation.js"
+import CompanyQRModal from "../components/CompanyQRModal.jsx"
 import { getOrganization, updateOrganization } from "@/lib/api/organization.js"
+import { getInvitations, createInvitation, revokeInvitation, getOrgMembers } from "@/lib/api/invitations.js"
+import { getSDSManagerConnection, saveSDSManagerKey, syncSDSManagerLibrary } from "@/lib/api/integrations.js"
+import { PROVIDER_META, getProvidersByCategory } from "@/lib/integrations/index.js"
 import PageShell from "../components/PageShell.jsx"
 import StatusBadge from "../components/StatusBadge.jsx"
+import IntegrationLogo from "../components/IntegrationLogo.jsx"
+import { ConfirmModal } from "../components/PageUI.jsx"
 import s from "./SettingsPage.module.css"
 
 const NAV_ITEMS = [
@@ -25,52 +35,23 @@ const NAV_ITEMS = [
   { key: "notifications", label: "Notifications", icon: Bell },
 ]
 
-const INTEGRATIONS = [
-  {
-    key: "quickbooks",
-    label: "QuickBooks",
-    desc: "Sync jobs and hours to invoices and payroll",
-    category: "accounting",
-    icon: Calculator,
-    iconColor: "#2CA01C",
-    connected: false,
-    docsUrl: "https://quickbooks.intuit.com",
-  },
-  {
-    key: "bluebeam",
-    label: "Bluebeam",
-    desc: "Sync construction documents and drawings to projects",
-    category: "documents",
-    icon: FileText,
-    iconColor: "#005BAC",
-    connected: false,
-    docsUrl: "https://www.bluebeam.com",
-  },
-  {
-    key: "pubchem",
-    label: "PubChem",
-    desc: "Free chemical data from NCBI — auto-populate SDS library",
-    category: "compliance",
-    icon: FlaskConical,
-    iconColor: "#16A34A",
-    connected: false,
-    free: true,
-    docsUrl: "https://pubchem.ncbi.nlm.nih.gov",
-  },
-  {
-    key: "custom-sds",
-    label: "Custom SDS API",
-    desc: "Connect a Safety Data Sheet database to auto-populate your SDS library",
-    category: "compliance",
-    icon: FlaskConical,
-    iconColor: "#CA8A04",
-    connected: false,
-    hasPubchemOption: true,
-  },
-]
+const CATEGORY_ORDER = ["accounting", "compliance", "documents", "payroll"]
+const CATEGORY_LABELS = {
+  accounting: "ACCOUNTING",
+  compliance: "COMPLIANCE",
+  documents: "DOCUMENTS",
+  payroll: "PAYROLL",
+}
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("company")
+  const { logout } = useAuth()
+  const routerNavigate = useRouterNavigate()
+
+  const handleSignOut = () => {
+    logout()
+    routerNavigate("/login", { replace: true })
+  }
 
   return (
     <PageShell title="Settings">
@@ -93,6 +74,13 @@ export default function SettingsPage() {
               </button>
             )
           })}
+
+          {/* Sign Out button */}
+          <div className={s.navDivider} />
+          <button className={`${s.navItem} ${s.navItemSignOut}`} onClick={handleSignOut}>
+            <LogOut size={16} />
+            <span>Sign Out</span>
+          </button>
         </div>
 
         {/* Right Content */}
@@ -117,6 +105,7 @@ function CompanySection() {
   const [form, setForm] = useState({ name: "", phone: "", address: "", city: "", state: "", zip: "" })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showQR, setShowQR] = useState(false)
   const toast = useToast()
 
   useEffect(() => {
@@ -199,6 +188,33 @@ function CompanySection() {
         </div>
       </form>
 
+      {/* Device Registration / QR Code */}
+      <h3 className={s.sectionTitle} style={{ marginTop: 32 }}>Field Device Registration</h3>
+      <div className={s.sectionDesc}>Share a QR code or company code with your crews to register their field devices.</div>
+      <div className={s.formCard}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "4px 0" }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 3, background: "var(--amb-dim)",
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          }}>
+            <Smartphone size={22} style={{ color: "var(--amb)" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "var(--text-base)", fontWeight: 600, color: "var(--t1)" }}>
+              Device QR Code
+            </div>
+            <div style={{ fontSize: "var(--text-sm)", color: "var(--t3)", marginTop: 2 }}>
+              Crews scan this to connect their phones to your workspace
+            </div>
+          </div>
+          <button onClick={() => setShowQR(true)} className={s.saveBtn} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <QrCode size={16} /> Manage Codes
+          </button>
+        </div>
+      </div>
+
+      <CompanyQRModal open={showQR} onClose={() => setShowQR(false)} />
+
       {toast.message && (
         <div className={s.toast} role="status" aria-live="polite">
           {toast.message}
@@ -211,34 +227,259 @@ function CompanySection() {
 // ===================================================
 // Users & Roles Section
 // ===================================================
+
+const ALL_PAGE_KEYS = [
+  { key: "employees", label: "Employees" },
+  { key: "crews", label: "Crews" },
+  { key: "vehicles", label: "Vehicles" },
+  { key: "equipment", label: "Equipment" },
+  { key: "training", label: "Training" },
+  { key: "certifications", label: "Certifications" },
+  { key: "incidents", label: "Incidents" },
+  { key: "sds", label: "SDS Library" },
+  { key: "documents", label: "Documents" },
+  { key: "reports", label: "Reports" },
+  { key: "projects", label: "Projects" },
+  { key: "schedule", label: "Schedule" },
+]
+
 function UsersSection() {
+  const toast = useToast()
+  const [members, setMembers] = useState([])
+  const [invitations, setInvitations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showInviteForm, setShowInviteForm] = useState(false)
+
+  // Invite form state
+  const [invEmail, setInvEmail] = useState("")
+  const [invRole, setInvRole] = useState("manager")
+  const [invPerms, setInvPerms] = useState({})
+  const [inviting, setInviting] = useState(false)
+
+  const loadData = async () => {
+    try {
+      const [m, i] = await Promise.all([getOrgMembers(), getInvitations()])
+      setMembers(m)
+      setInvitations(i)
+    } catch {
+      toast.show("Failed to load users")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { loadData() }, [])
+
+  const handleInvite = async (e) => {
+    e.preventDefault()
+    if (!invEmail.trim()) { toast.show("Email is required"); return }
+    setInviting(true)
+    try {
+      const permissions = invRole !== "owner" && Object.keys(invPerms).length > 0
+        ? { pages: invPerms } : {}
+      await createInvitation({ email: invEmail.trim(), role: invRole, permissions })
+      toast.show("Invitation created")
+      setInvEmail("")
+      setInvRole("manager")
+      setInvPerms({})
+      setShowInviteForm(false)
+      loadData()
+    } catch (err) {
+      toast.show(err.message || "Failed to create invitation")
+    } finally {
+      setInviting(false)
+    }
+  }
+
+  const handleRevoke = async (id) => {
+    try {
+      await revokeInvitation(id)
+      toast.show("Invitation revoked")
+      loadData()
+    } catch {
+      toast.show("Failed to revoke invitation")
+    }
+  }
+
+  const copyInviteLink = (token) => {
+    const url = `${window.location.origin}/invite/${token}`
+    navigator.clipboard.writeText(url)
+    toast.show("Invite link copied to clipboard")
+  }
+
+  const togglePerm = (key) => {
+    setInvPerms(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const roleBadgeClass = (role) => {
+    if (role === "owner") return s.roleBadgeOwner
+    if (role === "manager") return s.roleBadgeManager
+    return s.roleBadgeViewer
+  }
+
+  if (loading) {
+    return (
+      <div>
+        <h3 className={s.sectionTitle}>Users & Roles</h3>
+        <div className={s.sectionDesc}>Manage dashboard access and permission levels.</div>
+        <div className={s.loadingState}><Loader2 size={20} className={s.spinnerIcon} /> Loading...</div>
+      </div>
+    )
+  }
+
   return (
     <div>
       <h3 className={s.sectionTitle}>Users & Roles</h3>
       <div className={s.sectionDesc}>Manage dashboard access and permission levels.</div>
-      <div className={s.emptySection}>
-        <Users size={32} strokeWidth={1} className={s.emptyIcon} />
-        <div className={s.emptyTitle}>User management coming soon</div>
-        <div className={s.emptyDesc}>
-          Invite team members, assign roles (Owner, Admin, Manager, Viewer),
-          and control page-level access permissions.
-        </div>
+
+      {/* Members list */}
+      <div className={s.usersSubHeader}>
+        <div className={s.usersSubLabel}>Members ({members.length})</div>
+        <button className={s.inviteBtn} onClick={() => setShowInviteForm(v => !v)}>
+          <UserPlus size={14} /> Invite User
+        </button>
       </div>
+
+      <div className={s.membersList}>
+        {members.map(m => (
+          <div key={m.id} className={s.memberRow}>
+            <div className={s.memberAvatar}>
+              {m.name ? m.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?"}
+            </div>
+            <div className={s.memberInfo}>
+              <div className={s.memberName}>{m.name}</div>
+              <div className={s.memberEmail}>{m.email}</div>
+            </div>
+            <span className={`${s.roleBadge} ${roleBadgeClass(m.role)}`}>
+              {(m.role || "member").toUpperCase()}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Invite form */}
+      {showInviteForm && (
+        <div className={s.inviteForm}>
+          <div className={s.inviteFormHeader}>
+            <Mail size={16} /> <span>New Invitation</span>
+            <button className={s.inviteFormClose} onClick={() => setShowInviteForm(false)}><X size={14} /></button>
+          </div>
+          <form onSubmit={handleInvite}>
+            <div className={s.inviteFormGrid}>
+              <div className={s.formField}>
+                <label className={s.formLabel}>Email</label>
+                <input
+                  className={s.formInput}
+                  type="email"
+                  value={invEmail}
+                  onChange={e => setInvEmail(e.target.value)}
+                  placeholder="user@company.com"
+                />
+              </div>
+              <div className={s.formField}>
+                <label className={s.formLabel}>Role</label>
+                <select className={s.formInput} value={invRole} onChange={e => setInvRole(e.target.value)}>
+                  <option value="owner">Owner</option>
+                  <option value="manager">Manager</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              </div>
+            </div>
+
+            {invRole !== "owner" && (
+              <div className={s.formField}>
+                <label className={s.formLabel}>Page Access</label>
+                <div className={s.permGrid}>
+                  {ALL_PAGE_KEYS.map(p => (
+                    <label key={p.key} className={s.permCheck}>
+                      <input
+                        type="checkbox"
+                        checked={invPerms[p.key] !== false}
+                        onChange={() => togglePerm(p.key)}
+                      />
+                      <span>{p.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className={s.permHint}>Uncheck pages to restrict access. All checked by default.</div>
+              </div>
+            )}
+
+            <div className={s.inviteFormActions}>
+              <button type="button" className={s.cancelBtn} onClick={() => setShowInviteForm(false)}>Cancel</button>
+              <button type="submit" className={s.submitInviteBtn} disabled={inviting}>
+                {inviting ? "Sending..." : "Create Invitation"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Pending invitations */}
+      {invitations.filter(i => i.status === "pending").length > 0 && (
+        <>
+          <div className={s.usersSubHeader} style={{ marginTop: 24 }}>
+            <div className={s.usersSubLabel}>Pending Invitations</div>
+          </div>
+          <div className={s.membersList}>
+            {invitations.filter(i => i.status === "pending").map(inv => (
+              <div key={inv.id} className={s.memberRow}>
+                <div className={s.memberAvatar} style={{ opacity: 0.5 }}>
+                  <Mail size={14} />
+                </div>
+                <div className={s.memberInfo}>
+                  <div className={s.memberName}>{inv.email}</div>
+                  <div className={s.memberEmail}>
+                    Invited as {inv.role} · Expires {new Date(inv.expires_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className={s.inviteActions}>
+                  <button className={s.copyLinkBtn} onClick={() => copyInviteLink(inv.token)} title="Copy invite link">
+                    <Copy size={13} />
+                  </button>
+                  <button className={s.revokeBtn} onClick={() => handleRevoke(inv.id)} title="Revoke">
+                    <X size={13} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
 // ===================================================
-// Modules Section
+// Modules Section — Real toggle switches with toast
 // ===================================================
 function ModulesSection() {
   const { allModules, isEnabled, toggleModule } = useModules()
+  const toast = useToast()
+  const [confirmDisable, setConfirmDisable] = useState(null)
 
-  const handleToggle = async (key, currentlyEnabled) => {
+  const handleToggle = async (mod, currentlyEnabled) => {
+    if (currentlyEnabled) {
+      setConfirmDisable(mod)
+      return
+    }
     try {
-      await toggleModule(key, !currentlyEnabled)
+      await toggleModule(mod.key, true)
+      toast.show(`${mod.label} enabled`)
     } catch {
-      // toggleModule already reverts on failure
+      toast.show(`Failed to enable ${mod.label}`)
+    }
+  }
+
+  const confirmDisableModule = async () => {
+    if (!confirmDisable) return
+    try {
+      await toggleModule(confirmDisable.key, false)
+      toast.show(`${confirmDisable.label} disabled`)
+    } catch {
+      toast.show(`Failed to disable ${confirmDisable.label}`)
+    } finally {
+      setConfirmDisable(null)
     }
   }
 
@@ -263,85 +504,222 @@ function ModulesSection() {
                 </div>
               </div>
               <button
-                className={s.moduleToggle}
-                onClick={() => handleToggle(mod.key, enabled)}
+                className={s.toggleSwitch}
+                onClick={() => handleToggle(mod, enabled)}
+                role="switch"
+                aria-checked={enabled}
+                aria-label={`Toggle ${mod.label}`}
                 type="button"
               >
-                {enabled ? (
-                  <div className={s.toggleOn}>
-                    <ToggleRight size={24} color="var(--amb)" />
-                    <StatusBadge variant="green">Enabled</StatusBadge>
-                  </div>
-                ) : (
-                  <div className={s.toggleOff}>
-                    <ToggleLeft size={24} color="var(--t3)" />
-                    <StatusBadge variant="gray">Disabled</StatusBadge>
-                  </div>
-                )}
+                <span className={`${s.toggleTrack} ${enabled ? s.toggleTrackOn : ""}`}>
+                  <span className={`${s.toggleThumb} ${enabled ? s.toggleThumbOn : ""}`} />
+                </span>
+                <StatusBadge variant={enabled ? "green" : "gray"}>
+                  {enabled ? "Enabled" : "Disabled"}
+                </StatusBadge>
               </button>
             </div>
           )
         })}
       </div>
+
+      {confirmDisable && (
+        <ConfirmModal
+          title={`Disable ${confirmDisable.label}?`}
+          message={`Disabling ${confirmDisable.label} will hide it from navigation. Your data will be preserved and can be re-enabled at any time.`}
+          confirmLabel="Disable Module"
+          onConfirm={confirmDisableModule}
+          onCancel={() => setConfirmDisable(null)}
+        />
+      )}
+
+      {toast.message && (
+        <div className={s.toast} role="status" aria-live="polite">
+          {toast.message}
+        </div>
+      )}
     </div>
   )
 }
 
 // ===================================================
-// Integrations Section
+// Integrations Section — Category groups + logos
 // ===================================================
 function IntegrationsSection() {
+  const { navigate } = useNavigation()
+  const toast = useToast()
+  const [showApiKey, setShowApiKey] = useState(false)
+  const [apiKeyInput, setApiKeyInput] = useState("")
+  const [sdsConnection, setSdsConnection] = useState(null)
+  const [savingKey, setSavingKey] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+
+  useEffect(() => {
+    getSDSManagerConnection()
+      .then(data => setSdsConnection(data))
+      .catch(() => {})
+  }, [])
+
+  const handleSaveApiKey = async () => {
+    if (!apiKeyInput.trim() || apiKeyInput.length < 8) {
+      toast.show("API key must be at least 8 characters")
+      return
+    }
+    setSavingKey(true)
+    try {
+      await saveSDSManagerKey(apiKeyInput)
+      setSdsConnection({ connected: true, maskedKey: apiKeyInput.slice(0, 4) + "••••" + apiKeyInput.slice(-4) })
+      setApiKeyInput("")
+      toast.show("SDS Manager API key saved")
+    } catch (err) {
+      toast.show(err.message || "Failed to save API key")
+    } finally {
+      setSavingKey(false)
+    }
+  }
+
+  const handleSync = async () => {
+    setSyncing(true)
+    try {
+      const data = await syncSDSManagerLibrary()
+      toast.show(data.message || "Sync complete")
+    } catch (err) {
+      toast.show(err.message || "Sync failed")
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  const providersByCategory = getProvidersByCategory()
+
   return (
     <div>
       <h3 className={s.sectionTitle}>Integrations</h3>
       <div className={s.sectionDesc}>Connect external services to sync data across your workspace.</div>
-      <div className={s.intGrid}>
-        {INTEGRATIONS.map(item => {
-          const Icon = item.icon
-          return (
-            <div key={item.key} className={s.intCard}>
-              <div className={s.intCardTop}>
-                <div className={s.intIconBox} style={{ background: `${item.iconColor}14` }}>
-                  <Icon size={20} color={item.iconColor} />
-                </div>
-                <div className={s.intInfo}>
-                  <div className={s.intNameRow}>
-                    <div className={s.intName}>{item.label}</div>
-                    {item.free && <span className={s.freeBadge}>Free</span>}
-                  </div>
-                  <div className={s.intDesc}>{item.desc}</div>
-                  <div className={s.intCategory}>{item.category}</div>
-                </div>
-              </div>
-              <div className={s.intCardActions}>
-                {item.hasPubchemOption ? (
-                  <>
-                    <button className={s.intConnectBtn}>Connect Custom API</button>
-                    <button className={s.intConnectBtnAlt}>
-                      Use PubChem
-                      <span className={s.freeBadge}>Free</span>
-                    </button>
-                  </>
-                ) : item.connected ? (
-                  <StatusBadge variant="green">Connected</StatusBadge>
-                ) : (
-                  <button className={s.intConnectBtn}>Connect</button>
-                )}
-                {item.docsUrl && (
-                  <a
-                    href={item.docsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={s.intLearnMore}
+
+      {CATEGORY_ORDER.map(cat => {
+        const providers = providersByCategory[cat]
+        if (!providers || providers.length === 0) return null
+        return (
+          <div key={cat} className={s.intSection}>
+            <div className={s.intSectionLabel}>{CATEGORY_LABELS[cat]}</div>
+            <div className={s.intGrid}>
+              {providers.map(provider => {
+                const isComingSoon = provider.status === "coming_soon"
+                const isSdsManager = provider.key === "sds_manager"
+
+                return (
+                  <div
+                    key={provider.key}
+                    className={`${s.intCard} ${isComingSoon ? s.intCardComingSoon : ""}`}
                   >
-                    Learn More <ExternalLink size={12} />
-                  </a>
-                )}
-              </div>
+                    <div className={s.intCardTop}>
+                      <IntegrationLogo provider={provider.key} size={40} />
+                      <div className={s.intInfo}>
+                        <div className={s.intNameRow}>
+                          <div className={s.intName}>{provider.name}</div>
+                          {isComingSoon ? (
+                            <StatusBadge variant="gray">Coming Soon</StatusBadge>
+                          ) : provider.status === "available" ? (
+                            <StatusBadge variant="amber">Available</StatusBadge>
+                          ) : (
+                            <StatusBadge variant="green">Connected</StatusBadge>
+                          )}
+                        </div>
+                        <div className={s.intDesc}>{provider.description}</div>
+                      </div>
+                    </div>
+
+                    {/* SDS Manager gets special card content */}
+                    {isSdsManager && (
+                      <div className={s.sdsManagerExtra}>
+                        <div className={s.sdsApiKeyRow}>
+                          <div className={s.sdsApiKeyField}>
+                            <label className={s.fieldLabel}>API Key</label>
+                            <div className={s.sdsApiKeyInput}>
+                              <input
+                                type={showApiKey ? "text" : "password"}
+                                className={s.fieldInput}
+                                placeholder={sdsConnection?.maskedKey || "Enter your SDS Manager API key"}
+                                value={apiKeyInput}
+                                onChange={e => setApiKeyInput(e.target.value)}
+                              />
+                              <button
+                                className={s.sdsApiKeyToggle}
+                                onClick={() => setShowApiKey(!showApiKey)}
+                                type="button"
+                                title={showApiKey ? "Hide" : "Show"}
+                              >
+                                {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                              </button>
+                              {apiKeyInput && (
+                                <button
+                                  className={s.intConnectBtn}
+                                  onClick={handleSaveApiKey}
+                                  disabled={savingKey}
+                                  style={{ marginLeft: "var(--space-2)", whiteSpace: "nowrap" }}
+                                >
+                                  {savingKey ? "Saving..." : "Save Key"}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className={s.sdsManagerActions}>
+                          <button
+                            className={s.intConnectBtn}
+                            onClick={() => navigate?.("sds")}
+                          >
+                            <Search size={14} /> Search & Import
+                          </button>
+                          <button
+                            className={s.intSecondaryBtn}
+                            onClick={handleSync}
+                            disabled={syncing || !sdsConnection?.connected}
+                          >
+                            {syncing ? "Syncing..." : "Sync All"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Standard card actions */}
+                    {!isSdsManager && (
+                      <div className={s.intCardActions}>
+                        {isComingSoon ? (
+                          <span className={s.intComingSoonText}>
+                            Notify me when available
+                          </span>
+                        ) : (
+                          <button className={s.intConnectBtn}>Connect</button>
+                        )}
+                        {provider.docsUrl && (
+                          <a
+                            href={provider.docsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={s.intLearnMore}
+                          >
+                            Learn More <ExternalLink size={12} />
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
-          )
-        })}
+          </div>
+        )
+      })}
+
+      <div className={s.intBillingNote}>
+        Integration connections are included in your subscription. API usage limits may apply for high-volume sync operations.
       </div>
+
+      {toast.message && (
+        <div className={s.toast} role="status" aria-live="polite">{toast.message}</div>
+      )}
     </div>
   )
 }
@@ -393,12 +771,16 @@ function NotifToggle({ label, sub, defaultOn = false }) {
         <div className={s.notifLabel}>{label}</div>
         {sub && <div className={s.notifSub}>{sub}</div>}
       </div>
-      <button className={s.notifToggle} onClick={() => setOn(!on)} type="button">
-        {on ? (
-          <ToggleRight size={24} color="var(--amb)" />
-        ) : (
-          <ToggleLeft size={24} color="var(--t3)" />
-        )}
+      <button
+        className={s.toggleSwitch}
+        onClick={() => setOn(!on)}
+        role="switch"
+        aria-checked={on}
+        type="button"
+      >
+        <span className={`${s.toggleTrack} ${on ? s.toggleTrackOn : ""}`}>
+          <span className={`${s.toggleThumb} ${on ? s.toggleThumbOn : ""}`} />
+        </span>
       </button>
     </div>
   )

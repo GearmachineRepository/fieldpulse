@@ -3,7 +3,13 @@
 // ═══════════════════════════════════════════
 import { request } from './core.js'
 
-export const getTrainingSessions = () => request('/training')
+export const getTrainingSessions = (params) => {
+  const qs = new URLSearchParams()
+  if (params?.type) qs.set('type', params.type)
+  if (params?.type_not) qs.set('type_not', params.type_not)
+  const q = qs.toString()
+  return request(`/training${q ? `?${q}` : ''}`)
+}
 export const getTrainingSession = (id) => request(`/training/${id}`)
 export const createTrainingSession = (data) => request('/training', { method: 'POST', body: JSON.stringify(data) })
 export const updateTrainingSession = (id, data) => request(`/training/${id}`, { method: 'PUT', body: JSON.stringify(data) })

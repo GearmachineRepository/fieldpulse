@@ -38,7 +38,12 @@ import certificationRoutes from './routes/certifications.js'
 import trainingRoutes from './routes/training.js'
 import incidentRoutes from './routes/incidents.js'
 import sdsRoutes from './routes/sds.js'
+import sdsPublicRoutes from './routes/sdsPublic.js'
+import integrationRoutes from './routes/integrations.js'
+import dashboardPinRoutes from './routes/dashboardPins.js'
 import organizationRoutes from './routes/organization.js'
+import invitationRoutes from './routes/invitations.js'
+import fieldDocRoutes from './routes/fieldDocs.js'
 
 import { createUpload, uploadToStorage } from './middleware/upload.js'
 import { notFound, errorHandler } from './middleware/error.js'
@@ -94,7 +99,7 @@ app.use(helmet({
 }))
 
 // ── CORS ──
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:3001')
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,https://localhost:5173,http://localhost:3001')
   .split(',').map(o => o.trim())
 
 app.use(cors({
@@ -136,9 +141,10 @@ if (process.env.SUPABASE_URL) {
   }))
 }
 
-// ── Routes — public (no auth required for some endpoints) ──
+// ── Routes — public (no auth required) ──
 app.use('/api/auth',   authRoutes)
 app.use('/api/admins', adminsRoutes)
+app.use('/sds',        sdsPublicRoutes)
 
 // ── Routes — protected (auth applied inside each router) ──
 app.use('/api/crews',  crewRoutes)
@@ -162,7 +168,11 @@ app.use('/api/certifications', certificationRoutes)
 app.use('/api/training', trainingRoutes)
 app.use('/api/incidents', incidentRoutes)
 app.use('/api/sds', sdsRoutes)
+app.use('/api/integrations', integrationRoutes)
+app.use('/api/dashboard-pins', dashboardPinRoutes)
 app.use('/api/organization', organizationRoutes)
+app.use('/api/invitations', invitationRoutes)
+app.use('/api/field-docs', fieldDocRoutes(upload, uploadToStorage))
 
 // ── Health check ──
 app.get('/api/health', async (req, res) => {

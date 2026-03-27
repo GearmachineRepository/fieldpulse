@@ -2,35 +2,35 @@
 // New Doc Modal — Type picker → opens form
 // ═══════════════════════════════════════════
 
-import { FileText, Camera, ClipboardList, X, Package } from "lucide-react"
+import { FileText, ClipboardList, X, Package, AlertTriangle } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import { ENABLED_MODULES } from "@/app/modules.js"
+import useModules from "@/hooks/useModules.jsx"
 
 const CORE_TYPES = [
-  { key: "general-note", icon: FileText, label: "General Note", desc: "Notes & observations", color: T.blue },
-  { key: "photo-doc", icon: Camera, label: "Photo Doc", desc: "Visual documentation", color: T.amber },
-  { key: "inspection", icon: ClipboardList, label: "Inspection", desc: "Site inspection", color: T.accent },
+  { key: "general-note", icon: FileText, label: "General Note", desc: "Notes, photos & observations", color: T.blue },
+  { key: "inspection", icon: ClipboardList, label: "Inspection", desc: "Site or equipment check", color: T.accent },
+  { key: "incident", icon: AlertTriangle, label: "Incident Report", desc: "Report an incident", color: T.red },
 ]
 
 export default function NewDocModal({ onClose, onSelectType }) {
-  // Group enabled modules by category
+  const { isEnabled } = useModules()
+
+  // Group enabled modules by category — only show modules that are enabled
   const categories = {}
   ENABLED_MODULES.forEach(mod => {
+    if (!isEnabled(mod.key)) return
     if (!categories[mod.category]) categories[mod.category] = []
     categories[mod.category].push(mod)
   })
 
   const handleSelect = (key) => {
     onSelectType?.(key)
-    // For types that don't have a form yet, just close
-    if (!["spray-log"].includes(key)) {
-      onClose()
-    }
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div style={{
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={e => e.stopPropagation()} style={{
         width: "100%", maxWidth: 430, background: T.card, borderRadius: "4px 4px 0 0",
         maxHeight: "85vh", display: "flex", flexDirection: "column", fontFamily: T.font,
         animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)",

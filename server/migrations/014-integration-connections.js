@@ -28,7 +28,7 @@ async function migrate() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS integration_connections (
         id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-        company_id UUID REFERENCES companies(id),
+        company_id UUID REFERENCES organizations(id),
         provider TEXT NOT NULL,
         status TEXT DEFAULT 'disconnected',
         access_token TEXT,

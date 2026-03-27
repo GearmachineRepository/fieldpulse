@@ -17,6 +17,7 @@ const PricingPage       = lazy(() => import("@/app/marketing/PricingPage.jsx"))
 const AdminLoginPage    = lazy(() => import("@/app/auth/AdminLoginPage.jsx"))
 const SignupPage        = lazy(() => import("@/app/auth/SignupPage.jsx"))
 const ResetPasswordPage = lazy(() => import("@/app/auth/ResetPasswordPage.jsx"))
+const AcceptInvitePage  = lazy(() => import("@/app/auth/AcceptInvitePage.jsx"))
 const DashboardShell    = lazy(() => import("@/app/dashboard/DashboardShell.jsx"))
 const FieldShell        = lazy(() => import("@/app/field/FieldShell.jsx"))
 
@@ -72,6 +73,7 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/invite/:token" element={<AcceptInvitePage />} />
 
         {/* Dashboard — nested routes rendered via <Outlet /> in Shell */}
         <Route path="/dashboard" element={<DashboardShell />}>

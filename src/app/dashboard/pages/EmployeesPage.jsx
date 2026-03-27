@@ -260,7 +260,6 @@ function DetailsTab({ employee, crews, onEdit, onDelete }) {
         <ReadField icon={Phone} label="Phone" value={employee.phone} mono />
         <ReadField icon={Shield} label="Crew" value={crew?.name || "Unassigned"} />
         <ReadField icon={Hash} label="License #" value={employee.license_number} mono />
-        <ReadField icon={Award} label="Cert #" value={employee.cert_number} mono />
       </div>
     </div>
   )
@@ -474,7 +473,6 @@ function EmployeeModal({ employee, crews, onClose, onSave, onDelete }) {
   const [lastName, setLastName]   = useState(employee.last_name || "")
   const [phone, setPhone]         = useState(employee.phone || "")
   const [licenseNum, setLicenseNum] = useState(employee.license_number || "")
-  const [certNum, setCertNum]     = useState(employee.cert_number || "")
   const [crewId, setCrewId]       = useState(employee.default_crew_id ? String(employee.default_crew_id) : "")
   const [pin, setPin]             = useState("")
   const [showPin, setShowPin]     = useState(false)
@@ -491,7 +489,6 @@ function EmployeeModal({ employee, crews, onClose, onSave, onDelete }) {
       lastName: lastName.trim(),
       phone: phone || undefined,
       licenseNumber: licenseNum || undefined,
-      certNumber: certNum || undefined,
       defaultCrewId: crewId || undefined,
       isCrewLead: isLead,
     }
@@ -518,10 +515,7 @@ function EmployeeModal({ employee, crews, onClose, onSave, onDelete }) {
         <FormField label="Last Name *" value={lastName} onChange={setLastName} />
       </div>
       <FormField label="Phone" value={phone} onChange={setPhone} type="tel" />
-      <div className={s.formGrid}>
-        <FormField label="License #" value={licenseNum} onChange={setLicenseNum} />
-        <FormField label="Cert #" value={certNum} onChange={setCertNum} />
-      </div>
+      <FormField label="License #" value={licenseNum} onChange={setLicenseNum} />
       <SelectField
         label="Crew"
         value={crewId}

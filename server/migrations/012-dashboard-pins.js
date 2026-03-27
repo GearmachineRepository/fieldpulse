@@ -28,7 +28,7 @@ async function migrate() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS dashboard_pins (
         id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-        company_id UUID REFERENCES companies(id),
+        company_id UUID REFERENCES organizations(id),
         card_key TEXT NOT NULL,
         position INTEGER,
         enabled BOOLEAN DEFAULT true,

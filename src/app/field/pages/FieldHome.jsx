@@ -142,17 +142,17 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
               <div style={{ fontSize: 11, opacity: 0.7 }}>Field documentation</div>
             </div>
           </button>
-          <button onClick={() => onNavigate?.("profile")} style={{
-            padding: "16px 18px", borderRadius: 3, cursor: "pointer",
-            background: T.card, border: `1.5px solid ${T.border}`, fontFamily: T.font,
-            display: "flex", alignItems: "center", gap: 10,
+          <button onClick={() => onNavigate?.("clockin")} style={{
+            padding: "16px 18px", borderRadius: 3, cursor: "pointer", border: "none",
+            background: todayRoster ? T.green : T.blue, fontFamily: T.font,
+            display: "flex", alignItems: "center", gap: 10, color: "#fff",
           }}>
-            <Clock size={20} color={todayRoster ? T.accent : T.blue} />
+            <Clock size={20} />
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: T.text }}>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>
                 {todayRoster ? "Clocked In" : "Clock In"}
               </div>
-              <div style={{ fontSize: 11, color: T.textLight }}>
+              <div style={{ fontSize: 11, opacity: 0.8 }}>
                 {todayRoster ? `${todayRoster.members?.length || 0} members` : "Start your day"}
               </div>
             </div>

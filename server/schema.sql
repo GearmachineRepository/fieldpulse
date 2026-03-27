@@ -152,6 +152,59 @@ INSERT INTO chemicals (name,type,epa,active_ingredient,signal_word,restricted,sd
   ('MSO Methylated Seed Oil','Adjuvant','N/A','Methylated seed oil','CAUTION',false,NULL,NULL,NULL,NULL,NULL,NULL),
   ('Marker Dye Blue','Indicator Dye','N/A','Colorant','CAUTION',false,NULL,NULL,NULL,NULL,NULL,NULL);
 
+-- Field Docs (general notes, inspections, etc.)
+CREATE TABLE IF NOT EXISTS field_docs (
+  id SERIAL PRIMARY KEY,
+  org_id UUID NOT NULL,
+  type VARCHAR(30) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  body TEXT,
+  location VARCHAR(255),
+  gps_lat DECIMAL(10,7),
+  gps_lng DECIMAL(10,7),
+  crew_name VARCHAR(100),
+  employee_id INTEGER,
+  employee_name VARCHAR(100),
+  checklist JSONB,
+  status VARCHAR(20) DEFAULT 'submitted',
+  metadata JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS field_doc_photos (
+  id SERIAL PRIMARY KEY,
+  field_doc_id INTEGER NOT NULL REFERENCES field_docs(id) ON DELETE CASCADE,
+  org_id UUID NOT NULL,
+  filename VARCHAR(255) NOT NULL,
+  original_name VARCHAR(255),
+  mime_type VARCHAR(100),
+  size_bytes INTEGER,
+  storage_path VARCHAR(500),
+  caption VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_field_docs_org ON field_docs(org_id);
+CREATE INDEX IF NOT EXISTS idx_field_docs_type ON field_docs(type);
+CREATE INDEX IF NOT EXISTS idx_field_docs_created ON field_docs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_field_doc_photos_doc ON field_doc_photos(field_doc_id);
+
+-- Registration codes for field device enrollment
+CREATE TABLE IF NOT EXISTS registration_codes (
+  id          SERIAL PRIMARY KEY,
+  org_id      UUID NOT NULL,
+  code        VARCHAR(20) NOT NULL UNIQUE,
+  label       VARCHAR(100),
+  expires_at  TIMESTAMPTZ,
+  revoked     BOOLEAN DEFAULT false,
+  created_by  INTEGER,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reg_codes_org ON registration_codes(org_id);
+CREATE INDEX IF NOT EXISTS idx_reg_codes_code ON registration_codes(code);
+
 CREATE INDEX IF NOT EXISTS idx_spray_logs_created ON spray_logs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_spray_logs_vehicle ON spray_logs(vehicle_id);
 CREATE INDEX IF NOT EXISTS idx_spray_log_products_log ON spray_log_products(spray_log_id);

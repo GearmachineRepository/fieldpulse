@@ -34,6 +34,17 @@ export default function useRole() {
         const hierarchy = { employee: 0, manager: 1, owner: 2 }
         return (hierarchy[role] ?? -1) >= (hierarchy[requiredRole] ?? 999)
       },
+
+      /** Check if user has access to a specific page */
+      hasPageAccess: (pageKey) => {
+        // Owners always have full access
+        if (role === 'owner') return true
+        const perms = admin?.permissions?.pages
+        // No custom permissions set — use role defaults (full access for managers)
+        if (!perms || Object.keys(perms).length === 0) return true
+        // Explicit permission check
+        return perms[pageKey] !== false
+      },
     }
   }, [admin, employee])
 }

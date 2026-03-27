@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   Incidents Page
+   Incidents Page — Table + 5-Step Wizard
    ═══════════════════════════════════════════ */
 
 /* ── Stats Row ── */
@@ -10,33 +10,16 @@
   flex-wrap: wrap;
 }
 
-.statCard {
+.statsRow > * {
   flex: 1;
   min-width: 160px;
-  padding: var(--space-4);
-  background: var(--s1);
+}
+
+.statRedTint {
+  flex: 1;
+  min-width: 160px;
+  background: rgba(239, 68, 68, 0.06);
   border-radius: var(--r);
-  border: 1px solid var(--bd);
-}
-
-.statLabel {
-  font-size: var(--text-xs);
-  font-family: var(--mono);
-  font-weight: var(--font-semibold);
-  color: var(--t3);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  margin-bottom: var(--space-1);
-}
-
-.statValue {
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--t1);
-}
-
-.statDanger {
-  color: var(--red);
 }
 
 /* ── Filter Bar ── */
@@ -99,6 +82,15 @@
   border-color: var(--amb);
 }
 
+/* ── Row accent bars ── */
+.rowInjury {
+  border-left: 3px solid var(--red);
+}
+
+.rowOpen {
+  border-left: 3px solid var(--amb);
+}
+
 /* ── Name cell with icon ── */
 .nameCell {
   display: flex;
@@ -126,6 +118,207 @@
   display: inline-flex;
   align-items: center;
   color: var(--t3);
+}
+
+/* ── Buttons ── */
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: none;
+  background: var(--amb);
+  color: var(--amb-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.addBtn:hover {
+  opacity: 0.88;
+}
+
+/* ═══════════════════════════════════════════
+   5-Step Wizard
+   ═══════════════════════════════════════════ */
+
+.wizardStep {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.wizardStepTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.wizardStepDesc {
+  font-size: var(--text-sm);
+  color: var(--t2);
+  line-height: var(--leading-relaxed);
+}
+
+.wizardSubtitle {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-top: var(--space-2);
+}
+
+/* ── Type Selector (Step 1) ── */
+.typeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+
+.typeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: center;
+}
+
+.typeCard:hover {
+  border-color: var(--t3);
+  color: var(--t1);
+}
+
+.typeCardActive {
+  border-color: var(--amb);
+  background: var(--amb-dim);
+  color: var(--amb);
+}
+
+/* ── Photo Slots (Step 3) ── */
+.photoSlotGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.photoSlot {
+  padding: var(--space-4);
+  border-radius: var(--r);
+  border: 1px dashed var(--bd);
+  background: var(--s2);
+  text-align: center;
+}
+
+.photoSlotLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+  margin-bottom: var(--space-1);
+}
+
+.photoSlotRequired {
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  color: var(--amb);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+.photoSlotAdd {
+  border-style: dashed;
+  border-color: var(--bd2);
+  color: var(--t3);
+}
+
+/* ── Confirmation Box (Step 4) ── */
+.confirmBox {
+  padding: var(--space-4);
+  border-radius: var(--r);
+  border: 1px solid var(--amb);
+  background: var(--amb-dim);
+}
+
+/* ── Review Card (Step 5) ── */
+.reviewCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  overflow: hidden;
+}
+
+.reviewRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--bd);
+}
+
+.reviewRow:last-child {
+  border-bottom: none;
+}
+
+.reviewLabel {
+  width: 100px;
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  font-family: var(--mono);
+  font-weight: var(--font-semibold);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+.reviewNotice {
+  padding: var(--space-4);
+  border-radius: var(--r);
+  background: var(--amb-dim);
+  color: var(--amb);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  text-align: center;
+}
+
+/* ── Form ── */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.checkRow {
+  margin: var(--space-3) 0;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--amb);
+  cursor: pointer;
 }
 
 /* ── SlidePanel detail ── */
@@ -278,55 +471,6 @@
 .emptyTabDesc {
   font-size: var(--text-sm);
   color: var(--t3);
-}
-
-/* ── Buttons ── */
-.addBtn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--r);
-  border: none;
-  background: var(--amb);
-  color: var(--amb-text);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  font-family: var(--fn);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.addBtn:hover {
-  opacity: 0.88;
-}
-
-/* ── Form ── */
-.formRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-
-.checkRow {
-  margin: var(--space-3) 0;
-}
-
-.checkLabel {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-family: var(--fn);
-  color: var(--t1);
-  cursor: pointer;
-}
-
-.checkbox {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--amb);
-  cursor: pointer;
 }
 
 /* ── Toast ── */
@@ -563,5 +707,17 @@
 
   .formRow {
     grid-template-columns: 1fr;
+  }
+
+  .typeGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .photoSlotGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .reviewLabel {
+    width: 80px;
   }
 }

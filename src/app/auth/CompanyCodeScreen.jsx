@@ -117,7 +117,7 @@ export default function CompanyCodeScreen({ onRegistered }) {
 
         {/* Submit */}
         <button
-          onClick={handleSubmit}
+          onClick={() => handleSubmit()}
           disabled={submitting || !code.trim()}
           style={{
             width: "100%", padding: "16px", borderRadius: 3, border: "none", cursor: "pointer",

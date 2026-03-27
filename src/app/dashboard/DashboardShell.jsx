@@ -10,17 +10,15 @@
 // Pages are rendered via React Router <Outlet />.
 // ═══════════════════════════════════════════
 
-import { useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Outlet, Link, useNavigate as useRouterNavigate } from "react-router-dom"
-import { Loader2, Menu, Plus } from "lucide-react"
+import { Loader2, Menu, ChevronDown, Settings, LogOut } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
 import { ModulesProvider } from "@/hooks/useModules.jsx"
 import useNavigation from "@/hooks/useNavigation.js"
 import useShell from "@/hooks/useShell.js"
 import useTheme from "@/hooks/useTheme.js"
-// DataProvider is deprecated — kept for backward compat during migration
-// import { useData } from "@/context/DataProvider.jsx"
 import DashboardRail from "@/app/dashboard/components/DashboardRail.jsx"
 import DashboardSidebar from "@/app/dashboard/components/DashboardSidebar.jsx"
 import CompanyQRModal from "@/app/dashboard/components/CompanyQRModal.jsx"
@@ -28,15 +26,38 @@ import s from "./DashboardShell.module.css"
 
 export default function DashboardShell() {
   const routerNavigate = useRouterNavigate()
-  const { isAdmin, restoring } = useAuth()
+  const { admin, isAdmin, restoring, logout } = useAuth()
   const { activePage, activeSection, navigate, selectSection, breadcrumb } = useNavigation()
   const { sidebarOpen, openSidebar, closeSidebar, qrModalOpen, closeQrModal } = useShell()
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const menuRef = useRef(null)
 
   // Initialize theme on mount
   useTheme()
 
   useEffect(() => { if (!restoring && !isAdmin) routerNavigate("/login", { replace: true }) }, [isAdmin, restoring, routerNavigate])
-  // DataProvider is deprecated — pages load their own data via usePageData
+
+  // Close user menu on click outside
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setUserMenuOpen(false)
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [userMenuOpen])
+
+  const handleSignOut = useCallback(() => {
+    setUserMenuOpen(false)
+    logout()
+    routerNavigate("/login", { replace: true })
+  }, [logout, routerNavigate])
+
+  const handleGoSettings = useCallback(() => {
+    setUserMenuOpen(false)
+    selectSection("settings")
+    navigate("settings")
+  }, [selectSection, navigate])
 
   if (restoring || !isAdmin) {
     return (
@@ -49,6 +70,10 @@ export default function DashboardShell() {
   // Format today's date for topbar
   const today = new Date()
   const dateStr = today.toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" }).toUpperCase()
+
+  const initials = admin?.name
+    ? admin.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+    : "?"
 
   return (
     <ModulesProvider>
@@ -95,7 +120,35 @@ export default function DashboardShell() {
           </div>
           <div className={s.tbRight}>
             <div className={s.tbBtn}>{dateStr}</div>
-            <button className={`${s.tbBtn} ${s.tbBtnPri}`}><Plus size={14} /> New</button>
+            <div className={`${s.tbBtn} ${s.wsBtn}`}>
+              {admin?.company || "My Workspace"}
+              <ChevronDown size={12} />
+            </div>
+            <div className={s.userMenuWrap} ref={menuRef}>
+              <button
+                className={s.userAvatar}
+                onClick={() => setUserMenuOpen(v => !v)}
+                aria-label="User menu"
+              >
+                {initials}
+              </button>
+              {userMenuOpen && (
+                <div className={s.userMenu}>
+                  <div className={s.userMenuHeader}>
+                    <div className={s.userMenuName}>{admin?.name || "User"}</div>
+                    <div className={s.userMenuEmail}>{admin?.email || ""}</div>
+                    <div className={s.userMenuRole}>{(admin?.role || "member").toUpperCase()}</div>
+                  </div>
+                  <div className={s.userMenuDivider} />
+                  <button className={s.userMenuItem} onClick={handleGoSettings}>
+                    <Settings size={14} /> Settings
+                  </button>
+                  <button className={s.userMenuItem} onClick={handleSignOut}>
+                    <LogOut size={14} /> Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

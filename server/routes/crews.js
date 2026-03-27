@@ -53,15 +53,35 @@ router.post('/',
   })
 )
 
-/** @route PUT /api/crews/:id — Update crew */
+/** @route PUT /api/crews/:id — Update crew (partial update) */
 router.put('/:id',
   requireAuth,
   validateIdParam,
-  validateBody({ name: { required: true, type: 'string', maxLength: 100 } }),
   asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
     const { name, leadName } = req.body
-    await db.query('UPDATE crews SET name = $1, lead_name = $2 WHERE id = $3 AND org_id = $4', [name, leadName, req.params.id, orgId])
+
+    // Build SET clause dynamically for partial updates
+    const sets = []
+    const params = []
+    if (name !== undefined) {
+      params.push(name)
+      sets.push(`name = $${params.length}`)
+    }
+    if (leadName !== undefined) {
+      params.push(leadName)
+      sets.push(`lead_name = $${params.length}`)
+    }
+
+    if (sets.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' })
+    }
+
+    params.push(req.params.id, orgId)
+    await db.query(
+      `UPDATE crews SET ${sets.join(', ')} WHERE id = $${params.length - 1} AND org_id = $${params.length}`,
+      params
+    )
     res.json({ success: true })
   })
 )

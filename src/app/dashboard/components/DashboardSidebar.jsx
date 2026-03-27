@@ -10,12 +10,14 @@ import { ChevronDown } from "lucide-react"
 import { SECTIONS, getSectionPages, isSinglePage } from "@/app/dashboard/nav-sections.js"
 import useModules from "@/hooks/useModules.jsx"
 import useAuth from "@/hooks/useAuth.jsx"
+import useRole from "@/hooks/useRole.js"
 import { APP } from "@/config/app.js"
 import s from "./DashboardSidebar.module.css"
 
 export default function DashboardSidebar({ activePage, activeSection, onNavigate, onSelectSection, open, onClose }) {
   const { admin } = useAuth()
   const { isEnabled, enabledModules } = useModules()
+  const { hasPageAccess } = useRole()
 
   const section = useMemo(
     () => SECTIONS.find(sec => sec.key === activeSection),
@@ -24,8 +26,9 @@ export default function DashboardSidebar({ activePage, activeSection, onNavigate
 
   const pages = useMemo(
     () => getSectionPages(activeSection)
-      .filter(page => !page.module || isEnabled(page.module)),
-    [activeSection, isEnabled]
+      .filter(page => !page.module || isEnabled(page.module))
+      .filter(page => hasPageAccess(page.key)),
+    [activeSection, isEnabled, hasPageAccess]
   )
 
   // For mobile: all sections with their pages
@@ -117,6 +120,7 @@ export default function DashboardSidebar({ activePage, activeSection, onNavigate
           {allSections.map(sec => {
             const secPages = getSectionPages(sec.key)
               .filter(page => !page.module || isEnabled(page.module))
+              .filter(page => hasPageAccess(page.key))
             const isSingle = isSinglePage(sec)
             return (
               <div key={sec.key} className={s.group}>

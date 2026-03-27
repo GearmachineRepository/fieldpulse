@@ -68,6 +68,16 @@ export function ModulesProvider({ children }) {
 
     try {
       await apiToggle(key, enabled)
+      // Background re-fetch to confirm server state
+      getModules()
+        .then(rows => {
+          if (rows.length > 0) {
+            const keys = new Set()
+            rows.forEach(r => { if (r.enabled) keys.add(r.module_key) })
+            setEnabledKeys(keys)
+          }
+        })
+        .catch(() => { /* keep optimistic state */ })
     } catch {
       // Revert on failure
       setEnabledKeys(prev => {

@@ -62,11 +62,11 @@ export default function employeeRoutes(upload, uploadToStorage) {
     const fields = {
       first_name: firstName,
       last_name: lastName,
-      phone: phone || null,
-      license_number: licenseNumber || null,
-      cert_number: certNumber || null,
-      is_crew_lead: isCrewLead === 'true' || isCrewLead === true,
-      default_crew_id: defaultCrewId || null,
+      phone: phone !== undefined ? (phone || null) : undefined,
+      license_number: licenseNumber !== undefined ? (licenseNumber || null) : undefined,
+      cert_number: certNumber !== undefined ? (certNumber || null) : undefined,
+      is_crew_lead: isCrewLead !== undefined ? (isCrewLead === 'true' || isCrewLead === true) : undefined,
+      default_crew_id: defaultCrewId !== undefined ? (defaultCrewId || null) : undefined,
     }
 
     // Only include photo if a new file was uploaded

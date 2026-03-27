@@ -353,6 +353,116 @@
   color: var(--t3);
 }
 
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-5);
+  background: var(--t1);
+  color: var(--s1);
+  border-radius: var(--r);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+
+/* ── Customize Modal ── */
+.customizeList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.customizeItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+}
+
+.customizeItemGated {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.customizeToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.customizeCheckbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--amb);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.customizeInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.customizeLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--t1);
+}
+
+.customizeDesc {
+  font-size: var(--text-xs);
+  color: var(--t3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customizeArrows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.arrowBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 20px;
+  border: none;
+  background: none;
+  color: var(--t3);
+  cursor: pointer;
+  border-radius: var(--r);
+  transition: var(--transition-fast);
+}
+
+.arrowBtn:hover:not(:disabled) {
+  color: var(--amb);
+  background: var(--s2);
+}
+
+.arrowBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .statsGrid {

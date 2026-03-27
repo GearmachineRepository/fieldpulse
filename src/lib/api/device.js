@@ -44,3 +44,24 @@ export function setDeviceRegistration(company) {
 export function clearDeviceRegistration() {
   localStorage.removeItem(DEVICE_KEY)
 }
+
+// ── Registration codes (admin) ──
+
+export function getRegistrationCodes() {
+  return request('/device/codes')
+}
+
+export function createRegistrationCode({ label, expiresIn } = {}) {
+  return request('/device/codes', {
+    method: 'POST',
+    body: JSON.stringify({ label, expiresIn }),
+  })
+}
+
+export function revokeRegistrationCode(id) {
+  return request(`/device/codes/${id}`, { method: 'DELETE' })
+}
+
+export function getRegistrationCodeQR(id) {
+  return request(`/device/codes/${id}/qr`)
+}

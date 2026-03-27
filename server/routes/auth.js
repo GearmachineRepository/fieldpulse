@@ -124,6 +124,8 @@ router.post('/signup',
       name: admin.name,
       email: admin.email,
       role: admin.role,
+      company: `${name.trim()}'s Organization`,
+      permissions: {},
       token: signInData.session.access_token,
     })
   })
@@ -145,7 +147,10 @@ router.post('/login',
 
     // Verify admin exists in our database first
     const r = await db.query(
-      'SELECT id, name, email, role, supabase_uid FROM admins WHERE LOWER(email) = LOWER($1) AND active = true',
+      `SELECT a.id, a.name, a.email, a.role, a.permissions, a.supabase_uid, o.name AS company
+       FROM admins a
+       LEFT JOIN organizations o ON o.id = a.org_id
+       WHERE LOWER(a.email) = LOWER($1) AND a.active = true`,
       [email.trim()]
     )
 
@@ -172,6 +177,8 @@ router.post('/login',
         name: admin.name,
         email: admin.email,
         role: admin.role,
+        company: admin.company || null,
+        permissions: admin.permissions || {},
         token: data.session.access_token,
       })
     }
@@ -193,6 +200,8 @@ router.post('/login',
         name: admin.name,
         email: admin.email,
         role: admin.role,
+        company: admin.company || null,
+        permissions: admin.permissions || {},
         token,
       })
     }
@@ -332,7 +341,10 @@ router.get('/me', requireAuth, asyncHandler(async (req, res) => {
 
   if (type === 'admin') {
     const r = await db.query(
-      'SELECT id, name, email, role FROM admins WHERE id = $1 AND active = true',
+      `SELECT a.id, a.name, a.email, a.role, a.permissions, o.name AS company
+       FROM admins a
+       LEFT JOIN organizations o ON o.id = a.org_id
+       WHERE a.id = $1 AND a.active = true`,
       [adminId]
     )
     if (!r.rows.length) return res.status(401).json({ error: 'Account not found' })

@@ -1,0 +1,17 @@
+.logo {
+  border-radius: var(--r);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--amb-dim);
+  color: var(--amb);
+  border-radius: var(--r);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  flex-shrink: 0;
+}

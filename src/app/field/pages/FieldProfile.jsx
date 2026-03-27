@@ -16,9 +16,17 @@ import { getEmployees } from "@/lib/api/employees.js"
 import { getResources, getResourceCategories } from "@/lib/api/resources.js"
 import { BottomSheet, BottomSheetOption, FilterButton } from "@/app/field/components/BottomSheet.jsx"
 
-export default function FieldProfile() {
+export default function FieldProfile({ initialView, onViewConsumed }) {
   const { employee, crew, vehicle, logout } = useAuth()
   const [view, setView] = useState("main")
+
+  // Handle external navigation (e.g., clock-in from FieldHome)
+  useEffect(() => {
+    if (initialView) {
+      setView(initialView)
+      onViewConsumed?.()
+    }
+  }, [initialView, onViewConsumed])
 
   if (view === "clockin") return <ClockInView crew={crew} employee={employee} onBack={() => setView("main")} />
   if (view === "resources") return <ResourcesView onBack={() => setView("main")} />
@@ -162,16 +170,19 @@ function CertsView({ employee, onBack }) {
 // ═══════════════════════════════════════════
 function ClockInView({ crew, employee, onBack }) {
   const [crewMembers, setCrewMembers] = useState([])
+  const [allEmployees, setAllEmployees] = useState([])
   const [todayRoster, setTodayRoster] = useState(null)
   const [selected, setSelected] = useState([])
   const [notes, setNotes] = useState("")
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [showAllEmployees, setShowAllEmployees] = useState(false)
 
   useEffect(() => {
     const load = async () => {
       try {
         const allEmps = await getEmployees()
+        setAllEmployees(allEmps)
         const members = allEmps.filter(e => e.default_crew_id === crew?.id)
         setCrewMembers(members)
         const roster = await getTodayRoster(crew?.id)
@@ -187,6 +198,9 @@ function ClockInView({ crew, employee, onBack }) {
     }
     load()
   }, [crew])
+
+  // Employees from other crews (not in current crew)
+  const otherEmployees = allEmployees.filter(e => e.default_crew_id !== crew?.id)
 
   const toggleMember = (emp) => {
     const exists = selected.find(m => m.id === emp.id)
@@ -279,6 +293,48 @@ function ClockInView({ crew, employee, onBack }) {
               )
             })}
           </div>
+
+          {/* Add from other crews */}
+          {otherEmployees.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <button onClick={() => setShowAllEmployees(!showAllEmployees)} style={{
+                display: "flex", alignItems: "center", gap: 8, width: "100%",
+                padding: "12px 16px", borderRadius: 3, cursor: "pointer", fontFamily: T.font,
+                background: showAllEmployees ? `${T.blue}10` : T.bg,
+                border: `1.5px solid ${showAllEmployees ? T.blue : T.border}`,
+                color: showAllEmployees ? T.blue : T.textMed, fontSize: 13, fontWeight: 600,
+              }}>
+                <Users size={16} />
+                {showAllEmployees ? "Hide other employees" : "Add from other crews"}
+              </button>
+              {showAllEmployees && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
+                  {otherEmployees.map(emp => {
+                    const isSelected = selected.some(m => m.id === emp.id)
+                    return (
+                      <button key={emp.id} onClick={() => toggleMember(emp)} style={{
+                        display: "flex", alignItems: "center", gap: 12, padding: "14px 16px",
+                        background: T.card, borderRadius: 3,
+                        border: `1.5px solid ${isSelected ? T.blue : T.border}`,
+                        cursor: "pointer", fontFamily: T.font, width: "100%", textAlign: "left",
+                      }}>
+                        <div style={{
+                          width: 22, height: 22, borderRadius: 3,
+                          border: `2px solid ${isSelected ? T.blue : T.border}`,
+                          background: isSelected ? T.blue : "transparent",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>{isSelected && <span style={{ color: "#fff", fontSize: 12, fontWeight: 600 }}>✓</span>}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{emp.first_name} {emp.last_name}</div>
+                          <div style={{ fontSize: 11, color: T.textLight }}>Other crew</div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           <div style={{ marginBottom: 16 }}>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Notes (optional)"

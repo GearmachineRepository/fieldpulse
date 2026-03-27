@@ -248,8 +248,8 @@ function FullScreenPage({ onClose, title, children }) {
         padding: "14px 20px", background: T.card, borderBottom: `1px solid ${T.border}`, flexShrink: 0,
       }}>
         <button onClick={onClose} style={{
-          border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
-          fontSize: 14, color: T.textLight, fontWeight: 600, padding: 0,
+          border: `1.5px solid ${T.red}`, background: `${T.red}10`, cursor: "pointer", fontFamily: T.font,
+          fontSize: 13, color: T.red, fontWeight: 600, padding: "6px 14px", borderRadius: 3,
         }}>Cancel</button>
         <div style={{ fontSize: 16, fontWeight: 600 }}>{title}</div>
         <div style={{ width: 50 }} />

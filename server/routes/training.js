@@ -12,18 +12,34 @@ import { getOrgId } from '../utils/db.js'
 
 const router = Router()
 
-/** @route GET /api/training — List all training sessions with signoff counts */
+/** @route GET /api/training — List training sessions with signoff counts
+ *  Query params:
+ *    type       — filter to exact type match
+ *    type_not   — exclude a specific type
+ */
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
+  const params = [orgId]
+  let where = 'ts.org_id = $1'
+
+  if (req.query.type) {
+    params.push(req.query.type)
+    where += ` AND ts.type = $${params.length}`
+  }
+  if (req.query.type_not) {
+    params.push(req.query.type_not)
+    where += ` AND (ts.type IS NULL OR ts.type != $${params.length})`
+  }
+
   const r = await db.query(
     `SELECT ts.*,
             COUNT(so.id)::int AS signoff_count
      FROM training_sessions ts
      LEFT JOIN training_signoffs so ON so.training_session_id = ts.id
-     WHERE ts.org_id = $1
+     WHERE ${where}
      GROUP BY ts.id
      ORDER BY ts.training_date DESC, ts.created_at DESC`,
-    [orgId]
+    params
   )
   res.json(r.rows)
 }))

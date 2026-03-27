@@ -1,85 +1,115 @@
 /* ═══════════════════════════════════════════
-   SDS Library Page
+   SDS Library Page — Search-first redesign
    ═══════════════════════════════════════════ */
 
-/* ── Filter Bar ── */
-.filterBar {
-  display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.searchWrap {
+/* ── Prominent Search Bar ── */
+.searchBar {
   position: relative;
-  flex: 1;
-  min-width: 120px;
-  max-width: 320px;
+  margin-bottom: var(--space-3);
 }
 
-.searchIcon {
+.searchBarIcon {
   position: absolute;
-  left: 10px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--t3);
 }
 
-.searchInput {
+.searchBarInput {
   width: 100%;
-  padding: var(--space-3) var(--space-3) var(--space-3) 32px;
+  height: 48px;
+  padding: 0 var(--space-4) 0 42px;
   border-radius: var(--r);
   border: 1px solid var(--bd);
   background: var(--s1);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-family: var(--fn);
   color: var(--t1);
   outline: none;
   box-sizing: border-box;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
-.searchInput:focus {
+.searchBarInput:focus {
   border-color: var(--amb);
 }
 
-.filterSelect {
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--r);
-  border: 1px solid var(--bd);
-  background: var(--s1);
-  font-size: var(--text-sm);
-  font-family: var(--fn);
-  color: var(--t1);
-  outline: none;
-  cursor: pointer;
+.searchBarInput::placeholder {
+  color: var(--t3);
 }
 
-.filterSelect:focus {
-  border-color: var(--amb);
-}
-
-.manageBtn {
+/* ── Mode Toggle (pill switch) ── */
+.modeRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--r);
-  border: 1px solid var(--bd);
-  background: var(--s1);
-  color: var(--t3);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  flex-shrink: 0;
+  margin-bottom: var(--space-3);
 }
 
-.manageBtn:hover {
+.modeToggle {
+  display: inline-flex;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  overflow: hidden;
+}
+
+.modePill {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: none;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  color: var(--t2);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.modePill:hover {
+  color: var(--t1);
+}
+
+.modePillActive {
+  background: var(--amb);
+  color: var(--amb-text);
+}
+
+/* ── Filter Pills ── */
+.filterPills {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.filterPill {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: none;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  color: var(--t2);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.filterPill:hover {
   border-color: var(--amb);
   color: var(--amb);
+}
+
+.filterPillActive {
+  background: var(--amb-dim);
+  border-color: var(--amb);
+  color: var(--amb);
+}
+
+/* ── Header Actions ── */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 /* ── Card Grid ── */
@@ -112,16 +142,34 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-2);
+  margin-bottom: var(--space-2);
 }
 
 .cardName {
   font-size: var(--text-md);
   font-weight: var(--font-semibold);
   color: var(--t1);
-  margin-bottom: var(--space-1);
+  margin-bottom: 2px;
 }
 
-.cardEditBtn {
+.cardMfg {
+  font-size: var(--text-sm);
+  color: var(--t3);
+}
+
+/* ── Card Actions / Kebab ── */
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.kebabWrap {
+  position: relative;
+}
+
+.kebabBtn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,25 +181,60 @@
   color: var(--t3);
   cursor: pointer;
   transition: var(--transition-fast);
-  flex-shrink: 0;
   opacity: 0;
 }
 
-.card:hover .cardEditBtn {
+.card:hover .kebabBtn {
   opacity: 1;
 }
 
-.cardEditBtn:hover {
+.kebabBtn:hover {
   border-color: var(--amb);
   color: var(--amb);
 }
 
-.cardMfg {
-  font-size: var(--text-sm);
-  color: var(--t3);
-  margin-bottom: var(--space-3);
+.kebabMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 120px;
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+  overflow: hidden;
 }
 
+.kebabItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: none;
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  color: var(--t1);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.kebabItem:hover {
+  background: var(--s2);
+}
+
+.kebabItemDanger {
+  color: var(--red);
+}
+
+.kebabItemDanger:hover {
+  background: rgba(239, 68, 68, 0.06);
+}
+
+/* ── GHS / Hazard Row ── */
 .hazardRow {
   display: flex;
   gap: var(--space-1);
@@ -159,6 +242,7 @@
   margin-bottom: var(--space-3);
 }
 
+/* ── Card Meta / Badges ── */
 .cardMeta {
   display: flex;
   flex-wrap: wrap;
@@ -172,25 +256,25 @@
   margin-bottom: 2px;
 }
 
+/* ── Staleness Indicator ── */
 .cardUpdated {
-  font-size: var(--text-xs);
-  color: var(--t3);
-}
-
-.checkRow {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--t2);
-  margin-bottom: var(--space-3);
-  cursor: pointer;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--t3);
+  margin-top: var(--space-2);
 }
 
-.mono {
-  font-family: var(--mono);
+.stalenessDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
+/* ── Card Footer ── */
 .cardFooter {
   display: flex;
   border-top: 1px solid var(--bd);
@@ -211,6 +295,7 @@
   font-family: var(--fn);
   cursor: pointer;
   transition: var(--transition-fast);
+  text-decoration: none;
 }
 
 .cardAction:hover {
@@ -220,6 +305,126 @@
 
 .cardAction + .cardAction {
   border-left: 1px solid var(--bd);
+}
+
+/* ── Import Card (search mode) ── */
+.importCard {
+  border-style: dashed;
+}
+
+.importBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: none;
+  background: none;
+  color: var(--amb);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.importBtn:hover {
+  background: var(--amb-dim);
+}
+
+/* ── Search Mode Content ── */
+.searchModeContent {
+  min-height: 200px;
+}
+
+/* ── Manage / Settings Button ── */
+.manageBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r);
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t3);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.manageBtn:hover {
+  border-color: var(--amb);
+  color: var(--amb);
+}
+
+/* ── Buttons ── */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: none;
+  background: var(--amb);
+  color: var(--amb-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.addBtn:hover {
+  opacity: 0.88;
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--r);
+  border: 1px dashed var(--amb);
+  background: transparent;
+  color: var(--amb);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.secondaryBtn:hover {
+  background: var(--amb-dim);
+}
+
+/* ── Checkbox Row ── */
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--t2);
+  margin-bottom: var(--space-3);
+  cursor: pointer;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+/* ── Form ── */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
 }
 
 /* ── Loading Grid ── */
@@ -284,31 +489,10 @@
   line-height: var(--leading-relaxed);
 }
 
-/* ── Buttons ── */
-.addBtn {
-  display: inline-flex;
+.emptyActions {
+  display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--r);
-  border: none;
-  background: var(--amb);
-  color: var(--amb-text);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  font-family: var(--fn);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.addBtn:hover {
-  opacity: 0.88;
-}
-
-/* ── Form ── */
-.formRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  justify-content: center;
   gap: var(--space-3);
 }
 
@@ -331,13 +515,24 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .searchWrap {
-    max-width: none;
-    min-width: 0;
+  .searchBarInput {
+    height: 40px;
+    font-size: var(--text-sm);
   }
 
-  .filterSelect {
-    min-width: 0;
+  .modeToggle {
+    width: 100%;
+  }
+
+  .modePill {
+    flex: 1;
+    text-align: center;
+  }
+
+  .filterPills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: var(--space-1);
   }
 
   .grid {
@@ -350,5 +545,9 @@
 
   .formRow {
     grid-template-columns: 1fr;
+  }
+
+  .emptyActions {
+    flex-direction: column;
   }
 }

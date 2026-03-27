@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   Company QR Code Modal
+   Registration Code Manager Modal
    ═══════════════════════════════════════════ */
 
 .overlay {
@@ -14,29 +14,49 @@
 }
 
 .modal {
-  background: var(--color-card);
-  border-radius: 4px;
+  background: var(--s1);
+  border-radius: 3px;
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
+  max-height: 85vh;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
-  border-bottom: 1px solid var(--color-card-border);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bd);
+  flex-shrink: 0;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 16px;
+  gap: 8px;
+  font-size: var(--text-base);
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--t1);
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 3px;
+  color: var(--t3);
+  display: flex;
+  align-items: center;
+}
+
+.backBtn:hover {
+  background: var(--s2);
+  color: var(--t1);
 }
 
 .closeBtn {
@@ -45,35 +65,271 @@
   cursor: pointer;
   padding: 6px;
   border-radius: 3px;
-  color: var(--color-text-light);
+  color: var(--t3);
   display: flex;
   align-items: center;
   transition: background 0.15s;
 }
 
 .closeBtn:hover {
-  background: var(--color-bg);
+  background: var(--s2);
 }
 
 .body {
-  padding: 24px 20px;
+  padding: 20px;
+  overflow-y: auto;
 }
 
-.instructions {
-  font-size: 14px;
-  color: var(--color-text-med);
-  line-height: 1.5;
+/* ── Error banner ── */
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--red-dim);
+  border-radius: 3px;
+  margin-bottom: 16px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--red);
+}
+
+.errorBanner button {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--red);
+  padding: 2px;
+}
+
+/* ── Create button ── */
+.createBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 3px;
+  border: 1.5px dashed var(--bd);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--fn);
+  color: var(--amb);
+  transition: background 0.15s, border-color 0.15s;
+  margin-bottom: 16px;
+}
+
+.createBtn:hover {
+  background: var(--amb-dim);
+  border-color: var(--amb);
+}
+
+/* ── Create form ── */
+.createForm {
+  padding: 16px;
+  border-radius: 3px;
+  border: 1px solid var(--bd);
+  background: var(--s2);
+  margin-bottom: 16px;
+}
+
+.createField {
+  margin-bottom: 12px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t3);
+  margin-bottom: 6px;
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 3px;
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  color: var(--t1);
+  font-size: var(--text-sm);
+  font-family: var(--fn);
+  box-sizing: border-box;
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: var(--amb);
+}
+
+.createActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.cancelBtn {
+  padding: 8px 14px;
+  border-radius: 3px;
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--fn);
+  color: var(--t2);
+}
+
+.cancelBtn:hover {
+  background: var(--s2);
+}
+
+.primaryBtn {
+  padding: 8px 16px;
+  border-radius: 3px;
+  border: none;
+  background: var(--amb);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--fn);
+  color: var(--amb-text);
+  transition: opacity 0.15s;
+}
+
+.primaryBtn:hover {
+  opacity: 0.9;
+}
+
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Empty state ── */
+.emptyState {
   text-align: center;
-  margin: 0 0 20px;
+  padding: 32px 16px;
+  color: var(--t3);
 }
 
+.emptyState svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.emptyState p {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--t2);
+  margin: 0 0 4px;
+}
+
+.emptyState span {
+  font-size: var(--text-sm);
+}
+
+/* ── Code list ── */
+.codeList {
+  margin-bottom: 16px;
+}
+
+.listLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.codeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 3px;
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  margin-bottom: 6px;
+}
+
+.codeItemInactive {
+  opacity: 0.45;
+}
+
+.codeItemLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.codeItemCode {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--t1);
+  letter-spacing: 0.5px;
+  font-family: var(--mono);
+}
+
+.codeItemLabel {
+  font-size: 12px;
+  color: var(--t2);
+}
+
+.codeItemExpiry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--t3);
+}
+
+.codeItemActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.qrBtn,
+.revokeBtn {
+  padding: 8px;
+  border-radius: 3px;
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: var(--t2);
+  transition: background 0.15s, color 0.15s;
+}
+
+.qrBtn:hover {
+  background: var(--amb-dim);
+  color: var(--amb);
+  border-color: var(--amb);
+}
+
+.revokeBtn:hover {
+  background: var(--red-dim);
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* ── QR View ── */
 .qrContainer {
   display: flex;
   justify-content: center;
   padding: 20px;
   background: #fff;
   border-radius: 3px;
-  border: 1px solid var(--color-card-border);
+  border: 1px solid var(--bd);
   margin-bottom: 20px;
 }
 
@@ -89,7 +345,7 @@
 
 .codeLabel {
   font-size: 12px;
-  color: var(--color-text-light);
+  color: var(--t3);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -106,12 +362,13 @@
 .codeValue {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--t1);
   letter-spacing: 1px;
-  background: var(--color-bg);
+  background: var(--s2);
   padding: 8px 16px;
   border-radius: 3px;
-  border: 1px solid var(--color-card-border);
+  border: 1px solid var(--bd);
+  font-family: var(--mono);
 }
 
 .copyBtn {
@@ -120,48 +377,71 @@
   gap: 4px;
   padding: 8px 12px;
   border-radius: 3px;
-  border: 1px solid var(--color-card-border);
-  background: var(--color-card);
+  border: 1px solid var(--bd);
+  background: var(--s1);
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-med);
+  font-family: var(--fn);
+  color: var(--t2);
   transition: background 0.15s, color 0.15s;
 }
 
 .copyBtn:hover {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--s2);
+  color: var(--t1);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 3px;
+  border: 1px solid var(--bd);
+  background: var(--s1);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--fn);
+  color: var(--t2);
+  transition: background 0.15s, color 0.15s;
+}
+
+.actionBtn:hover {
+  background: var(--s2);
+  color: var(--t1);
 }
 
 .hint {
   font-size: 12px;
-  color: var(--color-text-light);
+  color: var(--t3);
   text-align: center;
   margin: 0;
   line-height: 1.5;
 }
 
+/* ── Loading ── */
 .loadingState {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   padding: 40px 0;
-  color: var(--color-text-light);
+  color: var(--t3);
   font-size: 14px;
 }
 
 .spinner {
   animation: spin 1s linear infinite;
-  color: var(--color-accent);
-}
-
-.errorState {
-  text-align: center;
-  padding: 20px;
-  color: var(--color-red);
-  font-size: 14px;
+  color: var(--amb);
 }
 
 @keyframes spin {
