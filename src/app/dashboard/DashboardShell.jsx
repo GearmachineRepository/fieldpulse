@@ -22,6 +22,7 @@ import useTheme from "@/hooks/useTheme.js"
 import DashboardRail from "@/app/dashboard/components/DashboardRail.jsx"
 import DashboardSidebar from "@/app/dashboard/components/DashboardSidebar.jsx"
 import CompanyQRModal from "@/app/dashboard/components/CompanyQRModal.jsx"
+import { ToastProvider } from "@/hooks/ToastContext.jsx"
 import s from "./DashboardShell.module.css"
 
 export default function DashboardShell() {
@@ -154,7 +155,9 @@ export default function DashboardShell() {
 
         {/* Page content — rendered by React Router */}
         <main className={s.content}>
-          <Outlet />
+          <ToastProvider>
+            <Outlet />
+          </ToastProvider>
         </main>
       </div>
     </div>

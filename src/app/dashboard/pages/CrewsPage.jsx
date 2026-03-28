@@ -7,7 +7,7 @@
 import { useState, useMemo } from "react"
 import { Plus, Edit3, Shield, Users, ChevronRight, Search, X, UserPlus, UserMinus } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import { getCrews, createCrew, updateCrew, deleteCrew } from "@/lib/api/crews.js"
 import { getEmployees, updateEmployee } from "@/lib/api/employees.js"
 import useNavigation from "@/hooks/useNavigation.js"
@@ -20,8 +20,8 @@ import {
 import s from "./CrewsPage.module.css"
 
 export default function CrewsPage() {
-  const toast = useToast()
-  const { navigate: onNavigate } = useNavigation()
+  const toast = useGlobalToast()
+  const { navigate: _onNavigate } = useNavigation()
   const crews = usePageData("crews", {
     fetchFn: getCrews,
     createFn: createCrew,
@@ -226,12 +226,6 @@ export default function CrewsPage() {
         />
       )}
 
-      {/* Toast */}
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </>
   )
 }

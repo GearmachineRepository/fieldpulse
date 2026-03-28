@@ -97,7 +97,7 @@ export default function useCrud(config) {
   // ── Auto-fetch on mount if immediate ──
   useEffect(() => {
     if (immediate) refresh().catch(() => {})
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Mount-only; immediate is a static config flag
 
   return {
     data,

@@ -8,8 +8,8 @@
 import { useState, useEffect, useCallback } from "react"
 import {
   MapPin, CheckCircle2, Circle, Clock, ChevronRight,
-  Phone, Navigation, Loader2, AlertCircle, FileText, Camera,
-  ExternalLink, Download, BookOpen, ChevronDown, X,
+  Phone, Navigation, Loader2, FileText,
+  ExternalLink, Download, BookOpen, X,
 } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
@@ -20,7 +20,6 @@ import { BottomSheet } from "@/app/field/components/BottomSheet.jsx"
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-function getLocalDate() { return new Date().toLocaleDateString("en-CA") }
 function getLocalDow() { return new Date().getDay() }
 function getDateForDow(dow) {
   const today = new Date()
@@ -47,8 +46,13 @@ export default function FieldSchedule() {
 
   // Load all crew routes
   useEffect(() => {
-    if (!crewId) { setLoading(false); return }
-    getCrewRoutes(crewId).then(setAllRoutes).catch(console.error).finally(() => setLoading(false))
+    if (!crewId) { setLoading(false); return } // eslint-disable-line react-hooks/set-state-in-effect -- Early exit guard
+    let active = true
+    getCrewRoutes(crewId)
+      .then(r => { if (active) setAllRoutes(r) })
+      .catch(() => {})
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [crewId])
 
   // Load stops for selected day
@@ -72,13 +76,38 @@ export default function FieldSchedule() {
     setLoadingStops(false)
   }, [allRoutes, selectedDow, selectedDate])
 
-  useEffect(() => { if (allRoutes.length > 0) loadDayStops() }, [loadDayStops, allRoutes])
+  useEffect(() => {
+    let active = true
+    if (allRoutes.length > 0) {
+      ;(async () => {
+        const dayRoutes = allRoutes.filter(r => r.dayOfWeek === selectedDow && r.stopCount > 0)
+        if (dayRoutes.length === 0) { if (active) setDayStops([]); return }
+        if (active) setLoadingStops(true)
+        const stops = []
+        for (const route of dayRoutes) {
+          try {
+            const data = await getRouteDay(route.id, selectedDate)
+            if (data.stops) {
+              data.stops.forEach(s => stops.push({
+                ...s, routeId: route.id, routeName: route.name, routeColor: route.color,
+              }))
+            }
+          } catch (e) { console.error('Failed to load route stops:', e.message) }
+        }
+        if (active) { setDayStops(stops); setLoadingStops(false) }
+      })()
+    }
+    return () => { active = false }
+  }, [allRoutes, selectedDow, selectedDate])
 
   // Load events for selected day
   useEffect(() => {
     if (!crewId) return
+    let active = true
     getScheduleEvents({ startDate: selectedDate, endDate: selectedDate, crewId })
-      .then(setEvents).catch(() => setEvents([]))
+      .then(ev => { if (active) setEvents(ev) })
+      .catch(() => { if (active) setEvents([]) })
+    return () => { active = false }
   }, [crewId, selectedDate])
 
   // Complete a stop (can be called from detail sheet or quick-tap)
@@ -131,12 +160,12 @@ export default function FieldSchedule() {
               background: isSel ? T.accent : "transparent", fontFamily: T.font,
               display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
             }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: isSel ? "#fff" : T.textLight }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: isSel ? T.card : T.textLight }}>
                 {label}
               </span>
               <span style={{
                 fontSize: 16, fontWeight: 600,
-                color: isSel ? "#fff" : isTodayTab ? T.accent : T.text,
+                color: isSel ? T.card : isTodayTab ? T.accent : T.text,
               }}>
                 {new Date(new Date().setDate(new Date().getDate() + (i - getLocalDow()))).getDate()}
               </span>
@@ -307,7 +336,7 @@ function StopCard({ stop, index, onTap, onQuickComplete }) {
           <div style={{
             width: 28, height: 28, borderRadius: 3,
             background: isDone ? T.accentLight : (stop.routeColor || T.accent),
-            color: isDone ? T.accent : "#fff",
+            color: isDone ? T.accent : T.card,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 12, fontWeight: 600,
           }}>{index + 1}</div>
@@ -363,14 +392,16 @@ function StopDetailSheet({ stop, onComplete, onClose }) {
   // Fetch resources linked to this account
   useEffect(() => {
     if (!stop.account?.id && !stop.accountId) {
-      setLoadingResources(false)
+      setLoadingResources(false) // eslint-disable-line react-hooks/set-state-in-effect -- Early exit guard
       return
     }
+    let active = true
     const accountId = stop.account?.id || stop.accountId
     getAccountResources(accountId)
-      .then(setResources)
-      .catch(() => setResources([]))
-      .finally(() => setLoadingResources(false))
+      .then(r => { if (active) setResources(r) })
+      .catch(() => { if (active) setResources([]) })
+      .finally(() => { if (active) setLoadingResources(false) })
+    return () => { active = false }
   }, [stop])
 
   const account = stop.account || {}
@@ -389,7 +420,7 @@ function StopDetailSheet({ stop, onComplete, onClose }) {
         cursor: "pointer", fontFamily: T.font, fontSize: 15, fontWeight: 600,
         marginBottom: 20,
         background: isDone ? T.amberLight : T.accent,
-        color: isDone ? T.amber : "#fff",
+        color: isDone ? T.amber : T.card,
         transition: "background 0.15s",
       }}>
         {isDone ? (
@@ -428,7 +459,7 @@ function StopDetailSheet({ stop, onComplete, onClose }) {
             style={{
               flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               padding: "10px", borderRadius: 3, border: "none", textDecoration: "none",
-              background: T.accent, color: "#fff", fontSize: 13, fontWeight: 600,
+              background: T.accent, color: T.card, fontSize: 13, fontWeight: 600,
               fontFamily: T.font, cursor: "pointer",
             }}>
             <Navigation size={14} /> Navigate

@@ -3,14 +3,16 @@
 // Matches EquipmentPage pattern with vehicle-specific columns
 // ═══════════════════════════════════════════
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Truck, Plus, Search, Edit3, Trash2,
   Hash, Calendar, CreditCard, Wrench, Users, Settings,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from "@/lib/api/vehicles.js"
+import { getFieldDocs } from "@/lib/api/fieldDocs.js"
+import { AssetInspectionList } from "../components/AssetInspections.jsx"
 import { getCrews } from "@/lib/api/crews.js"
 import PageShell from "../components/PageShell.jsx"
 import DataTable from "../components/DataTable.jsx"
@@ -21,13 +23,12 @@ import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField,
 } from "../components/PageUI.jsx"
 import s from "./FleetPage.module.css"
+import { ASSET_STATUSES, getStatusVariant } from "@/lib/formatUtils.js"
 
 const ts = DataTable.s
 
-const STATUSES = ["Active", "Out of Service", "Retired"]
-
 export default function FleetPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const vehicles = usePageData("vehicles", {
     fetchFn: getVehicles,
     createFn: createVehicle,
@@ -85,15 +86,6 @@ export default function FleetPage() {
     }
   }
 
-  const getStatusVariant = (status) => {
-    switch (status) {
-      case "Active": return "green"
-      case "Out of Service": return "amber"
-      case "Retired": return "gray"
-      default: return "green"
-    }
-  }
-
   // Build unique crew names for the filter dropdown
   const crewNames = [...new Set(vehicles.data.map(v => v.crew_name).filter(Boolean))].sort()
 
@@ -143,7 +135,7 @@ export default function FleetPage() {
             className={s.filterSelect}
           >
             <option value="">All Statuses</option>
-            {STATUSES.map(st => <option key={st} value={st}>{st}</option>)}
+            {ASSET_STATUSES.map(st => <option key={st} value={st}>{st}</option>)}
           </select>
         </div>
 
@@ -230,11 +222,6 @@ export default function FleetPage() {
         />
       )}
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </>
   )
 }
@@ -246,10 +233,24 @@ export default function FleetPage() {
 function VehicleDetail({ vehicle, onEdit, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [tab, setTab] = useState("info")
+  const [inspections, setInspections] = useState([])
+  const [loadingInspections, setLoadingInspections] = useState(false)
+
+  // Fetch inspections linked to this vehicle
+  useEffect(() => {
+    if (tab !== "inspections" || !vehicle?.id) return
+    let active = true
+    setLoadingInspections(true) // eslint-disable-line react-hooks/set-state-in-effect -- Loading flag before async fetch
+    getFieldDocs({ type: "inspection", assetType: "vehicle", assetId: vehicle.id })
+      .then(docs => { if (active) setInspections(docs || []) })
+      .catch(() => { if (active) setInspections([]) })
+      .finally(() => { if (active) setLoadingInspections(false) })
+    return () => { active = false }
+  }, [tab, vehicle?.id])
 
   const tabs = [
     { key: "info", label: "Info" },
-    { key: "inspections", label: "Inspections" },
+    { key: "inspections", label: `Inspections${inspections.length ? ` (${inspections.length})` : ""}` },
     { key: "maintenance", label: "Maintenance" },
   ]
 
@@ -290,11 +291,7 @@ function VehicleDetail({ vehicle, onEdit, onDelete }) {
       )}
 
       {tab === "inspections" && (
-        <div className={s.emptyTab}>
-          <Settings size={28} strokeWidth={1} className={s.emptyTabIcon} />
-          <div className={s.emptyTabTitle}>No inspections recorded</div>
-          <div className={s.emptyTabDesc}>Vehicle inspection history will appear here.</div>
-        </div>
+        <AssetInspectionList inspections={inspections} loading={loadingInspections} />
       )}
 
       {tab === "maintenance" && (
@@ -392,7 +389,7 @@ function VehicleModal({ vehicle, crews, onClose, onSave, onDelete }) {
           label="Status"
           value={status}
           onChange={setStatus}
-          options={STATUSES.map(st => ({ value: st, label: st }))}
+          options={ASSET_STATUSES.map(st => ({ value: st, label: st }))}
         />
       </div>
       <ModalFooter

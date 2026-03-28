@@ -181,11 +181,13 @@ router.get('/attendance-today', requireAuth, asyncHandler(async (req, res) => {
   })
 }))
 
-/** @route DELETE /api/rosters/:id — Delete roster */
+/** @route DELETE /api/rosters/:id — Delete roster + members atomically */
 router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
-  await db.query('DELETE FROM daily_roster_members WHERE roster_id = $1', [req.params.id])
-  await db.query('DELETE FROM daily_crew_rosters WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
+  await withTransaction(async (client) => {
+    await client.query('DELETE FROM daily_roster_members WHERE roster_id = $1', [req.params.id])
+    await client.query('DELETE FROM daily_crew_rosters WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
+  })
   res.json({ success: true })
 }))
 

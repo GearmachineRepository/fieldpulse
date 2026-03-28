@@ -62,7 +62,7 @@ export default function SignupPage() {
             width: 52, height: 52, borderRadius: 3, background: T.accent, margin: "0 auto 14px",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <Leaf size={28} color="#fff" />
+            <Leaf size={28} color={T.card} />
           </div>
           <div style={{ fontSize: 26, fontWeight: 600, color: T.text, letterSpacing: "-0.5px" }}>CruPoint</div>
           <div style={{ fontSize: 14, color: T.textLight, marginTop: 4 }}>Create your account</div>
@@ -162,7 +162,7 @@ export default function SignupPage() {
             disabled={submitting || !canSubmit}
             style={{
               width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-              background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
+              background: T.accent, color: T.card, fontSize: 16, fontWeight: 600, fontFamily: T.font,
               opacity: (submitting || !canSubmit) ? 0.5 : 1,
               transition: "opacity 0.15s",
               boxShadow: "0 4px 14px rgba(47,111,237,0.2)",

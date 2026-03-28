@@ -12,7 +12,7 @@ import {
   MoreVertical, Trash2, Link2,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import useCategories from "@/hooks/useCategories.js"
 import { getSdsEntries, createSdsEntry, updateSdsEntry, deleteSdsEntry } from "@/lib/api/sds.js"
 import { searchSDSManagerAPI } from "@/lib/api/integrations.js"
@@ -22,7 +22,7 @@ import CategoryManager from "../components/CategoryManager.jsx"
 import SDSQRModal from "../components/SDSQRModal.jsx"
 import { GHSRow } from "../components/GHSPictograms.jsx"
 import {
-  Modal, ModalFooter, ConfirmModal, FormField, SelectField, TextareaField,
+  Modal, ModalFooter, ConfirmModal, FormField, SelectField,
 } from "../components/PageUI.jsx"
 import s from "./SDSPage.module.css"
 
@@ -49,7 +49,7 @@ function getStalenessLabel(dateStr) {
 }
 
 export default function SDSPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const sds = usePageData("sds", {
     fetchFn: getSdsEntries,
     createFn: createSdsEntry,
@@ -329,11 +329,6 @@ export default function SDSPage() {
         scopeLabel="SDS Categories"
       />
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </>
   )
 }

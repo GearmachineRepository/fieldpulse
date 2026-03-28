@@ -11,7 +11,7 @@ import {
 import AddressLink from "../components/AddressLink.jsx"
 import s from "./ProjectsPage.module.css"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import {
   getAccounts, createAccount, updateAccount, deleteAccount,
   getAccountResources, linkAccountResource, unlinkAccountResource,
@@ -26,37 +26,10 @@ import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField, TextareaField,
   LoadingSpinner,
 } from "../components/PageUI.jsx"
-
-// -- State abbreviation helper --
-const STATE_MAP = {
-  alabama:"AL", alaska:"AK", arizona:"AZ", arkansas:"AR", california:"CA",
-  colorado:"CO", connecticut:"CT", delaware:"DE", florida:"FL", georgia:"GA",
-  hawaii:"HI", idaho:"ID", illinois:"IL", indiana:"IN", iowa:"IA", kansas:"KS",
-  kentucky:"KY", louisiana:"LA", maine:"ME", maryland:"MD", massachusetts:"MA",
-  michigan:"MI", minnesota:"MN", mississippi:"MS", missouri:"MO", montana:"MT",
-  nebraska:"NE", nevada:"NV", "new hampshire":"NH", "new jersey":"NJ",
-  "new mexico":"NM", "new york":"NY", "north carolina":"NC", "north dakota":"ND",
-  ohio:"OH", oklahoma:"OK", oregon:"OR", pennsylvania:"PA", "rhode island":"RI",
-  "south carolina":"SC", "south dakota":"SD", tennessee:"TN", texas:"TX",
-  utah:"UT", vermont:"VT", virginia:"VA", washington:"WA", "west virginia":"WV",
-  wisconsin:"WI", wyoming:"WY", "district of columbia":"DC",
-}
-
-function abbreviateState(input) {
-  if (!input) return "CA"
-  const trimmed = input.trim()
-  if (trimmed.length <= 2) return trimmed.toUpperCase()
-  return STATE_MAP[trimmed.toLowerCase()] || trimmed
-}
-
-// -- Group color presets --
-const ITEM_COLORS = [
-  "#2F6FED", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED",
-  "#0891B2", "#DB2777", "#65A30D", "#92400E", "#475569",
-]
+import { abbreviateState, formatFileSize, ITEM_COLORS } from "@/lib/formatUtils.js"
 
 export default function ProjectsPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const projects = usePageData("accounts", {
     fetchFn: getAccounts,
     createFn: createAccount,
@@ -82,7 +55,7 @@ export default function ProjectsPage() {
 
   // Reset tab + edit mode when selection changes
   useEffect(() => {
-    setActiveTab("details")
+    setActiveTab("details") // eslint-disable-line react-hooks/set-state-in-effect -- Reset state on selection change
     setIsEditMode(false)
   }, [selectedId])
 
@@ -331,12 +304,6 @@ export default function ProjectsPage() {
         />
       )}
 
-      {/* Toast */}
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </div>
   )
 }
@@ -361,6 +328,7 @@ function DetailsTab({ project, groups, isEditMode, onEdit, onCancel, onSave, onD
 
   // Sync form when project changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync form fields from prop
     setName(project.name || "")
     setAddress(project.address || "")
     setCity(project.city || "")
@@ -524,7 +492,17 @@ function ResourcesTab({ projectId, toast }) {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [projectId])
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      let linkedRes = []
+      let allRes = []
+      try { allRes = await getResources() } catch (err) { console.error("Failed to load resources:", err) }
+      try { linkedRes = await getAccountResources(projectId) } catch (err) { console.error("Failed to load linked resources:", err) }
+      if (active) { setLinked(linkedRes); setAllResources(allRes); setLoading(false) }
+    })()
+    return () => { active = false }
+  }, [projectId])
 
   const handleLink = async (resourceId) => {
     try {
@@ -619,12 +597,6 @@ function ResourcesTab({ projectId, toast }) {
   )
 }
 
-function formatFileSize(bytes) {
-  if (!bytes) return ""
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
 
 
 // ===================================================

@@ -25,7 +25,7 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 
   let r = await db.query(
     `SELECT id, card_key, position FROM dashboard_pins
-     WHERE company_id = $1
+     WHERE org_id = $1
      ORDER BY position`,
     [orgId]
   )
@@ -34,14 +34,14 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
   if (r.rows.length === 0) {
     for (const pin of DEFAULT_PINS) {
       await db.query(
-        `INSERT INTO dashboard_pins (company_id, card_key, position)
+        `INSERT INTO dashboard_pins (org_id, card_key, position)
          VALUES ($1, $2, $3)`,
         [orgId, pin.card_key, pin.position]
       )
     }
     r = await db.query(
       `SELECT id, card_key, position FROM dashboard_pins
-       WHERE company_id = $1
+       WHERE org_id = $1
        ORDER BY position`,
       [orgId]
     )
@@ -60,12 +60,12 @@ router.put('/', requireAuth, asyncHandler(async (req, res) => {
   }
 
   // Delete existing and re-insert
-  await db.query('DELETE FROM dashboard_pins WHERE company_id = $1', [orgId])
+  await db.query('DELETE FROM dashboard_pins WHERE org_id = $1', [orgId])
 
   for (const pin of pins) {
     if (!pin.card_key) continue
     await db.query(
-      `INSERT INTO dashboard_pins (company_id, card_key, position)
+      `INSERT INTO dashboard_pins (org_id, card_key, position)
        VALUES ($1, $2, $3)`,
       [orgId, pin.card_key, pin.position || 0]
     )
@@ -73,7 +73,7 @@ router.put('/', requireAuth, asyncHandler(async (req, res) => {
 
   const r = await db.query(
     `SELECT id, card_key, position FROM dashboard_pins
-     WHERE company_id = $1
+     WHERE org_id = $1
      ORDER BY position`,
     [orgId]
   )

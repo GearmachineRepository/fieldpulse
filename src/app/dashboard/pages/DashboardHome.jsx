@@ -15,7 +15,7 @@ import {
 import useNavigation from "@/hooks/useNavigation.js"
 import usePageData from "@/hooks/usePageData.js"
 import useModules from "@/hooks/useModules.jsx"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import { getCrews, getEmployees, getVehicles, getAccounts } from "@/lib/api/index.js"
 import { getAttendanceToday } from "@/lib/api/rosters.js"
 import { getDashboardPins, updateDashboardPins } from "@/lib/api/dashboard.js"
@@ -32,7 +32,7 @@ const ts = DataTable.s
 export default function DashboardHome() {
   const { navigate: onNavigate } = useNavigation()
   const { isEnabled } = useModules()
-  const toast = useToast()
+  const toast = useGlobalToast()
 
   // ── Pin state ──
   const [pins, setPins] = useState(null)
@@ -427,9 +427,6 @@ export default function DashboardHome() {
         />
       )}
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">{toast.message}</div>
-      )}
     </div>
   )
 }

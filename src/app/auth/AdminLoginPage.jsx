@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Leaf, Eye, EyeOff, Loader2, Mail, Lock, ArrowLeft, Check } from "lucide-react"
+import { Leaf, Eye, EyeOff, Loader2, Mail, Lock, Check } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
 import { forgotPassword } from "@/lib/api/auth.js"
@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
     try {
       await forgotPassword(forgotEmail.trim())
       setForgotSent(true)
-    } catch (err) {
+    } catch {
       setForgotSent(true) // always show success to prevent email enumeration
     } finally {
       setForgotSubmitting(false)
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
             width: 52, height: 52, borderRadius: 3, background: T.accent, margin: "0 auto 14px",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <Leaf size={28} color="#fff" />
+            <Leaf size={28} color={T.card} />
           </div>
           <div style={{ fontSize: 26, fontWeight: 600, color: T.text, letterSpacing: "-0.5px" }}>CruPoint</div>
           <div style={{ fontSize: 14, color: T.textLight, marginTop: 4 }}>Sign in to your dashboard</div>
@@ -164,7 +164,7 @@ export default function AdminLoginPage() {
             disabled={submitting || !email.trim() || !password}
             style={{
               width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-              background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
+              background: T.accent, color: T.card, fontSize: 16, fontWeight: 600, fontFamily: T.font,
               opacity: (submitting || !email.trim() || !password) ? 0.5 : 1,
               transition: "opacity 0.15s",
               boxShadow: "0 4px 14px rgba(47,111,237,0.2)",
@@ -209,7 +209,7 @@ export default function AdminLoginPage() {
                   </div>
                   <button onClick={() => setShowForgot(false)} style={{
                     width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-                    background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+                    background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
                   }}>
                     Back to Sign In
                   </button>
@@ -247,7 +247,7 @@ export default function AdminLoginPage() {
                     </button>
                     <button onClick={handleForgot} disabled={forgotSubmitting || !forgotEmail.trim()} style={{
                       flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-                      background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+                      background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
                       opacity: (forgotSubmitting || !forgotEmail.trim()) ? 0.5 : 1,
                     }}>
                       {forgotSubmitting ? "Sending..." : "Send Reset Link"}

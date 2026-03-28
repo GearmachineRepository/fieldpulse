@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // ═══════════════════════════════════════════
 // Shared Dashboard Components
 //
@@ -8,7 +9,7 @@
 // import { Modal, FormField, ... } from '@/app/dashboard/components/PageUI.jsx'
 // ═══════════════════════════════════════════
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect } from "react"
 import { X, AlertCircle, Loader2, ChevronDown, Search } from "lucide-react"
 import s from "./PageUI.module.css"
 

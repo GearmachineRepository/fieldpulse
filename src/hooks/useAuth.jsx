@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // ═══════════════════════════════════════════
 // useAuth — Auth provider + hook
 //
@@ -12,8 +13,8 @@ import {
   loginWithEmail,
   crewLogin,
   restoreSession,
-  getCrewLoginTiles,
 } from '@/lib/api/auth.js'
+import { getCrewLoginTiles } from '@/lib/api/crews.js'
 
 const AuthContext = createContext(null)
 

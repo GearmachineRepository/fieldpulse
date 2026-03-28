@@ -9,9 +9,10 @@ import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam, sanitizeQueryInt } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
-import { getOrgId } from '../utils/db.js'
+import { getOrgId, withTransaction } from '../utils/db.js'
 
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+import { DAY_NAMES } from '../constants/index.js'
+import { findException } from '../utils/scheduling.js'
 
 export default function routeRoutes(upload, uploadToStorage) {
   const router = Router()
@@ -390,13 +391,12 @@ export default function routeRoutes(upload, uploadToStorage) {
   router.put('/:id/stops-order', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
     const { stopIds } = req.body
     if (!Array.isArray(stopIds)) return res.status(400).json({ error: 'stopIds must be an array' })
-    const client = await db.connect()
-    try {
-      await client.query('BEGIN')
-      for (let i = 0; i < stopIds.length; i++) await client.query('UPDATE route_stops SET stop_order = $1 WHERE id = $2 AND route_id = $3', [i, stopIds[i], req.params.id])
-      await client.query('COMMIT'); res.json({ success: true })
-    } catch (e) { await client.query('ROLLBACK'); throw e }
-    finally { client.release() }
+    await withTransaction(async (client) => {
+      for (let i = 0; i < stopIds.length; i++) {
+        await client.query('UPDATE route_stops SET stop_order = $1 WHERE id = $2 AND route_id = $3', [i, stopIds[i], req.params.id])
+      }
+    })
+    res.json({ success: true })
   }))
 
   // ── Stop Exceptions (skip / pause) ──
@@ -461,16 +461,6 @@ function isStopDueOnDate(stop, dateObj, dateStr) {
   }
 
   return true
-}
-
-function findException(exceptions, dateStr) {
-  for (const ex of exceptions) {
-    const exStart = (ex.dateStart || '').split('T')[0]
-    const exEnd = (ex.dateEnd || '').split('T')[0]
-    if (ex.type === 'skip' && exStart === dateStr) return ex
-    if (ex.type === 'pause' && exStart <= dateStr && (!exEnd || exEnd >= dateStr)) return ex
-  }
-  return null
 }
 
 function formatRoute(row) {

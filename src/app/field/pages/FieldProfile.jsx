@@ -7,13 +7,16 @@ import { useState, useEffect } from "react"
 import {
   Clock, Shield, BookOpen, ChevronRight, LogOut, Users,
   CheckCircle2, Loader2, Search, ExternalLink, Download,
-  FileText, Pin, Truck, Award, Hash, AlertCircle,
+  FileText, Pin, Truck,
+  GraduationCap, ClipboardCheck, ChevronDown, ChevronUp,
 } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
 import { submitRoster, getTodayRoster } from "@/lib/api/rosters.js"
 import { getEmployees } from "@/lib/api/employees.js"
 import { getResources, getResourceCategories } from "@/lib/api/resources.js"
+import { getEmployeeCertifications } from "@/lib/api/certifications.js"
+import { getTrainingSessions } from "@/lib/api/training.js"
 import { BottomSheet, BottomSheetOption, FilterButton } from "@/app/field/components/BottomSheet.jsx"
 
 export default function FieldProfile({ initialView, onViewConsumed }) {
@@ -23,7 +26,7 @@ export default function FieldProfile({ initialView, onViewConsumed }) {
   // Handle external navigation (e.g., clock-in from FieldHome)
   useEffect(() => {
     if (initialView) {
-      setView(initialView)
+      setView(initialView) // eslint-disable-line react-hooks/set-state-in-effect -- Sync view from prop
       onViewConsumed?.()
     }
   }, [initialView, onViewConsumed])
@@ -42,7 +45,7 @@ export default function FieldProfile({ initialView, onViewConsumed }) {
         <div style={{
           width: 56, height: 56, borderRadius: 3, background: T.accent,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 22, fontWeight: 600, color: "#fff", flexShrink: 0,
+          fontSize: 22, fontWeight: 600, color: T.card, flexShrink: 0,
         }}>
           {(employee?.firstName?.[0] || "")}{(employee?.lastName?.[0] || "")}
         </div>
@@ -59,7 +62,7 @@ export default function FieldProfile({ initialView, onViewConsumed }) {
       {/* Info cards */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
         <InfoCard icon={Shield} label="License" value={employee?.license} placeholder="Not set" color={T.accent} />
-        <InfoCard icon={Award} label="Cert #" value={employee?.certNumber} placeholder="Not set" color={T.blue} />
+        <InfoCard icon={Shield} label="Certification" value={employee?.certNumber} placeholder="None" color={T.blue} />
         <InfoCard icon={Users} label="Crew" value={crew?.name} placeholder="Unassigned" color={T.purple} />
         <InfoCard icon={Truck} label="Vehicle" value={vehicle?.name} placeholder="None" color={T.amber} />
       </div>
@@ -68,7 +71,7 @@ export default function FieldProfile({ initialView, onViewConsumed }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <MenuButton icon={Clock} label="Clock In / Out" color={T.blue} onClick={() => setView("clockin")} />
         <MenuButton icon={BookOpen} label="Safety & Resources" sublabel="SDS sheets, manuals, policies" color={T.amber} onClick={() => setView("resources")} />
-        <MenuButton icon={Shield} label="My Certifications" sublabel={employee?.license ? `License: ${employee.license}` : "View details"} color={T.accent} onClick={() => setView("certs")} />
+        <MenuButton icon={Shield} label="Certifications & Training" sublabel={employee?.license ? `License: ${employee.license}` : "View details"} color={T.accent} onClick={() => setView("certs")} />
         <div style={{ height: 12 }} />
         <MenuButton icon={LogOut} label="Sign Out" color={T.red} onClick={logout} />
       </div>
@@ -112,12 +115,46 @@ function MenuButton({ icon: Icon, label, sublabel, color, onClick }) {
 }
 
 // ═══════════════════════════════════════════
-// Certifications View
+// Certifications & Training View
 // ═══════════════════════════════════════════
 function CertsView({ employee, onBack }) {
-  const certs = [
-    { label: "Applicator License", value: employee?.license, icon: Shield, color: T.accent },
-    { label: "Certification Number", value: employee?.certNumber, icon: Award, color: T.blue },
+  const [tab, setTab] = useState("certs")
+  const [certs, setCerts] = useState([])
+  const [training, setTraining] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [certsData, trainingData] = await Promise.all([
+          getEmployeeCertifications(employee?.id).catch(() => []),
+          getTrainingSessions().catch(() => []),
+        ])
+        setCerts(certsData)
+        // Filter training to sessions this employee signed off on, or all if crew lead
+        setTraining(trainingData)
+      } catch {}
+      setLoading(false)
+    }
+    if (employee?.id) load()
+  }, [employee?.id])
+
+  const now = new Date()
+  const soon = new Date(now.getTime() + 30 * 86400000)
+
+  const getCertStatus = (cert) => {
+    if (!cert.expiry_date) return { label: "No expiry", color: T.textLight }
+    const exp = new Date(cert.expiry_date)
+    if (exp < now) return { label: "Expired", color: T.red }
+    if (exp < soon) return { label: "Expiring soon", color: T.amber }
+    return { label: "Valid", color: T.accent }
+  }
+
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"
+
+  const tabs = [
+    { key: "certs", label: "Certifications", count: certs.length },
+    { key: "training", label: "Training", count: training.length },
   ]
 
   return (
@@ -128,39 +165,190 @@ function CertsView({ employee, onBack }) {
         padding: 0, marginBottom: 16,
       }}>← Back</button>
 
-      <div style={{ fontSize: 22, fontWeight: 600, color: T.text, marginBottom: 6 }}>My Certifications</div>
-      <div style={{ fontSize: 13, color: T.textLight, marginBottom: 20 }}>
-        Contact your admin to update certification details.
+      <div style={{ fontSize: 22, fontWeight: 600, color: T.text, marginBottom: 4 }}>Certifications & Training</div>
+      <div style={{ fontSize: 13, color: T.textLight, marginBottom: 16 }}>
+        Contact your admin to update details.
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {certs.map((cert, i) => (
-          <div key={i} style={{
-            padding: "18px 20px", background: T.card, borderRadius: 3,
-            border: `1px solid ${T.border}`,
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <cert.icon size={18} color={cert.value ? cert.color : T.textLight} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5 }}>{cert.label}</span>
-            </div>
-            {cert.value ? (
-              <div style={{ fontSize: 18, fontWeight: 600, color: T.text }}>{cert.value}</div>
-            ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <AlertCircle size={14} color={T.amber} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: T.amber }}>Not set — contact admin</span>
+      {/* Quick stats from employee record */}
+      {(employee?.license || employee?.certNumber) && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+          {employee?.license && (
+            <div style={{ padding: "12px 14px", background: T.card, borderRadius: 3, border: `1px solid ${T.border}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <Shield size={12} color={T.accent} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5 }}>License</span>
               </div>
-            )}
-          </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{employee.license}</div>
+            </div>
+          )}
+          {employee?.certNumber && (
+            <div style={{ padding: "12px 14px", background: T.card, borderRadius: 3, border: `1px solid ${T.border}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <ClipboardCheck size={12} color={T.blue} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: T.textLight, textTransform: "uppercase", letterSpacing: 0.5 }}>Cert #</span>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{employee.certNumber}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)} style={{
+            flex: 1, padding: "10px 12px", borderRadius: 3, cursor: "pointer", fontFamily: T.font,
+            border: `1.5px solid ${tab === t.key ? T.accent : T.border}`,
+            background: tab === t.key ? T.accentLight : T.card,
+            color: tab === t.key ? T.accent : T.textMed,
+            fontSize: 13, fontWeight: 600,
+          }}>
+            {t.label} {t.count > 0 && <span style={{ opacity: 0.7 }}>({t.count})</span>}
+          </button>
         ))}
       </div>
 
-      <div style={{
-        marginTop: 24, padding: "14px 18px", background: T.blueLight, borderRadius: 3,
-        border: `1px solid ${T.blue}20`, fontSize: 13, color: T.blue, lineHeight: 1.5,
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 30 }}>
+          <Loader2 size={24} color={T.textLight} style={{ animation: "spin 1s linear infinite" }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+        </div>
+      ) : tab === "certs" ? (
+        /* ── Certifications Tab ── */
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {certs.length === 0 ? (
+            <div style={{
+              padding: "32px 16px", background: T.card, borderRadius: 3,
+              border: `1px dashed ${T.border}`, textAlign: "center",
+            }}>
+              <Shield size={32} color={T.textLight} strokeWidth={1} style={{ margin: "0 auto 12px" }} />
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 4 }}>No certifications</div>
+              <div style={{ fontSize: 13, color: T.textLight }}>Your admin will add certifications here.</div>
+            </div>
+          ) : certs.map(cert => {
+            const status = getCertStatus(cert)
+            return (
+              <div key={cert.id} style={{
+                padding: "16px 18px", background: T.card, borderRadius: 3,
+                border: `1px solid ${T.border}`,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: T.text }}>{cert.name}</div>
+                    {cert.type_name && (
+                      <div style={{ fontSize: 12, color: T.textLight, marginTop: 2 }}>{cert.type_name}</div>
+                    )}
+                  </div>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 3,
+                    background: `${status.color}15`, color: status.color,
+                  }}>{status.label}</span>
+                </div>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                  {cert.issuing_authority && (
+                    <div style={{ fontSize: 12, color: T.textLight }}>
+                      <span style={{ fontWeight: 600 }}>Issuer:</span> {cert.issuing_authority}
+                    </div>
+                  )}
+                  {cert.cert_number && (
+                    <div style={{ fontSize: 12, color: T.textLight }}>
+                      <span style={{ fontWeight: 600 }}>#:</span> {cert.cert_number}
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: 16, marginTop: 6 }}>
+                  <div style={{ fontSize: 12, color: T.textLight }}>
+                    <span style={{ fontWeight: 600 }}>Issued:</span> {formatDate(cert.issued_date)}
+                  </div>
+                  <div style={{ fontSize: 12, color: T.textLight }}>
+                    <span style={{ fontWeight: 600 }}>Expires:</span> {formatDate(cert.expiry_date)}
+                  </div>
+                </div>
+                {cert.notes && (
+                  <div style={{ fontSize: 12, color: T.textMed, marginTop: 6, fontStyle: "italic" }}>{cert.notes}</div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        /* ── Training Tab ── */
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {training.length === 0 ? (
+            <div style={{
+              padding: "32px 16px", background: T.card, borderRadius: 3,
+              border: `1px dashed ${T.border}`, textAlign: "center",
+            }}>
+              <GraduationCap size={32} color={T.textLight} strokeWidth={1} style={{ margin: "0 auto 12px" }} />
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 4 }}>No training sessions</div>
+              <div style={{ fontSize: 13, color: T.textLight }}>Training records will appear here.</div>
+            </div>
+          ) : training.map(session => {
+            const statusColors = { scheduled: T.blue, in_progress: T.amber, completed: T.accent }
+            const statusColor = statusColors[session.status] || T.textLight
+            return (
+              <TrainingCard key={session.id} session={session} statusColor={statusColor} formatDate={formatDate} />
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TrainingCard({ session, statusColor, formatDate }) {
+  const [expanded, setExpanded] = useState(false)
+  const typeLabels = {
+    safety: "Safety", heat_illness: "Heat Illness Prevention",
+    pesticide_safety: "Pesticide Safety", equipment_operation: "Equipment Operation",
+    tailgate: "Tailgate Meeting", video: "Video Training", other: "Other",
+  }
+  return (
+    <div style={{
+      background: T.card, borderRadius: 3, border: `1px solid ${T.border}`, overflow: "hidden",
+    }}>
+      <button onClick={() => setExpanded(!expanded)} style={{
+        display: "flex", alignItems: "center", gap: 12, padding: "16px 18px",
+        width: "100%", border: "none", background: "transparent", cursor: "pointer",
+        fontFamily: T.font, textAlign: "left",
       }}>
-        Training records and certification renewals will be tracked here in a future update.
-      </div>
+        <GraduationCap size={18} color={statusColor} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{session.title}</div>
+          <div style={{ fontSize: 12, color: T.textLight, marginTop: 2 }}>
+            {typeLabels[session.type] || session.type || "Training"} · {formatDate(session.training_date)}
+          </div>
+        </div>
+        <span style={{
+          fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 3,
+          background: `${statusColor}15`, color: statusColor, textTransform: "capitalize", flexShrink: 0,
+        }}>{(session.status || "").replace("_", " ")}</span>
+        {expanded ? <ChevronUp size={16} color={T.textLight} /> : <ChevronDown size={16} color={T.textLight} />}
+      </button>
+      {expanded && (
+        <div style={{ padding: "0 18px 16px", borderTop: `1px solid ${T.border}` }}>
+          <div style={{ paddingTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+            {session.trainer && (
+              <div style={{ fontSize: 12, color: T.textLight }}><span style={{ fontWeight: 600 }}>Trainer:</span> {session.trainer}</div>
+            )}
+            {session.location && (
+              <div style={{ fontSize: 12, color: T.textLight }}><span style={{ fontWeight: 600 }}>Location:</span> {session.location}</div>
+            )}
+            {session.duration_hours && (
+              <div style={{ fontSize: 12, color: T.textLight }}><span style={{ fontWeight: 600 }}>Duration:</span> {session.duration_hours}h</div>
+            )}
+            {session.description && (
+              <div style={{ fontSize: 12, color: T.textMed, marginTop: 4 }}>{session.description}</div>
+            )}
+            {session.signoff_count > 0 && (
+              <div style={{ fontSize: 12, color: T.accent, marginTop: 4, fontWeight: 600 }}>
+                {session.signoff_count} attendee{session.signoff_count !== 1 ? "s" : ""} signed off
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -258,7 +446,7 @@ function ClockInView({ crew, employee, onBack }) {
           </div>
           <button onClick={() => setTodayRoster(null)} style={{
             padding: "6px 14px", borderRadius: 3, border: `1px solid ${T.accentBorder}`,
-            background: "#fff", cursor: "pointer", fontFamily: T.font, fontSize: 12,
+            background: T.card, cursor: "pointer", fontFamily: T.font, fontSize: 12,
             fontWeight: 600, color: T.accent,
           }}>Edit</button>
         </div>
@@ -282,7 +470,7 @@ function ClockInView({ crew, employee, onBack }) {
                     border: `2px solid ${isSelected ? T.accent : T.border}`,
                     background: isSelected ? T.accent : "transparent",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>{isSelected && <span style={{ color: "#fff", fontSize: 12, fontWeight: 600 }}>✓</span>}</div>
+                  }}>{isSelected && <span style={{ color: T.card, fontSize: 12, fontWeight: 600 }}>✓</span>}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{emp.first_name} {emp.last_name}</div>
                   </div>
@@ -305,7 +493,7 @@ function ClockInView({ crew, employee, onBack }) {
                 color: showAllEmployees ? T.blue : T.textMed, fontSize: 13, fontWeight: 600,
               }}>
                 <Users size={16} />
-                {showAllEmployees ? "Hide other employees" : "Add from other crews"}
+                {showAllEmployees ? "Hide fill-ins" : "Add fill-in from other crews"}
               </button>
               {showAllEmployees && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
@@ -323,10 +511,10 @@ function ClockInView({ crew, employee, onBack }) {
                           border: `2px solid ${isSelected ? T.blue : T.border}`,
                           background: isSelected ? T.blue : "transparent",
                           display: "flex", alignItems: "center", justifyContent: "center",
-                        }}>{isSelected && <span style={{ color: "#fff", fontSize: 12, fontWeight: 600 }}>✓</span>}</div>
+                        }}>{isSelected && <span style={{ color: T.card, fontSize: 12, fontWeight: 600 }}>✓</span>}</div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{emp.first_name} {emp.last_name}</div>
-                          <div style={{ fontSize: 11, color: T.textLight }}>Other crew</div>
+                          <div style={{ fontSize: 11, color: T.textLight }}>Fill-in</div>
                         </div>
                       </button>
                     )
@@ -347,7 +535,7 @@ function ClockInView({ crew, employee, onBack }) {
 
           <button onClick={handleSubmit} disabled={submitting || selected.length === 0} style={{
             width: "100%", padding: "16px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
+            background: T.accent, color: T.card, fontSize: 16, fontWeight: 600, fontFamily: T.font,
             opacity: (submitting || selected.length === 0) ? 0.5 : 1,
           }}>
             {submitting ? "Submitting..." : `Clock In ${selected.length} Member${selected.length !== 1 ? "s" : ""}`}

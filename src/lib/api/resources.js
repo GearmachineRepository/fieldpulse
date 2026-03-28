@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════
 // Resources API — Resource library CRUD + file uploads
 // ═══════════════════════════════════════════
-import { request, multipartRequest } from './core.js'
+import { request, buildQuery, multipartRequest } from './core.js'
 
 // Categories
 export const getResourceCategories    = ()      => request('/resources/categories')
@@ -10,12 +10,7 @@ export const updateResourceCategory   = (id, d) => request(`/resources/categorie
 export const deleteResourceCategory   = (id)    => request(`/resources/categories/${id}`, { method: 'DELETE' })
 
 // Resources
-export const getResources       = (params = {}) => {
-  const q = new URLSearchParams()
-  for (const [k, v] of Object.entries(params)) { if (v != null && v !== '') q.set(k, v) }
-  const s = q.toString()
-  return request(`/resources${s ? `?${s}` : ''}`)
-}
+export const getResources       = (params = {}) => request(`/resources${buildQuery(params)}`)
 export const createResource     = (d)     => request('/resources', { method: 'POST', body: JSON.stringify(d) })
 export const updateResource     = (id, d) => request(`/resources/${id}`, { method: 'PUT', body: JSON.stringify(d) })
 export const deleteResource     = (id)    => request(`/resources/${id}`, { method: 'DELETE' })

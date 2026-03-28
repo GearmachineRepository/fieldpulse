@@ -5,8 +5,8 @@
 
 import { useState, useMemo } from "react"
 import {
-  TrendingUp, Users, Award, ShieldCheck,
-  AlertTriangle, Download, GraduationCap,
+  TrendingUp, Users, Award,
+  Download, GraduationCap,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
 import { getCrews } from "@/lib/api/crews.js"

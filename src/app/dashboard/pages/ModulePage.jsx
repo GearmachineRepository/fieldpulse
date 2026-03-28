@@ -6,6 +6,7 @@ import { useState } from "react"
 import { useParams } from "react-router-dom"
 import { Plus, FileText, CheckCircle2 } from "lucide-react"
 import { ENABLED_MODULES } from "@/app/modules.js"
+import { T } from "@/app/tokens.js"
 import s from "./ModulePage.module.css"
 
 export default function ModulePage() {
@@ -40,7 +41,7 @@ export default function ModulePage() {
         {["Logs", "Inventory", "Reports"].map(t => (
           <button key={t} onClick={() => setTab(t.toLowerCase())} className={s.tabButton} style={{
             background: tab === t.toLowerCase() ? mod.color : "transparent",
-            color: tab === t.toLowerCase() ? "#fff" : undefined,
+            color: tab === t.toLowerCase() ? T.card : undefined,
           }}>{t}</button>
         ))}
       </div>

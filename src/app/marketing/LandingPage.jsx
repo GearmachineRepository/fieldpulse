@@ -31,7 +31,7 @@ export default function LandingPage() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 3, background: T.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Leaf size={20} color="#fff" />
+            <Leaf size={20} color={T.card} />
           </div>
           <span style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.5px", color: T.text }}>CruPoint</span>
         </div>
@@ -47,21 +47,21 @@ export default function LandingPage() {
             ))}
             <button onClick={() => navigate("/login")} style={{
               padding: "10px 22px", borderRadius: 3, border: "none", cursor: "pointer",
-              background: T.sidebar, color: "#fff", fontSize: 14, fontWeight: 600, fontFamily: T.font,
+              background: T.sidebar, color: T.card, fontSize: 14, fontWeight: 600, fontFamily: T.font,
             }}>Sign In</button>
           </div>
         )}
       </nav>
 
       {isMobile && menuOpen && (
-        <div style={{ padding: "8px 16px 16px", display: "flex", flexDirection: "column", gap: 4, background: "#fff", borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ padding: "8px 16px 16px", display: "flex", flexDirection: "column", gap: 4, background: T.card, borderBottom: `1px solid ${T.border}` }}>
           {["Features", "Modules", "Pricing", "About"].map(item => (
             <a key={item} href={item === "Pricing" ? "/pricing" : "#"} onClick={item === "Pricing" ? (e) => { e.preventDefault(); navigate("/pricing") } : undefined}
               style={{ color: T.textMed, textDecoration: "none", fontSize: 15, fontWeight: 500, padding: "10px 0", cursor: "pointer" }}>{item}</a>
           ))}
           <button onClick={() => navigate("/login")} style={{
             padding: "12px", borderRadius: 3, border: "none", cursor: "pointer", marginTop: 8,
-            background: T.sidebar, color: "#fff", fontSize: 14, fontWeight: 600, fontFamily: T.font, width: "100%",
+            background: T.sidebar, color: T.card, fontSize: 14, fontWeight: 600, fontFamily: T.font, width: "100%",
           }}>Sign In</button>
         </div>
       )}
@@ -89,7 +89,7 @@ export default function LandingPage() {
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <button onClick={() => navigate("/login")} style={{
               padding: "14px 28px", borderRadius: 3, border: "none", cursor: "pointer",
-              background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
+              background: T.accent, color: T.card, fontSize: 16, fontWeight: 600, fontFamily: T.font,
               boxShadow: "0 4px 14px rgba(47,111,237,0.3)",
             }}>Start Free Trial</button>
             <button style={{
@@ -109,7 +109,7 @@ export default function LandingPage() {
                   { label: "Stops Today", val: "23", icon: MapPin, color: T.blue },
                   { label: "Docs Filed", val: "12", icon: FileText, color: T.amber },
                 ].map((s, i) => (
-                  <div key={i} style={{ flex: 1, background: "#fff", borderRadius: 3, padding: "14px 16px", border: `1px solid ${T.border}` }}>
+                  <div key={i} style={{ flex: 1, background: T.card, borderRadius: 3, padding: "14px 16px", border: `1px solid ${T.border}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
                       <div>
                         <div style={{ fontSize: 11, color: T.textLight, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</div>
@@ -122,7 +122,7 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <div style={{ background: "#fff", borderRadius: 3, padding: 16, border: `1px solid ${T.border}` }}>
+              <div style={{ background: T.card, borderRadius: 3, padding: 16, border: `1px solid ${T.border}` }}>
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: T.text }}>Today's Activity</div>
                 {[
                   { name: "Crew Alpha", action: "Completed spray at Oak Ridge", time: "2m ago", color: T.accent },
@@ -177,12 +177,12 @@ export default function LandingPage() {
         }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 600, color: T.accent, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Specialized Modules</div>
-            <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 600, color: "#fff", marginBottom: 8 }}>Need spray tracking? Irrigation? Pest control?</div>
+            <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 600, color: T.card, marginBottom: 8 }}>Need spray tracking? Irrigation? Pest control?</div>
             <div style={{ fontSize: 15, color: "#94A3B8", maxWidth: 500 }}>Add industry-specific tools to your account. Only pay for what your business needs.</div>
           </div>
           <button style={{
             padding: "14px 28px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font, flexShrink: 0, whiteSpace: "nowrap",
+            background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font, flexShrink: 0, whiteSpace: "nowrap",
           }}>Explore Modules</button>
         </div>
       </div>

@@ -3,15 +3,17 @@
 // Full CRUD with category filtering, maintenance log
 // ═══════════════════════════════════════════
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Wrench, Plus, Search, Edit3, Trash2,
   Hash, Calendar, Tag, Users, Settings, Settings2,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import useCategories from "@/hooks/useCategories.js"
 import { getEquipment, createEquipment, updateEquipment, deleteEquipment } from "@/lib/api/equipment.js"
+import { getFieldDocs } from "@/lib/api/fieldDocs.js"
+import { AssetInspectionList } from "../components/AssetInspections.jsx"
 import { getCrews } from "@/lib/api/crews.js"
 import PageShell from "../components/PageShell.jsx"
 import DataTable from "../components/DataTable.jsx"
@@ -23,14 +25,14 @@ import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField,
 } from "../components/PageUI.jsx"
 import s from "./EquipmentPage.module.css"
+import { ASSET_STATUSES, getStatusVariant } from "@/lib/formatUtils.js"
 
 const ts = DataTable.s
 
 const FALLBACK_CATEGORIES = ["Mowers", "Trenchers", "Compactors", "Blowers", "Other"]
-const STATUSES = ["Active", "Out of Service", "Retired"]
 
 export default function EquipmentPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const equipment = usePageData("equipment", {
     fetchFn: getEquipment,
     createFn: createEquipment,
@@ -92,15 +94,6 @@ export default function EquipmentPage() {
     }
   }
 
-  const getStatusVariant = (status) => {
-    switch (status) {
-      case "Active": return "green"
-      case "Out of Service": return "amber"
-      case "Retired": return "gray"
-      default: return "green"
-    }
-  }
-
   return (
     <>
     <PageShell
@@ -147,7 +140,7 @@ export default function EquipmentPage() {
           className={s.filterSelect}
         >
           <option value="">All Statuses</option>
-          {STATUSES.map(st => <option key={st} value={st}>{st}</option>)}
+          {ASSET_STATUSES.map(st => <option key={st} value={st}>{st}</option>)}
         </select>
         <button
           className={s.manageBtn}
@@ -237,12 +230,6 @@ export default function EquipmentPage() {
       />
     )}
 
-    {toast.message && (
-      <div className={s.toast} role="status" aria-live="polite">
-        {toast.message}
-      </div>
-    )}
-
     <CategoryManager
       open={manageOpen}
       onClose={() => setManageOpen(false)}
@@ -260,11 +247,25 @@ export default function EquipmentPage() {
 function EquipmentDetail({ item, onEdit, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [tab, setTab] = useState("info")
+  const [inspections, setInspections] = useState([])
+  const [loadingInspections, setLoadingInspections] = useState(false)
+
+  // Fetch inspections linked to this equipment
+  useEffect(() => {
+    if (tab !== "inspections" || !item?.id) return
+    let active = true
+    setLoadingInspections(true) // eslint-disable-line react-hooks/set-state-in-effect -- Loading flag before async fetch
+    getFieldDocs({ type: "inspection", assetType: "equipment", assetId: item.id })
+      .then(docs => { if (active) setInspections(docs || []) })
+      .catch(() => { if (active) setInspections([]) })
+      .finally(() => { if (active) setLoadingInspections(false) })
+    return () => { active = false }
+  }, [tab, item?.id])
 
   const tabs = [
     { key: "info", label: "Info" },
     { key: "maintenance", label: "Maintenance Log" },
-    { key: "inspections", label: "Inspection History" },
+    { key: "inspections", label: `Inspections${inspections.length ? ` (${inspections.length})` : ""}` },
   ]
 
   if (confirmDelete) {
@@ -311,11 +312,7 @@ function EquipmentDetail({ item, onEdit, onDelete }) {
       )}
 
       {tab === "inspections" && (
-        <div className={s.emptyTab}>
-          <Settings size={28} strokeWidth={1} className={s.emptyTabIcon} />
-          <div className={s.emptyTabTitle}>No inspections recorded</div>
-          <div className={s.emptyTabDesc}>Inspection history will appear here.</div>
-        </div>
+        <AssetInspectionList inspections={inspections} loading={loadingInspections} />
       )}
     </div>
   )
@@ -357,7 +354,6 @@ function EquipmentModal({ item, crews, categoryNames, onClose, onSave, onDelete 
     await onSave({
       name: name.trim(),
       type: category || undefined,
-      category: category || undefined,
       serialNumber: serialNumber || undefined,
       crewName: crewName || undefined,
       status: status || "Active",
@@ -391,7 +387,7 @@ function EquipmentModal({ item, crews, categoryNames, onClose, onSave, onDelete 
           label="Status"
           value={status}
           onChange={setStatus}
-          options={STATUSES.map(st => ({ value: st, label: st }))}
+          options={ASSET_STATUSES.map(st => ({ value: st, label: st }))}
         />
       </div>
       <FormField label="Serial Number" value={serialNumber} onChange={setSerialNumber} placeholder="Optional" />

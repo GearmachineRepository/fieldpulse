@@ -8,7 +8,7 @@
 
 import { useCallback, useMemo, useRef } from 'react'
 import { useNavigate as useRouterNavigate, useLocation } from 'react-router-dom'
-import { SECTIONS, PAGE_TO_SECTION, isSinglePage, getSectionPages, resolvePageTitle } from '@/app/dashboard/nav-sections.js'
+import { SECTIONS, PAGE_TO_SECTION, isSinglePage, resolvePageTitle } from '@/app/dashboard/nav-sections.js'
 import { ENABLED_MODULES } from '@/app/modules.js'
 import { APP } from '@/config/app.js'
 
@@ -32,7 +32,7 @@ export default function useNavigation() {
 
   // Keep a ref for selectSection to avoid stale closures
   const activePageRef = useRef(activePage)
-  activePageRef.current = activePage
+  activePageRef.current = activePage // eslint-disable-line react-hooks/refs -- Sync ref with derived value
 
   // ── Derive activeSection from activePage ──
   const activeSection = useMemo(() => {

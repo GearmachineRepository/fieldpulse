@@ -1,8 +1,6 @@
 // ═══════════════════════════════════════════
-// useWeather — Data Hook
-// Wraps geolocation + weather API.
-// Falls back to simulated weather if
-// geolocation is unavailable or denied.
+// useWeather — Geolocation + weather API
+// Falls back to simulated data when unavailable.
 // ═══════════════════════════════════════════
 
 import { useState, useCallback } from 'react'
@@ -12,7 +10,7 @@ export default function useWeather() {
   const [weather, setWeather] = useState(getSimulatedWeather())
   const [loading, setLoading] = useState(false)
 
-  const fetch = useCallback(() => {
+  const fetchWeather = useCallback(() => {
     if (!navigator.geolocation) {
       setWeather(getSimulatedWeather())
       return
@@ -38,5 +36,5 @@ export default function useWeather() {
     )
   }, [])
 
-  return { weather, loading, fetch }
+  return { weather, loading, fetch: fetchWeather }
 }

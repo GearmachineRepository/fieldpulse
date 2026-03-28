@@ -969,27 +969,3 @@
   font-size: var(--text-xs);
   color: var(--t3);
 }
-
-/* ═══ TOAST ═══ */
-.toast {
-  position: fixed;
-  bottom: var(--space-5);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--t1);
-  color: var(--s1);
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--r);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  font-family: var(--fn);
-  box-shadow: var(--shadow-lg);
-  z-index: 400;
-  cursor: pointer;
-  animation: toastIn 0.2s ease-out;
-}
-
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}

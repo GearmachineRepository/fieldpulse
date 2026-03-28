@@ -9,6 +9,7 @@ import { validateIdParam } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { AppError } from '../utils/AppError.js'
 import { getOrgId } from '../utils/db.js'
+import { logger } from '../utils/logger.js'
 import { createUpload, uploadToStorage } from '../middleware/upload.js'
 import supabase from '../lib/supabase.js'
 
@@ -170,7 +171,6 @@ router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res
 router.get('/:id/photos', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
 
-  // Verify incident belongs to org
   const check = await db.query(
     'SELECT id FROM incidents WHERE id = $1 AND org_id = $2',
     [req.params.id, orgId]
@@ -281,17 +281,15 @@ router.delete('/:id/photos/:photoId', requireAuth, validateIdParam, asyncHandler
   )
   if (photo.rows.length === 0) throw new AppError('Photo not found', 404)
 
-  // Delete from Supabase Storage (best-effort — don't fail the request if storage delete fails)
+  // Best-effort storage cleanup — DB record is the source of truth
   if (supabase && photo.rows[0].storage_path) {
     try {
       await supabase.storage.from('uploads').remove([photo.rows[0].storage_path])
     } catch (err) {
-      // Log but don't block — the DB record is the source of truth
-      console.error('Failed to delete photo from storage:', err.message)
+      logger.warn({ err, photoId }, 'Failed to delete photo from storage')
     }
   }
 
-  // Delete from DB
   await db.query(
     'DELETE FROM incident_photos WHERE id = $1 AND org_id = $2',
     [photoId, orgId]

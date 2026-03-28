@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from "react"
 import {
   ArrowLeft, ArrowRight, Check, MapPin, Droplets, Cloud,
   Camera, X, Loader2, Plus, Trash2, Search, Navigation,
-  Thermometer, Wind as WindIcon, ChevronDown, AlertTriangle,
+  Thermometer, Wind as WindIcon, AlertTriangle,
 } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
@@ -77,7 +77,7 @@ export default function SprayLogForm({ onClose, onSubmitted }) {
         () => setWeather(getSimulatedWeather()),
         { timeout: 8000 }
       )
-    } else { setWeather(getSimulatedWeather()) }
+    } else { setWeather(getSimulatedWeather()) } // eslint-disable-line react-hooks/set-state-in-effect -- Fallback when no geolocation
   }, [])
 
   // Navigation
@@ -212,7 +212,7 @@ export default function SprayLogForm({ onClose, onSubmitted }) {
         {step < 3 ? (
           <button onClick={next} disabled={!canAdvance()} style={{
             flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+            background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: canAdvance() ? 1 : 0.4, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             Next <ArrowRight size={18} />
@@ -220,7 +220,7 @@ export default function SprayLogForm({ onClose, onSubmitted }) {
         ) : (
           <button onClick={handleSubmit} disabled={submitting} style={{
             flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+            background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: submitting ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             {submitting ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> Submitting...</> : <><Check size={18} /> Submit Log</>}
@@ -262,7 +262,7 @@ function FullScreenPage({ onClose, title, children }) {
 // ═══════════════════════════════════════════
 // Step 1: Property
 // ═══════════════════════════════════════════
-function StepProperty({ property, setProperty, accountId, setAccountId, accounts, crewLead, license, crewName, location, setLocation, gps }) {
+function StepProperty({ property, setProperty, accountId: _accountId, setAccountId, accounts, crewLead, license, crewName, location, setLocation, gps }) {
   const [showSearch, setShowSearch] = useState(false)
   const [searchQ, setSearchQ] = useState("")
 
@@ -386,7 +386,7 @@ function StepProperty({ property, setProperty, accountId, setAccountId, accounts
 // ═══════════════════════════════════════════
 // Step 2: Products + Equipment
 // ═══════════════════════════════════════════
-function StepProducts({ products, setProducts, chemicals, equipmentList, selectedEquipment, setSelectedEquipment, equipmentName, setEquipmentName, totalMixVol, setTotalMixVol, mixUnit, setMixUnit, targetPest, setTargetPest }) {
+function StepProducts({ products, setProducts, chemicals, equipmentList, selectedEquipment, setSelectedEquipment, equipmentName: _equipmentName, setEquipmentName, totalMixVol, setTotalMixVol, mixUnit, setMixUnit, targetPest, setTargetPest }) {
   const [showChemSearch, setShowChemSearch] = useState(false)
   const [chemSearchQ, setChemSearchQ] = useState("")
 
@@ -521,7 +521,7 @@ function StepProducts({ products, setProducts, chemicals, equipmentList, selecte
 // ═══════════════════════════════════════════
 // Step 3: Conditions + Photos
 // ═══════════════════════════════════════════
-function StepConditions({ weather, setWeather, notes, setNotes, photos, setPhotos, photoPreviews, setPhotoPreviews }) {
+function StepConditions({ weather, setWeather: _setWeather, notes, setNotes, photos: _photos, setPhotos, photoPreviews, setPhotoPreviews }) {
   const fileRef = useRef(null)
   const windHigh = weather && weather.windSpeed > 10
 
@@ -584,7 +584,7 @@ function StepConditions({ weather, setWeather, notes, setNotes, photos, setPhoto
               position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%",
               background: "rgba(0,0,0,0.6)", border: "none", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-            }}><X size={12} color="#fff" /></button>
+            }}><X size={12} color={T.card} /></button>
           </div>
         ))}
         <button onClick={() => fileRef.current?.click()} style={{

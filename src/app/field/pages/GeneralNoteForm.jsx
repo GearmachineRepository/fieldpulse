@@ -10,8 +10,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  ArrowLeft, ArrowRight, Check, MapPin, Camera, X,
-  Loader2, FileText, Navigation,
+  ArrowLeft, ArrowRight, Check, Camera, X,
+  Loader2, Navigation,
 } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
@@ -49,7 +49,7 @@ export default function GeneralNoteForm({ onClose, onSubmitted }) {
         { timeout: 8000 }
       )
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Mount-only GPS fetch; location is only read to check if already set
 
   // Navigation
   const canAdvance = () => {
@@ -151,7 +151,7 @@ export default function GeneralNoteForm({ onClose, onSubmitted }) {
         {step < 2 ? (
           <button onClick={next} disabled={!canAdvance()} style={{
             flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+            background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: canAdvance() ? 1 : 0.4, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             Next <ArrowRight size={18} />
@@ -159,7 +159,7 @@ export default function GeneralNoteForm({ onClose, onSubmitted }) {
         ) : (
           <button onClick={handleSubmit} disabled={submitting} style={{
             flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+            background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: submitting ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             {submitting ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> Submitting...</> : <><Check size={18} /> Submit Note</>}

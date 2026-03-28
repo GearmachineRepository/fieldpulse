@@ -11,9 +11,10 @@ import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { getOrgId } from '../utils/db.js'
 import { logger } from '../utils/logger.js'
-
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+import { DAY_NAMES } from '../constants/index.js'
+import { findException } from '../utils/scheduling.js'
 
 const router = Router()
 
@@ -23,9 +24,10 @@ const router = Router()
 
 /** @route GET /api/service-plans — List plans (optionally by account or route) */
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { accountId, routeId } = req.query
-    const where = ['sp.active = true']
-    const params = []
+    const params = [orgId]
+    const where = ['sp.active = true', `sp.org_id = $${params.length}`]
 
     if (accountId) { params.push(accountId); where.push(`sp.account_id = $${params.length}`) }
     if (routeId) { params.push(routeId); where.push(`sp.route_id = $${params.length}`) }
@@ -51,6 +53,7 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 
 /** @route GET /api/service-plans/:id — Get single plan */
 router.get('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const result = await db.query(`
       SELECT sp.*,
         a.name AS account_name, a.address AS account_address, a.city AS account_city,
@@ -63,8 +66,8 @@ router.get('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
       FROM service_plans sp
       JOIN accounts a ON a.id = sp.account_id
       LEFT JOIN routes r ON r.id = sp.route_id
-      WHERE sp.id = $1 AND sp.active = true
-    `, [req.params.id])
+      WHERE sp.id = $1 AND sp.active = true AND sp.org_id = $2
+    `, [req.params.id, orgId])
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' })
     res.json(formatPlan(result.rows[0]))
 }))
@@ -73,32 +76,34 @@ router.get('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
 router.post('/', requireAuth,
   validateBody({ accountId: { required: true, type: 'number' }, frequency: { required: true, type: 'string' } }),
   asyncHandler(async (req, res) => {
+      const orgId = getOrgId(req)
       const { accountId, frequency, intervalWeeks, preferredDays, routeId, startDate, endDate, seasonStart, seasonEnd, notes } = req.body
 
       const result = await db.query(
-        `INSERT INTO service_plans (account_id, status, frequency, interval_weeks, preferred_days, route_id, start_date, end_date, season_start, season_end, notes)
-         VALUES ($1, 'active', $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+        `INSERT INTO service_plans (account_id, status, frequency, interval_weeks, preferred_days, route_id, start_date, end_date, season_start, season_end, notes, org_id)
+         VALUES ($1, 'active', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
         [
           accountId, frequency, intervalWeeks || getDefaultInterval(frequency),
           preferredDays || [1], routeId || null,
           startDate || new Date().toLocaleDateString('en-CA'), endDate || null,
           seasonStart || null, seasonEnd || null, notes || null,
+          orgId,
         ]
       )
 
-      // Auto-add to route if assigned
       if (routeId) await autoAddStop(routeId, accountId)
 
-      const full = await fetchFullPlan(result.rows[0].id)
+      const full = await fetchFullPlan(result.rows[0].id, orgId)
       res.json(full)
   })
 )
 
 /** @route PUT /api/service-plans/:id — Update plan */
 router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { status, frequency, intervalWeeks, preferredDays, routeId, startDate, endDate, seasonStart, seasonEnd, notes } = req.body
 
-    const old = await db.query('SELECT route_id, account_id FROM service_plans WHERE id = $1', [req.params.id])
+    const old = await db.query('SELECT route_id, account_id FROM service_plans WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
     if (old.rows.length === 0) return res.status(404).json({ error: 'Not found' })
     const oldRouteId = old.rows[0].route_id
     const accountId = old.rows[0].account_id
@@ -109,34 +114,34 @@ router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
         interval_weeks = $3, preferred_days = $4,
         route_id = $5, start_date = $6, end_date = $7,
         season_start = $8, season_end = $9, notes = $10, updated_at = NOW()
-       WHERE id = $11`,
+       WHERE id = $11 AND org_id = $12`,
       [
         status || null, frequency || null,
         intervalWeeks || getDefaultInterval(frequency || 'weekly'),
         preferredDays || [1], routeId || null,
         startDate || null, endDate || null,
         seasonStart || null, seasonEnd || null, notes || null,
-        req.params.id,
+        req.params.id, orgId,
       ]
     )
 
     if (routeId && routeId !== oldRouteId) await autoAddStop(routeId, accountId)
 
-    const full = await fetchFullPlan(req.params.id)
+    const full = await fetchFullPlan(req.params.id, orgId)
     res.json(full)
 }))
 
 /** @route PATCH /api/service-plans/:id/status — Quick status change (pause / resume / cancel) */
 router.patch('/:id/status', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { status } = req.body
     if (!['active', 'paused', 'canceled'].includes(status)) {
       return res.status(400).json({ error: 'Status must be active, paused, or canceled' })
     }
-    await db.query('UPDATE service_plans SET status = $1, updated_at = NOW() WHERE id = $2', [status, req.params.id])
+    await db.query('UPDATE service_plans SET status = $1, updated_at = NOW() WHERE id = $2 AND org_id = $3', [status, req.params.id, orgId])
 
-    // If canceling, set end_date to today if not already set
     if (status === 'canceled') {
-      await db.query('UPDATE service_plans SET end_date = COALESCE(end_date, CURRENT_DATE) WHERE id = $1', [req.params.id])
+      await db.query('UPDATE service_plans SET end_date = COALESCE(end_date, CURRENT_DATE) WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
     }
 
     res.json({ success: true })
@@ -144,7 +149,8 @@ router.patch('/:id/status', requireAuth, validateIdParam, asyncHandler(async (re
 
 /** @route DELETE /api/service-plans/:id — Soft-delete plan */
 router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
-    await db.query('UPDATE service_plans SET active = false, updated_at = NOW() WHERE id = $1', [req.params.id])
+    const orgId = getOrgId(req)
+    await db.query('UPDATE service_plans SET active = false, updated_at = NOW() WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
     res.json({ success: true })
 }))
 
@@ -156,11 +162,17 @@ router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res
 router.post('/:id/exceptions', requireAuth, validateIdParam,
   validateBody({ exceptionType: { required: true, type: 'string' }, dateStart: { required: true, type: 'string' } }),
   asyncHandler(async (req, res) => {
+      const orgId = getOrgId(req)
+
+      // Verify plan belongs to this org
+      const check = await db.query('SELECT id FROM service_plans WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
+      if (check.rows.length === 0) return res.status(404).json({ error: 'Not found' })
+
       const { exceptionType, dateStart, dateEnd, reason } = req.body
       const result = await db.query(
-        `INSERT INTO service_exceptions (service_plan_id, exception_type, date_start, date_end, reason)
-         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [req.params.id, exceptionType, dateStart, dateEnd || null, reason || null]
+        `INSERT INTO service_exceptions (service_plan_id, exception_type, date_start, date_end, reason, org_id)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        [req.params.id, exceptionType, dateStart, dateEnd || null, reason || null, orgId]
       )
       res.json(formatException(result.rows[0]))
   })
@@ -168,9 +180,13 @@ router.post('/:id/exceptions', requireAuth, validateIdParam,
 
 /** @route DELETE /api/service-plans/:id/exceptions/:exceptionId — Remove exception */
 router.delete('/:id/exceptions/:exceptionId', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const exId = parseInt(req.params.exceptionId, 10)
     if (isNaN(exId) || exId < 1) return res.status(400).json({ error: 'Invalid exception ID' })
-    await db.query('DELETE FROM service_exceptions WHERE id = $1 AND service_plan_id = $2', [exId, req.params.id])
+    await db.query(
+      'DELETE FROM service_exceptions WHERE id = $1 AND service_plan_id = $2 AND org_id = $3',
+      [exId, req.params.id, orgId]
+    )
     res.json({ success: true })
 }))
 
@@ -180,12 +196,12 @@ router.delete('/:id/exceptions/:exceptionId', requireAuth, validateIdParam, asyn
 
 /** @route GET /api/service-plans/schedule/visits — Get calculated visits for a date range */
 router.get('/schedule/visits', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { start, end, crewId, routeId } = req.query
     if (!start || !end) return res.status(400).json({ error: 'start and end required' })
 
-    // Get all active plans with their exceptions
-    const where = ["sp.active = true", "sp.status = 'active'"]
-    const params = []
+    const params = [orgId]
+    const where = ["sp.active = true", "sp.status = 'active'", `sp.org_id = $${params.length}`]
     if (routeId) { params.push(routeId); where.push(`sp.route_id = $${params.length}`) }
 
     const plansR = await db.query(`
@@ -203,13 +219,11 @@ router.get('/schedule/visits', requireAuth, asyncHandler(async (req, res) => {
       WHERE ${where.join(' AND ')}
     `, params)
 
-    // Filter by crew if specified (through route's crew_id)
     let plans = plansR.rows
     if (crewId) {
       plans = plans.filter(p => p.crew_id && String(p.crew_id) === String(crewId))
     }
 
-    // Calculate visits for each plan in the date range
     const visits = []
     const startDate = new Date(start + 'T12:00:00')
     const endDate = new Date(end + 'T12:00:00')
@@ -220,15 +234,12 @@ router.get('/schedule/visits', requireAuth, asyncHandler(async (req, res) => {
       const planEnd = plan.end_date ? new Date(plan.end_date + 'T12:00:00') : new Date('2099-12-31')
       const preferredDays = plan.preferred_days || []
 
-      // Walk each day in the range
       const current = new Date(Math.max(startDate.getTime(), planStart.getTime()))
       while (current <= endDate && current <= planEnd) {
         const dateStr = current.toLocaleDateString('en-CA')
         const dow = current.getDay()
 
-        // Check if this day matches the plan's schedule
         if (isDueOnDate(plan, current, preferredDays, dow, dateStr)) {
-          // Check exceptions
           const exception = findException(exceptions, dateStr)
           const status = exception ? (exception.type === 'skip' ? 'skipped' : 'paused') : 'scheduled'
 
@@ -257,24 +268,18 @@ router.get('/schedule/visits', requireAuth, asyncHandler(async (req, res) => {
       }
     }
 
-    // Sort by date, then account name
     visits.sort((a, b) => a.date.localeCompare(b.date) || a.accountName.localeCompare(b.accountName))
     res.json(visits)
 }))
 
 /** @route GET /api/service-plans/schedule/today — Visits due today (for field app) */
 router.get('/schedule/today', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const today = new Date().toLocaleDateString('en-CA')
     const { crewId, routeId } = req.query
 
-    // Reuse the visits endpoint logic
-    const url = `/schedule/visits?start=${today}&end=${today}`
-      + (crewId ? `&crewId=${crewId}` : '')
-      + (routeId ? `&routeId=${routeId}` : '')
-
-    // Forward internally — just call the calculation directly
-    const where = ["sp.active = true", "sp.status = 'active'"]
-    const params = []
+    const params = [orgId]
+    const where = ["sp.active = true", "sp.status = 'active'", `sp.org_id = $${params.length}`]
     if (routeId) { params.push(routeId); where.push(`sp.route_id = $${params.length}`) }
 
     const plansR = await db.query(`
@@ -336,15 +341,13 @@ router.get('/schedule/today', requireAuth, asyncHandler(async (req, res) => {
 // CALCULATION HELPERS
 // ═══════════════════════════════════════════
 
-function isDueOnDate(plan, date, preferredDays, dow, dateStr) {
-  // Must be a preferred day
+function isDueOnDate(plan, date, preferredDays, dow) {
   if (!preferredDays.includes(dow)) return false
 
-  // Seasonal check
+  // Seasonal window check
   if (plan.season_start && plan.season_end) {
     const md = `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
     if (plan.season_start <= plan.season_end) {
-      // Normal range (e.g., 03-01 to 11-30)
       if (md < plan.season_start || md > plan.season_end) return false
     } else {
       // Wrapping range (e.g., 11-01 to 03-31 for winter)
@@ -352,27 +355,15 @@ function isDueOnDate(plan, date, preferredDays, dow, dateStr) {
     }
   }
 
-  // Frequency / interval check
+  // Frequency interval — weekly plans match every preferred day
   const interval = plan.interval_weeks || 1
-  if (interval <= 1) return true // weekly — every preferred day counts
+  if (interval <= 1) return true
 
-  // For biweekly / custom: check if this week is a "service week"
-  // Use the plan's start_date as epoch to count weeks from
+  // Biweekly+: check if this week is a service week relative to start_date
   const epoch = plan.start_date ? new Date(plan.start_date + 'T12:00:00') : new Date('2024-01-01T12:00:00')
   const msPerWeek = 7 * 24 * 60 * 60 * 1000
   const weeksSinceEpoch = Math.floor((date.getTime() - epoch.getTime()) / msPerWeek)
   return weeksSinceEpoch % interval === 0
-}
-
-function findException(exceptions, dateStr) {
-  for (const ex of exceptions) {
-    const exStart = ex.dateStart?.split('T')[0] || ex.dateStart
-    const exEnd = ex.dateEnd?.split('T')[0] || ex.dateEnd
-
-    if (ex.type === 'skip' && exStart === dateStr) return ex
-    if (ex.type === 'pause' && exStart <= dateStr && (!exEnd || exEnd >= dateStr)) return ex
-  }
-  return null
 }
 
 // ═══════════════════════════════════════════
@@ -403,7 +394,7 @@ async function autoAddStop(routeId, accountId) {
   }
 }
 
-async function fetchFullPlan(id) {
+async function fetchFullPlan(id, orgId) {
   const result = await db.query(`
     SELECT sp.*,
       a.name AS account_name, a.address AS account_address, a.city AS account_city,
@@ -416,8 +407,8 @@ async function fetchFullPlan(id) {
     FROM service_plans sp
     JOIN accounts a ON a.id = sp.account_id
     LEFT JOIN routes r ON r.id = sp.route_id
-    WHERE sp.id = $1
-  `, [id])
+    WHERE sp.id = $1 AND sp.org_id = $2
+  `, [id, orgId])
   return formatPlan(result.rows[0])
 }
 

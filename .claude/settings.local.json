@@ -122,7 +122,29 @@
       "Bash(echo \"exit: $?\")",
       "Bash(choco list:*)",
       "Bash(scoop list:*)",
-      "Bash(winget list:*)"
+      "Bash(winget list:*)",
+      "Bash(grep -E \"Page\\\\.jsx$\")",
+      "Bash(grep -E '\\\\.js$')",
+      "Bash(node -e \"require\\(''qrcode''\\)\")",
+      "Bash(find /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse -name *Vehicle* -type f)",
+      "Bash(find /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse -name *migration* -o -name *migrate*)",
+      "Bash(grep -r \"org_id\\\\|status\" /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse/server/migrations/*.js)",
+      "Bash(node --input-type=module -e \":*)",
+      "Bash(find /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse -maxdepth 3 -not -path */node_modules* -not -path */.git/* -type d)",
+      "Bash(grep -E \"\\\\.\\(js|json|sql|md|css|html\\)$\")",
+      "Bash(do sed:*)",
+      "Bash(taskkill //PID 30928 //F)",
+      "Bash(grep -v \"^$\")",
+      "Bash(npx react-compiler-healthcheck:*)",
+      "Bash(do)",
+      "Bash(sed -i '1s|^|/* eslint-disable react-refresh/only-export-components */\\\\n|' \"$f\")",
+      "Bash(node server/index.js)",
+      "Bash(xargs basename:*)",
+      "Bash(find /c/Users/Owen/Desktop/fieldpulse-dev/fieldpulse/src -type f \\\\\\( -name \"*.jsx\" -o -name \"*.js\" \\\\\\) -exec wc -l {} +)",
+      "Bash(rm -rf src/ui)",
+      "Bash(rm src/hooks/domain.js src/hooks/index.js)",
+      "Bash(taskkill //F //PID 49556)",
+      "Bash(taskkill //F //PID 29532)"
     ]
   }
 }

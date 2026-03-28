@@ -7,8 +7,8 @@
 
 import { useState, useEffect } from "react"
 import {
-  Search, Droplets, FileText, Camera, Loader2, ChevronRight,
-  MapPin, Clock, Users, Wind, Thermometer, Cloud,
+  Search, Droplets, FileText, Camera, Loader2,
+  MapPin, Users, Wind, Thermometer, Cloud,
   ClipboardList, AlertTriangle, CheckCircle, XCircle,
 } from "lucide-react"
 import { T } from "@/app/tokens.js"
@@ -39,7 +39,9 @@ export default function FieldDocs() {
   const [viewing, setViewing] = useState(null)
 
   useEffect(() => {
-    if (!crew?.name) { setLoading(false); return }
+    if (!crew?.name) { setLoading(false); return } // eslint-disable-line react-hooks/set-state-in-effect -- Early exit guard
+
+    let active = true
 
     // Fetch all doc types in parallel
     Promise.all([
@@ -47,6 +49,7 @@ export default function FieldDocs() {
       getFieldDocs({ crewName: crew.name }).catch(() => []),
     ])
       .then(([sprayLogs, fieldDocs]) => {
+        if (!active) return
         // Normalize spray logs into unified shape
         const normalizedSpray = sprayLogs.map(sl => ({
           id: `spray-${sl.id}`,
@@ -86,8 +89,10 @@ export default function FieldDocs() {
         })
         setDocs(all)
       })
-      .catch(console.error)
-      .finally(() => setLoading(false))
+      .catch(() => {})
+      .finally(() => { if (active) setLoading(false) })
+
+    return () => { active = false }
   }, [crew])
 
   const filtered = docs.filter(doc => {
@@ -122,7 +127,7 @@ export default function FieldDocs() {
               fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
               border: filter === fp.key ? "none" : `1.5px solid ${T.border}`,
               background: filter === fp.key ? T.accent : "transparent",
-              color: filter === fp.key ? "#fff" : T.textMed,
+              color: filter === fp.key ? T.card : T.textMed,
             }}>{fp.label}</button>
           ))}
         </div>

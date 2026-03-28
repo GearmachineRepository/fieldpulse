@@ -6,11 +6,13 @@ import { Router } from 'express'
 import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
+import { getOrgId } from '../utils/db.js'
 
 const router = Router()
 
 /** @route GET /api/reports/pur — PUR (Pesticide Use Report) summary */
 router.get('/pur', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { month, year, start: startParam, end: endParam } = req.query
     let start, end
 
@@ -20,17 +22,17 @@ router.get('/pur', requireAuth, asyncHandler(async (req, res) => {
     } else {
       if (!month || !year) return res.status(400).json({ error: 'month and year (or start and end) required' })
       start = `${year}-${String(month).padStart(2, '0')}-01`
-      end = new Date(year, month, 0).toISOString().split('T')[0] // last day of month
+      end = new Date(year, month, 0).toISOString().split('T')[0]
     }
 
-    // Use ::date + 1 to include everything through end of the selected end date
     const result = await db.query(
       `SELECT slp.chemical_name, slp.epa, slp.amount, sl.created_at, sl.crew_name, sl.property
        FROM spray_log_products slp
        JOIN spray_logs sl ON sl.id = slp.spray_log_id
        WHERE sl.created_at >= $1::date AND sl.created_at < ($2::date + interval '1 day')
+         AND sl.org_id = $3
        ORDER BY slp.chemical_name`,
-      [start, end]
+      [start, end, orgId]
     )
 
     const byProduct = {}
@@ -60,6 +62,7 @@ router.get('/pur', requireAuth, asyncHandler(async (req, res) => {
 
 /** @route GET /api/reports/rosters — Roster attendance report */
 router.get('/rosters', requireAuth, asyncHandler(async (req, res) => {
+    const orgId = getOrgId(req)
     const { start, end } = req.query
     if (!start || !end) return res.status(400).json({ error: 'start and end required' })
 
@@ -68,8 +71,8 @@ router.get('/rosters', requireAuth, asyncHandler(async (req, res) => {
         COALESCE((SELECT json_agg(json_build_object('employeeId',m.employee_id,'name',m.employee_name,'present',m.present))
           FROM daily_roster_members m WHERE m.roster_id = r.id), '[]') AS members
       FROM daily_crew_rosters r
-      WHERE r.work_date >= $1 AND r.work_date <= $2
-      ORDER BY r.work_date DESC, r.crew_name`, [start, end])
+      WHERE r.work_date >= $1 AND r.work_date <= $2 AND r.org_id = $3
+      ORDER BY r.work_date DESC, r.crew_name`, [start, end, orgId])
 
     const byCrewDate = {}
     for (const row of result.rows) {

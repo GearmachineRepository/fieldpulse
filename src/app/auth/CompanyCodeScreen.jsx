@@ -1,14 +1,6 @@
 // ═══════════════════════════════════════════
-// Company Code Screen
-//
-// First screen field devices see before crew
-// tiles. Enter a company code to register the
-// device. The code is remembered in localStorage
-// so this only shows once per device.
-//
-// Supports two registration methods:
-// 1. Manual code entry (type the company code)
-// 2. QR scan (camera reads admin-generated QR)
+// Company Code Screen — Device registration via
+// manual code entry or QR scan.
 // ═══════════════════════════════════════════
 
 import { useState } from "react"
@@ -47,20 +39,18 @@ export default function CompanyCodeScreen({ onRegistered }) {
 
   return (
     <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.font }}>
-      {/* Header */}
       <div style={{ background: T.sidebar, padding: "40px 20px 36px", textAlign: "center" }}>
         <div style={{
           width: 56, height: 56, borderRadius: 3, background: T.accent, margin: "0 auto 14px",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <Leaf size={30} color="#fff" />
+          <Leaf size={30} color={T.card} />
         </div>
-        <div style={{ fontSize: 24, fontWeight: 600, color: "#fff" }}>CruPoint</div>
+        <div style={{ fontSize: 24, fontWeight: 600, color: T.card }}>CruPoint</div>
         <div style={{ fontSize: 14, color: "#64748B", marginTop: 6 }}>Field App</div>
       </div>
 
       <div style={{ padding: "32px 20px", maxWidth: 430, margin: "0 auto" }}>
-        {/* Welcome message */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
           <div style={{
             width: 48, height: 48, borderRadius: 3, background: T.blueLight, margin: "0 auto 14px",
@@ -76,7 +66,6 @@ export default function CompanyCodeScreen({ onRegistered }) {
           </div>
         </div>
 
-        {/* Error */}
         {error && (
           <div style={{
             display: "flex", alignItems: "center", gap: 10, padding: "12px 16px",
@@ -88,59 +77,63 @@ export default function CompanyCodeScreen({ onRegistered }) {
           </div>
         )}
 
-        {/* Code input */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={{
-            display: "block", fontSize: 13, fontWeight: 600, color: T.textMed, marginBottom: 8,
-          }}>
-            Company Code
-          </label>
-          <input
-            type="text"
-            value={code}
-            onChange={e => { setCode(e.target.value.toUpperCase()); setError(null) }}
-            onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            placeholder="e.g. CRUPOINT-A1B2"
-            autoFocus
-            autoCapitalize="characters"
-            autoComplete="off"
+        {/* Use a real form so mobile keyboards get a native Submit button */}
+        <form onSubmit={e => { e.preventDefault(); handleSubmit() }}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{
+              display: "block", fontSize: 13, fontWeight: 600, color: T.textMed, marginBottom: 8,
+            }}>
+              Company Code
+            </label>
+            <input
+              type="text"
+              inputMode="text"
+              value={code}
+              onChange={e => { setCode(e.target.value.toUpperCase()); setError(null) }}
+              placeholder="e.g. CRUPOINT-A1B2"
+              autoCapitalize="characters"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
+              enterKeyHint="go"
+              style={{
+                width: "100%", padding: "16px 18px", borderRadius: 3,
+                background: T.card, border: `1.5px solid ${error ? T.red : T.border}`,
+                color: T.text, fontSize: 18, fontWeight: 600, fontFamily: T.font,
+                letterSpacing: 1, textAlign: "center", outline: "none",
+                boxSizing: "border-box",
+                WebkitAppearance: "none", appearance: "none",
+                transition: "border-color 0.15s",
+              }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting || !code.trim()}
             style={{
-              width: "100%", padding: "16px 18px", borderRadius: 3,
-              background: T.card, border: `1.5px solid ${error ? T.red : T.border}`,
-              color: T.text, fontSize: 18, fontWeight: 600, fontFamily: T.font,
-              letterSpacing: 1, textAlign: "center", outline: "none",
-              boxSizing: "border-box",
-              transition: "border-color 0.15s",
+              width: "100%", padding: "16px", borderRadius: 3, border: "none", cursor: "pointer",
+              background: T.accent, color: T.card, fontSize: 16, fontWeight: 600, fontFamily: T.font,
+              opacity: (submitting || !code.trim()) ? 0.5 : 1,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              boxShadow: "0 4px 14px rgba(47,111,237,0.2)",
+              WebkitAppearance: "none", appearance: "none",
+              transition: "opacity 0.15s",
             }}
-          />
-        </div>
+          >
+            {submitting ? (
+              <>
+                <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
+                Verifying...
+              </>
+            ) : (
+              <>
+                Connect Device <ArrowRight size={18} />
+              </>
+            )}
+          </button>
+        </form>
 
-        {/* Submit */}
-        <button
-          onClick={() => handleSubmit()}
-          disabled={submitting || !code.trim()}
-          style={{
-            width: "100%", padding: "16px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
-            opacity: (submitting || !code.trim()) ? 0.5 : 1,
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            boxShadow: "0 4px 14px rgba(47,111,237,0.2)",
-            transition: "opacity 0.15s",
-          }}
-        >
-          {submitting ? (
-            <>
-              <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
-              Verifying...
-            </>
-          ) : (
-            <>
-              Connect Device <ArrowRight size={18} />
-            </>
-          )}
-        </button>
-
-        {/* Divider */}
         <div style={{
           display: "flex", alignItems: "center", gap: 14, margin: "24px 0",
         }}>
@@ -149,7 +142,6 @@ export default function CompanyCodeScreen({ onRegistered }) {
           <div style={{ flex: 1, height: 1, background: T.border }} />
         </div>
 
-        {/* QR Code scanner */}
         <QRScanner open={scannerOpen} onClose={() => setScannerOpen(false)} onScan={handleQRScan} />
         <button
           onClick={() => setScannerOpen(true)}
@@ -167,7 +159,6 @@ export default function CompanyCodeScreen({ onRegistered }) {
           Ask your admin for a QR code
         </div>
 
-        {/* Help text */}
         <div style={{
           marginTop: 32, padding: "16px 18px", background: T.card, borderRadius: 3,
           border: `1px solid ${T.border}`,

@@ -1,8 +1,183 @@
 /* ═══════════════════════════════════════════
-   Global Styles — Base resets + focus handling
-
-   Uses CSS custom properties from tokens.
+   Global Styles — Design Tokens + Base Resets
    ═══════════════════════════════════════════ */
+
+/* ── Colors ── */
+
+:root {
+  --bg:      #F4F5F7;
+  --s1:      #FFFFFF;
+  --s2:      #F0F2F5;
+  --s3:      #E8EDF2;
+
+  --bd:      #DDE2E8;
+  --bd2:     #C8D0D8;
+  --bd3:     #B0BBC6;
+
+  --t1:      #0F1923;
+  --t2:      #4A5568;
+  --t3:      #8896A4;
+
+  --amb:      #D97706;
+  --amb2:     #E8930A;
+  --amb-dim:  #FEF3DC;
+  --amb-mid:  #FDE8B4;
+  --amb-text: #1A0D00;
+
+  --grn:     #059669;
+  --grn-dim: #ECFDF5;
+
+  --red:     #DC2626;
+  --red-dim: #FEF2F2;
+
+  --blu:     #2563EB;
+  --blu-dim: #EBF2FF;
+
+  --rail-bg:       hsl(30, 8%, 11%);
+  --sb-bg:         hsl(30, 8%, 14%);
+  --sb-text:       hsl(30, 8%, 70%);
+  --sb-text-active: var(--amb);
+  --sb-hover:      hsl(30, 8%, 18%);
+  --sb-active-bg:  hsla(38, 92%, 50%, 0.08);
+  --sb-divider:    hsl(30, 8%, 22%);
+  --sb-section:    hsl(30, 8%, 50%);
+
+  --color-overlay: rgba(0, 0, 0, 0.45);
+
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md:   0 4px 12px rgba(0, 0, 0, 0.07);
+  --shadow-lg:   0 10px 40px rgba(0, 0, 0, 0.1);
+  --shadow-toast: 0 8px 32px rgba(0, 0, 0, 0.25);
+
+  /* Backward-compat aliases — old component references */
+  --color-bg:             var(--bg);
+  --color-card:           var(--s1);
+  --color-card-border:    var(--bd);
+  --color-input-bg:       var(--s2);
+  --color-text:           var(--t1);
+  --color-text-med:       var(--t2);
+  --color-text-light:     var(--t3);
+  --color-text-inverse:   #FFFFFF;
+  --color-accent:         var(--amb);
+  --color-accent-light:   var(--amb-dim);
+  --color-accent-border:  var(--amb-mid);
+  --color-blue:           var(--blu);
+  --color-blue-light:     var(--blu-dim);
+  --color-blue-border:    #BFDBFE;
+  --color-amber:          var(--amb2);
+  --color-amber-light:    var(--amb-dim);
+  --color-amber-border:   var(--amb-mid);
+  --color-red:            var(--red);
+  --color-red-light:      var(--red-dim);
+  --color-red-border:     #FECACA;
+  --color-purple:         #7C3AED;
+  --color-purple-light:   #F5F3FF;
+  --color-sidebar:        var(--sb-bg);
+  --color-sidebar-hover:  var(--sb-hover);
+  --color-sidebar-active: var(--sb-active-bg);
+}
+
+[data-theme="dark"] {
+  --bg:      #0E1117;
+  --s1:      #161B23;
+  --s2:      #1D2430;
+  --s3:      #242D3A;
+  --bd:      #252D3A;
+  --bd2:     #2E3848;
+  --bd3:     #3A4557;
+  --t1:      #E8EDF3;
+  --t2:      #8A97A8;
+  --t3:      #4E5D6E;
+  --amb:     #E8930A;
+  --amb2:    #F5A623;
+  --amb-dim: #2A1F08;
+  --amb-mid: #3D2D0A;
+  --grn:     #16A37F;
+  --grn-dim: #0C2420;
+  --red:     #E05252;
+  --red-dim: #281414;
+  --blu:     #4A90D9;
+  --blu-dim: #0E1E30;
+  --color-text-inverse: #0F1923;
+
+  --rail-bg:       hsl(30, 6%, 8%);
+  --sb-bg:         hsl(30, 6%, 10%);
+  --sb-text:       hsl(30, 8%, 65%);
+  --sb-hover:      hsl(30, 6%, 14%);
+  --sb-active-bg:  hsla(38, 92%, 50%, 0.10);
+  --sb-divider:    hsl(30, 6%, 16%);
+  --sb-section:    hsl(30, 8%, 45%);
+}
+
+/* ── Typography ── */
+
+:root {
+  --fn:        'IBM Plex Sans', system-ui, sans-serif;
+  --mono:      'IBM Plex Mono', monospace;
+  --font-sans: var(--fn);
+  --font-mono: var(--mono);
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.8125rem;
+  --text-base: 0.875rem;
+  --text-md:   0.9375rem;
+  --text-lg:   1rem;
+  --text-xl:   1.125rem;
+  --text-2xl:  1.375rem;
+  --text-3xl:  1.75rem;
+
+  --font-normal:   400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     600;
+  --font-extrabold: 600;
+  --font-black:    600;
+
+  --leading-tight:  1;
+  --leading-snug:   1.3;
+  --leading-normal: 1.5;
+
+  --tracking-label:   1px;
+  --tracking-section: 0.8px;
+  --tracking-brand:   4px;
+}
+
+/* ── Spacing & Radii ── */
+
+:root {
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  18px;
+  --space-6:  20px;
+  --space-8:  24px;
+  --space-10: 32px;
+  --space-12: 40px;
+
+  --r:          3px;
+  --radius-sm:  2px;
+  --radius-md:  3px;
+  --radius-lg:  4px;
+  --radius-xl:   var(--radius-lg);
+  --radius-2xl:  var(--radius-lg);
+  --radius-full: 9999px;
+  --max-width-page: 900px;
+
+  --rail-width:    48px;
+  --sidebar-width: 200px;
+
+  --z-panel:   200;
+  --z-sidebar: 250;
+  --z-modal:   300;
+  --z-toast:   400;
+
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slide: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Base Resets ── */
 
 * {
   margin: 0;
@@ -17,11 +192,7 @@ body {
   color: var(--t1);
 }
 
-/* ── Focus ring fix ──
-   Remove the default browser outline that leaves pixel
-   artifacts on rounded elements. Replace with a clean
-   box-shadow ring that respects border-radius. */
-
+/* Remove default outline, replace with clean box-shadow ring */
 *:focus {
   outline: none;
 }
@@ -32,7 +203,6 @@ body {
   border-radius: inherit;
 }
 
-/* Inputs: amber focus ring via module CSS; just kill default outline here */
 input:focus,
 select:focus,
 textarea:focus {
@@ -43,21 +213,11 @@ button:focus-visible {
   box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
 }
 
-/* ── Smooth scrolling ── */
 html {
   scroll-behavior: smooth;
 }
 
-/* ── Selection color ── */
 ::selection {
   background: var(--amb-dim);
   color: var(--t1);
 }
-
-/* ── Responsive breakpoints (documented, not usable in media queries) ──
-   Use these values directly in @media rules:
-   --breakpoint-sm:  640px
-   --breakpoint-md:  768px
-   --breakpoint-lg:  1024px
-   --breakpoint-xl:  1280px
-*/

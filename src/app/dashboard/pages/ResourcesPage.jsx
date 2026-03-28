@@ -6,12 +6,12 @@
 import { useState, useEffect, useRef } from "react"
 import {
   BookOpen, Plus, Edit3, Search, Pin, ExternalLink, Download,
-  FileText, File, Shield, Tag, Wrench, GraduationCap,
-  FolderOpen, Upload, Link2, X, MapPinned,
+  FileText, File,
+  Upload, Link2, X, MapPinned,
   Settings, Trash2,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import {
   getResources, getResourceCategories, createResource, updateResource,
   deleteResource, uploadResource, replaceResourceFile, createResourceCategory, updateResourceCategory,
@@ -28,25 +28,13 @@ import {
   LoadingSpinner,
 } from "../components/PageUI.jsx"
 import s from "./ResourcesPage.module.css"
+import { formatFileSize } from "@/lib/formatUtils.js"
 
 const CAT_COLORS = ["#EF4444", "#F59E0B", "#7C3AED", "#3B82F6", "#2F6FED", "#0891B2", "#DB2777", "#92400E", "#475569"]
 
-function formatFileSize(bytes) {
-  if (!bytes) return ""
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function getFileIcon(mimeType) {
-  if (!mimeType) return FileText
-  if (mimeType.includes("pdf")) return FileText
-  if (mimeType.includes("image")) return File
-  return File
-}
 
 export default function ResourcesPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const resources = usePageData("resources", { fetchFn: getResources })
   const categories = usePageData("resourceCategories", { fetchFn: getResourceCategories })
 
@@ -276,11 +264,6 @@ export default function ResourcesPage() {
         />
       )}
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </>
   )
 }
@@ -291,13 +274,15 @@ export default function ResourcesPage() {
 // ═══════════════════════════════════════════
 function ResourceCard({ resource, onEdit, onPin }) {
   const isFile = resource.resourceType === "file"
-  const FileIcon = isFile ? getFileIcon(resource.mimeType) : ExternalLink
+  const isImage = isFile && resource.mimeType && resource.mimeType.includes("image")
 
   return (
     <div className={s.resCard} onClick={onEdit}>
       <div className={s.cardRow}>
         <div className={isFile ? s.cardIconFile : s.cardIconLink}>
-          <FileIcon size={20} color={isFile ? "var(--amb)" : "var(--blu)"} />
+          {!isFile && <ExternalLink size={20} color="var(--blu)" />}
+          {isFile && isImage && <File size={20} color="var(--amb)" />}
+          {isFile && !isImage && <FileText size={20} color="var(--amb)" />}
         </div>
 
         <div className={s.cardBody}>
@@ -548,7 +533,16 @@ function ResourceAccountsTab({ resourceId, onClose }) {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [resourceId])
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      let linked = [], all = []
+      try { all = await getAccounts() } catch (err) { console.error(err) }
+      try { linked = await getResourceAccounts(resourceId) } catch (err) { console.error(err) }
+      if (active) { setLinkedAccounts(linked); setAllAccounts(all); setLoading(false) }
+    })()
+    return () => { active = false }
+  }, [resourceId])
 
   const handleLink = async (accountId) => {
     try { await linkResourceToAccount(resourceId, accountId); load() }

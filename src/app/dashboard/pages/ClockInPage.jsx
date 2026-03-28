@@ -10,7 +10,7 @@
 // design system compliance.
 // ═══════════════════════════════════════════
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   Clock, Users, CheckCircle2, XCircle, RefreshCw,
   UserCheck, UserX, ChevronDown, ChevronUp,
@@ -33,7 +33,7 @@ function useRelativeTime(ts) {
   }, [ts])
 
   if (!ts) return null
-  const diff = Math.floor((Date.now() - ts) / 1000)
+  const diff = Math.floor((Date.now() - ts) / 1000) // eslint-disable-line react-hooks/purity -- Date.now() recalculated on each tick
   if (diff < 10) return "just now"
   if (diff < 60) return `${diff}s ago`
   if (diff < 3600) return `${Math.floor(diff / 60)} min ago`

@@ -6,15 +6,17 @@
 // Read-only — crews submit from the field app.
 // ═══════════════════════════════════════════
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import {
-  FileText, Droplets, Camera, MapPin, Cloud, Wind,
-  Thermometer, ChevronDown, ChevronUp, Download, Users,
-  Eye, Calendar, Filter, ClipboardList, AlertTriangle,
+  FileText, Droplets, MapPin, Cloud, Wind,
+  Thermometer, Users,
+  Eye, ClipboardList,
   CheckCircle, XCircle,
 } from "lucide-react"
 import AddressLink from "../components/AddressLink.jsx"
-import { useData } from "@/context/DataProvider.jsx"
+import usePageData from "@/hooks/usePageData.js"
+import { getSprayLogs } from "@/lib/api/sprayLogs.js"
+import { getCrews } from "@/lib/api/crews.js"
 import { getFieldDocs } from "@/lib/api/fieldDocs.js"
 import {
   Modal, PageHeader, SearchBar, LoadingSpinner, EmptyMessage,
@@ -35,7 +37,8 @@ const FILTER_TYPES = [
 ]
 
 export default function FieldDocsPage() {
-  const { sprayLogs, crews } = useData()
+  const sprayLogs = usePageData("sprayLogs", { fetchFn: getSprayLogs })
+  const _crews = usePageData("crews", { fetchFn: getCrews })
   const [fieldDocs, setFieldDocs] = useState([])
   const [fieldDocsLoading, setFieldDocsLoading] = useState(true)
   const [searchQ, setSearchQ] = useState("")
@@ -45,10 +48,12 @@ export default function FieldDocsPage() {
 
   // Fetch field docs (notes + inspections)
   useEffect(() => {
+    let active = true
     getFieldDocs()
-      .then(setFieldDocs)
-      .catch(console.error)
-      .finally(() => setFieldDocsLoading(false))
+      .then(d => { if (active) setFieldDocs(d) })
+      .catch(() => {})
+      .finally(() => { if (active) setFieldDocsLoading(false) })
+    return () => { active = false }
   }, [])
 
   // Combine all docs into unified list

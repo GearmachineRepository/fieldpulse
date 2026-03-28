@@ -11,7 +11,7 @@ import {
   CheckCircle, ChevronDown, ChevronUp, Video,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import { getEmployees } from "@/lib/api/employees.js"
 import {
   getTrainingSessions, getTrainingSession,
@@ -72,7 +72,7 @@ function formatDate(d) {
 }
 
 export default function TrainingPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const [tab, setTab] = useState("sessions")
 
   // Three separate data loads per plan
@@ -250,11 +250,6 @@ export default function TrainingPage() {
         />
       )}
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </>
   )
 }
@@ -263,7 +258,7 @@ export default function TrainingPage() {
 // ===================================================
 // Tab 1: Sessions — DataTable with expandable rows
 // ===================================================
-function SessionsTab({ data, onSelect, onEdit }) {
+function SessionsTab({ data, onSelect, onEdit: _onEdit }) {
   const [searchQ, setSearchQ] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
   const [typeFilter, setTypeFilter] = useState("")
@@ -434,7 +429,7 @@ function SessionsTab({ data, onSelect, onEdit }) {
 // ===================================================
 // Tab 2: Tailgate Meetings — Card layout with progress
 // ===================================================
-function TailgateTab({ data, onSelect, employees, onSignoff }) {
+function TailgateTab({ data, onSelect, employees, onSignoff: _onSignoff }) {
   const [searchQ, setSearchQ] = useState("")
 
   const filtered = data.filter(item => {

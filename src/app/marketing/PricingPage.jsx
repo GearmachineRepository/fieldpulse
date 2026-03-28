@@ -5,7 +5,7 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Leaf, Check, ArrowLeft } from "lucide-react"
+import { Leaf, Check } from "lucide-react"
 import { T } from "@/app/tokens.js"
 
 const PLANS = [
@@ -81,7 +81,7 @@ export default function PricingPage() {
             width: 34, height: 34, borderRadius: 3, background: T.accent,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <Leaf size={18} color="#fff" />
+            <Leaf size={18} color={T.card} />
           </div>
           <span style={{ fontSize: 18, fontWeight: 600, color: T.text }}>CruPoint</span>
         </button>
@@ -96,7 +96,7 @@ export default function PricingPage() {
           <button onClick={() => navigate("/signup")} style={{
             padding: "10px 20px", borderRadius: 3, border: "none",
             background: T.accent, cursor: "pointer", fontFamily: T.font,
-            fontSize: 14, fontWeight: 600, color: "#fff",
+            fontSize: 14, fontWeight: 600, color: T.card,
           }}>
             Get Started
           </button>
@@ -121,7 +121,7 @@ export default function PricingPage() {
             padding: "10px 24px", borderRadius: 3, border: "none", cursor: "pointer",
             fontFamily: T.font, fontSize: 14, fontWeight: 600,
             background: billing === "monthly" ? T.accent : "transparent",
-            color: billing === "monthly" ? "#fff" : T.textMed,
+            color: billing === "monthly" ? T.card : T.textMed,
             transition: "all 0.15s",
           }}>
             Monthly
@@ -130,7 +130,7 @@ export default function PricingPage() {
             padding: "10px 24px", borderRadius: 3, border: "none", cursor: "pointer",
             fontFamily: T.font, fontSize: 14, fontWeight: 600,
             background: billing === "annual" ? T.accent : "transparent",
-            color: billing === "annual" ? "#fff" : T.textMed,
+            color: billing === "annual" ? T.card : T.textMed,
             transition: "all 0.15s",
           }}>
             Annual <span style={{ fontSize: 12, opacity: 0.8 }}>(save 17%)</span>
@@ -154,7 +154,7 @@ export default function PricingPage() {
             {plan.popular && (
               <div style={{
                 position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)",
-                background: T.accent, color: "#fff", padding: "4px 16px", borderRadius: 3,
+                background: T.accent, color: T.card, padding: "4px 16px", borderRadius: 3,
                 fontSize: 12, fontWeight: 600, letterSpacing: "0.5px",
               }}>
                 MOST POPULAR
@@ -189,7 +189,7 @@ export default function PricingPage() {
               width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
               fontFamily: T.font, fontSize: 15, fontWeight: 600,
               background: plan.popular ? T.accent : T.bg,
-              color: plan.popular ? "#fff" : T.text,
+              color: plan.popular ? T.card : T.text,
               marginBottom: 28,
               boxShadow: plan.popular ? "0 4px 14px rgba(47,111,237,0.2)" : "none",
             }}>

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // ═══════════════════════════════════════════
 // useModules — Module state provider + hook
 //

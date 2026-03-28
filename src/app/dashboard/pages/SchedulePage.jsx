@@ -5,13 +5,13 @@
 
 import { useState, useEffect, useMemo } from "react"
 import {
-  Calendar, Plus, Edit3, MapPin, Clock, Users, ChevronLeft,
-  ChevronRight, Trash2, CheckCircle2, Circle, ArrowLeft,
+  Plus, Edit3, MapPin, Clock, Users, ChevronLeft,
+  ChevronRight, Trash2, CheckCircle2, Circle,
   GripVertical, Search, LayoutGrid, List,
 } from "lucide-react"
 import s from "./SchedulePage.module.css"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import {
   getRoutes, createRoute, updateRoute, deleteRoute,
   getRoute, addRouteStop, removeRouteStop, reorderRouteStops, updateRouteStop,
@@ -24,7 +24,7 @@ import SlidePanel from "../components/SlidePanel.jsx"
 import StatusBadge from "../components/StatusBadge.jsx"
 import {
   Modal, ModalFooter, ConfirmModal, FormField, SelectField, TextareaField,
-  PageHeader, AddButton, ClickableCard, IconButton, LoadingSpinner, EmptyMessage,
+  AddButton, ClickableCard, LoadingSpinner, EmptyMessage,
 } from "@/app/dashboard/components/PageUI.jsx"
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
@@ -74,7 +74,7 @@ export default function SchedulePage() {
   const routes = usePageData("routes", { fetchFn: getRoutes, createFn: createRoute, updateFn: updateRoute, deleteFn: deleteRoute })
   const crews = usePageData("crews", { fetchFn: getCrews })
   const accounts = usePageData("accounts", { fetchFn: getAccounts })
-  const toast = useToast()
+  const toast = useGlobalToast()
 
   const [view, setView] = useState("calendar")
   const today = new Date()
@@ -124,7 +124,7 @@ export default function SchedulePage() {
     finally { setLoadingEvents(false) }
   }
 
-  useEffect(() => { fetchData() }, [calYear, calMonth, weekStart, view])
+  useEffect(() => { fetchData() }, [calYear, calMonth, weekStart, view]) // eslint-disable-line react-hooks/exhaustive-deps -- Refetch on calendar navigation; fetchData is stable
 
   // ── Calendar nav ──
   const calPrev = () => { if (calMonth === 0) { setCalMonth(11); setCalYear(calYear - 1) } else setCalMonth(calMonth - 1) }
@@ -453,10 +453,6 @@ export default function SchedulePage() {
           onDelete={editingRoute.id ? () => handleDeleteRoute(editingRoute.id) : undefined} />
       )}
 
-      {/* ── Toast ── */}
-      {toast.message && (
-        <div className={s.toast} onClick={toast.dismiss}>{toast.message}</div>
-      )}
     </div>
   )
 }
@@ -553,7 +549,7 @@ function EventPanel({ event, onEdit, onDelete, onToggleComplete }) {
 // ═══════════════════════════════════════════
 // Route Panel — SlidePanel content for route details + stops
 // ═══════════════════════════════════════════
-function RoutePanel({ route: routeMeta, accounts, toast, onRefresh, onEdit, onClose }) {
+function RoutePanel({ route: routeMeta, accounts, toast, onRefresh: _onRefresh, onEdit, onClose: _onClose }) {
   const [route, setRoute] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -566,7 +562,7 @@ function RoutePanel({ route: routeMeta, accounts, toast, onRefresh, onEdit, onCl
     catch { toast.show("Failed to load route") }
     finally { setLoading(false) }
   }
-  useEffect(() => { load() }, [routeMeta.id])
+  useEffect(() => { load() }, [routeMeta.id]) // eslint-disable-line react-hooks/exhaustive-deps -- Refetch when route changes; load is stable
 
   const handleAdd = async (accountId) => {
     try { await addRouteStop(routeMeta.id, { accountId }); toast.show("Added"); setShowAdd(false); load() }

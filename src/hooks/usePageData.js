@@ -98,7 +98,7 @@ export default function usePageData(cacheKey, config) {
     if (!hasFreshCache) {
       refresh().catch(() => {})
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Mount-only fetch; cacheKey changes trigger refresh via explicit calls
 
   return {
     data,

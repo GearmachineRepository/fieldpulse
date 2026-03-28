@@ -1,16 +1,10 @@
 // ═══════════════════════════════════════════
 // useTheme — Theme state management
-//
-// Reads theme from localStorage (default: 'light').
-// Sets data-theme attribute on <html> to toggle
-// the CSS variable block in colors.css.
-//
-// Future: persist to Supabase user_preferences.theme
 // ═══════════════════════════════════════════
 
 import { useState, useCallback, useEffect } from 'react'
 
-const LS_KEY = 'crupoint-theme'
+const LS_KEY = 'fp_theme'
 
 export default function useTheme() {
   const [theme, setThemeState] = useState(() => {
@@ -31,10 +25,9 @@ export default function useTheme() {
     applyTheme(theme === 'dark' ? 'light' : 'dark')
   }, [theme, applyTheme])
 
-  // Apply on mount
   useEffect(() => {
-    applyTheme(theme)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    applyTheme(theme) // eslint-disable-line react-hooks/set-state-in-effect -- Apply theme to DOM on mount
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Mount-only; applyTheme is stable (useCallback)
 
   return { theme, setTheme, toggleTheme }
 }

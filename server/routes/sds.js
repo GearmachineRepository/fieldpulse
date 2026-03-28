@@ -6,6 +6,7 @@
 import { Router } from 'express'
 import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
+import { validateIdParam } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { getOrgId } from '../utils/db.js'
 
@@ -45,7 +46,7 @@ router.post('/', requireAuth, asyncHandler(async (req, res) => {
 }))
 
 /** @route PUT /api/sds/:id — Update SDS entry */
-router.put('/:id', requireAuth, asyncHandler(async (req, res) => {
+router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
   const b = req.body
   if (!b.name || !b.name.trim()) {
@@ -65,10 +66,10 @@ router.put('/:id', requireAuth, asyncHandler(async (req, res) => {
   res.json(r.rows[0])
 }))
 
-/** @route DELETE /api/sds/:id — Delete SDS entry */
-router.delete('/:id', requireAuth, asyncHandler(async (req, res) => {
+/** @route DELETE /api/sds/:id — Soft-delete SDS entry (consistent with chemicals route) */
+router.delete('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
-  await db.query('DELETE FROM chemicals WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
+  await db.query('UPDATE chemicals SET active = false WHERE id = $1 AND org_id = $2', [req.params.id, orgId])
   res.json({ success: true })
 }))
 

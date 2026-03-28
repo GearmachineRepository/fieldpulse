@@ -11,7 +11,15 @@ import { getOrgId } from '../utils/db.js'
 
 const router = Router()
 
-/** @route GET /api/crews/login-tiles — Public, needed by login screen */
+/**
+ * @route GET /api/crews/login-tiles — Public, needed by field login screen
+ *
+ * Intentionally unscoped (no auth, no org_id filter) because this runs
+ * before authentication on the field app login screen. Returns all active
+ * crews/employees/vehicles globally.
+ *
+ * TODO: Accept orgId query param from device registration to scope results.
+ */
 router.get('/login-tiles', asyncHandler(async (req, res) => {
   const crews = await db.query('SELECT id, name, lead_name FROM crews WHERE active = true ORDER BY name')
   const employees = await db.query(

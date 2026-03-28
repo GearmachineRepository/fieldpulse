@@ -4,8 +4,8 @@
 
 import { useState, useEffect } from "react"
 import {
-  Plus, Clock, Sun, Cloud, Navigation, CheckCircle2, MapPin,
-  Droplets, Camera, FileText, Users, ChevronRight, Loader2, Wind,
+  Plus, Clock, Sun, Cloud, CheckCircle2,
+  Droplets, ChevronRight, Loader2, Wind,
 } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
@@ -88,7 +88,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
   return (
     <div>
       {/* Header */}
-      <div style={{ background: T.sidebar, padding: "20px 20px 24px", color: "#fff" }}>
+      <div style={{ background: T.sidebar, padding: "20px 20px 24px", color: T.card }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
             <div style={{ fontSize: 13, color: "#64748B" }}>{greeting}</div>
@@ -134,7 +134,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
           <button onClick={onNewDoc} style={{
             padding: "16px 18px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontFamily: T.font, display: "flex", alignItems: "center", gap: 10,
+            background: T.accent, color: T.card, fontFamily: T.font, display: "flex", alignItems: "center", gap: 10,
           }}>
             <Plus size={20} />
             <div style={{ textAlign: "left" }}>
@@ -145,7 +145,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
           <button onClick={() => onNavigate?.("clockin")} style={{
             padding: "16px 18px", borderRadius: 3, cursor: "pointer", border: "none",
             background: todayRoster ? T.green : T.blue, fontFamily: T.font,
-            display: "flex", alignItems: "center", gap: 10, color: "#fff",
+            display: "flex", alignItems: "center", gap: 10, color: T.card,
           }}>
             <Clock size={20} />
             <div style={{ textAlign: "left" }}>
@@ -198,7 +198,7 @@ export default function FieldHome({ onNewDoc, onNavigate }) {
                     : <div style={{
                         width: 22, height: 22, borderRadius: 3, background: stop.routeColor || T.accent,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 11, fontWeight: 600, color: "#fff",
+                        fontSize: 11, fontWeight: 600, color: T.card,
                       }}>{i + 1}</div>
                   }
                 </div>

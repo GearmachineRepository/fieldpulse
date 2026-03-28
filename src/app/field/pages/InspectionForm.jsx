@@ -11,13 +11,14 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  ArrowLeft, ArrowRight, Check, MapPin, Camera, X,
+  ArrowLeft, ArrowRight, Check, Camera, X,
   Loader2, ClipboardList, Navigation, Plus, CheckCircle,
   XCircle, MinusCircle,
 } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
 import { createFieldDoc, uploadFieldDocPhotos } from "@/lib/api/fieldDocs.js"
+import { request } from "@/lib/api/core.js"
 
 const STEPS = ["Info", "Checklist", "Photos", "Review"]
 
@@ -86,6 +87,14 @@ export default function InspectionForm({ onClose, onSubmitted }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
+  // Asset linking (vehicle/equipment)
+  const [assetType, setAssetType] = useState(null) // "vehicle" | "equipment" | null
+  const [assetId, setAssetId] = useState(null)
+  const [assetName, setAssetName] = useState("")
+  const [assetManual, setAssetManual] = useState(false) // fallback to manual entry
+  const [assetList, setAssetList] = useState([])
+  const [loadingAssets, setLoadingAssets] = useState(false)
+
   const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : ""
   const crewName = crew?.name || ""
 
@@ -102,11 +111,40 @@ export default function InspectionForm({ onClose, onSubmitted }) {
         { timeout: 8000 }
       )
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Mount-only GPS fetch
+
+  // Fetch assets when template requires it
+  useEffect(() => {
+    let active = true
+    if (template === "vehicle" || template === "equipment") {
+      const type = template === "vehicle" ? "vehicle" : "equipment"
+      setAssetType(type) // eslint-disable-line react-hooks/set-state-in-effect -- Sync state before async fetch
+      setLoadingAssets(true)  
+      const endpoint = type === "vehicle" ? "/vehicles" : "/equipment"
+      request(endpoint)
+        .then(items => {
+          if (!active) return
+          const activeItems = (items || []).filter(i => i.active !== false && i.status !== "Retired")
+          setAssetList(activeItems)
+          setLoadingAssets(false)
+        })
+        .catch(() => { if (active) { setAssetList([]); setLoadingAssets(false) } })
+    } else {
+      setAssetType(null)
+      setAssetId(null)
+      setAssetName("")
+      setAssetManual(false)
+      setAssetList([])
+    }
+    return () => { active = false }
+  }, [template])
 
   // Apply template
   const applyTemplate = (key) => {
     setTemplate(key)
+    setAssetId(null)
+    setAssetName("")
+    setAssetManual(false)
     const t = INSPECTION_TEMPLATES.find(t => t.key === key)
     if (t && t.items.length > 0) {
       setChecklist(t.items.map(item => ({ item, status: "pending", note: "" })))
@@ -162,6 +200,9 @@ export default function InspectionForm({ onClose, onSubmitted }) {
         employeeName,
         checklist,
         status: overallStatus,
+        assetType: assetType || null,
+        assetId: assetId || null,
+        assetName: assetName || null,
         metadata: {
           template,
           passCount,
@@ -210,6 +251,9 @@ export default function InspectionForm({ onClose, onSubmitted }) {
             template={template} applyTemplate={applyTemplate}
             location={location} setLocation={setLocation}
             gps={gps} employeeName={employeeName} crewName={crewName}
+            assetType={assetType} assetId={assetId} assetName={assetName}
+            assetManual={assetManual} assetList={assetList} loadingAssets={loadingAssets}
+            setAssetId={setAssetId} setAssetName={setAssetName} setAssetManual={setAssetManual}
           />
         )}
         {step === 1 && (
@@ -231,6 +275,7 @@ export default function InspectionForm({ onClose, onSubmitted }) {
             employeeName={employeeName} crewName={crewName}
             checklist={checklist} notes={notes} photos={photos}
             failCount={failCount} error={error}
+            assetType={assetType} assetName={assetName}
           />
         )}
       </div>
@@ -255,7 +300,7 @@ export default function InspectionForm({ onClose, onSubmitted }) {
         {step < 3 ? (
           <button onClick={next} disabled={!canAdvance()} style={{
             flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+            background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: canAdvance() ? 1 : 0.4, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             Next <ArrowRight size={18} />
@@ -263,7 +308,7 @@ export default function InspectionForm({ onClose, onSubmitted }) {
         ) : (
           <button onClick={handleSubmit} disabled={submitting} style={{
             flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: failCount > 0 ? T.red : T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+            background: failCount > 0 ? T.red : T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: submitting ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             {submitting ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> Submitting...</> : <><Check size={18} /> Submit Inspection</>}
@@ -305,7 +350,26 @@ function FullScreenPage({ onClose, title, children }) {
 // ═══════════════════════════════════════════
 // Step 1: Info
 // ═══════════════════════════════════════════
-function StepInfo({ title, setTitle, template, applyTemplate, location, setLocation, gps, employeeName, crewName }) {
+function StepInfo({
+  title, setTitle, template, applyTemplate, location, setLocation, gps, employeeName, crewName,
+  assetType: _assetType, assetId, assetName, assetManual, assetList, loadingAssets,
+  setAssetId, setAssetName, setAssetManual,
+}) {
+  const needsAsset = template === "vehicle" || template === "equipment"
+  const assetLabel = template === "vehicle" ? "Vehicle" : "Equipment"
+
+  const selectAsset = (item) => {
+    setAssetId(item.id)
+    const name = template === "vehicle"
+      ? `${item.name}${item.truck_number ? ` (#${item.truck_number})` : ""}`
+      : item.name
+    setAssetName(name)
+    // Auto-fill title with asset name
+    if (!title || title === "Vehicle Pre-Trip" || title === "Equipment Check") {
+      setTitle(`${INSPECTION_TEMPLATES.find(t => t.key === template)?.label || "Inspection"} — ${name}`)
+    }
+  }
+
   return (
     <div>
       <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Inspection Type</div>
@@ -327,6 +391,61 @@ function StepInfo({ title, setTitle, template, applyTemplate, location, setLocat
           </button>
         ))}
       </div>
+
+      {/* Asset picker — shows when vehicle or equipment template selected */}
+      {needsAsset && (
+        <div style={{ marginBottom: 16 }}>
+          <label style={lbl}>{assetLabel} *</label>
+          {!assetManual ? (
+            <>
+              {loadingAssets ? (
+                <div style={{ fontSize: 13, color: T.textLight, padding: "10px 0" }}>Loading {assetLabel.toLowerCase()}s...</div>
+              ) : assetList.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+                  {assetList.map(item => {
+                    const label = template === "vehicle"
+                      ? `${item.name}${item.truck_number ? ` · #${item.truck_number}` : ""}${item.make_model ? ` · ${item.make_model}` : ""}`
+                      : `${item.name}${item.category ? ` · ${item.category}` : ""}${item.serial_number ? ` · S/N ${item.serial_number}` : ""}`
+                    const selected = assetId === item.id
+                    return (
+                      <button key={item.id} onClick={() => selectAsset(item)} style={{
+                        padding: "12px 14px", borderRadius: 3, cursor: "pointer", textAlign: "left", fontFamily: T.font,
+                        border: selected ? `2px solid ${T.accent}` : `1.5px solid ${T.border}`,
+                        background: selected ? `${T.accent}10` : T.card,
+                        fontSize: 13, fontWeight: selected ? 600 : 400, color: T.text,
+                      }}>
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div style={{ fontSize: 13, color: T.textLight, padding: "10px 0" }}>No {assetLabel.toLowerCase()}s found in the system.</div>
+              )}
+              <button onClick={() => setAssetManual(true)} style={{
+                border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
+                fontSize: 12, fontWeight: 600, color: T.accent, padding: "4px 0",
+              }}>
+                {assetList.length > 0 ? `${assetLabel} not listed? Type it in manually` : "Enter manually"}
+              </button>
+            </>
+          ) : (
+            <>
+              <input value={assetName} onChange={e => { setAssetName(e.target.value); setAssetId(null) }}
+                placeholder={`e.g. ${template === "vehicle" ? "Truck 101" : "John Deere Z930M"}`}
+                style={inp} />
+              {assetList.length > 0 && (
+                <button onClick={() => { setAssetManual(false); setAssetName(""); setAssetId(null) }} style={{
+                  border: "none", background: "none", cursor: "pointer", fontFamily: T.font,
+                  fontSize: 12, fontWeight: 600, color: T.accent, padding: "4px 0", marginTop: -8,
+                }}>
+                  ← Back to list
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       <label style={lbl}>Title *</label>
       <input value={title} onChange={e => setTitle(e.target.value)}
@@ -500,7 +619,7 @@ function StepPhotos({ photos, setPhotos, photoPreviews, setPhotoPreviews }) {
 // ═══════════════════════════════════════════
 // Step 4: Review
 // ═══════════════════════════════════════════
-function StepReview({ title, template, location, employeeName, crewName, checklist, notes, photos, failCount, error }) {
+function StepReview({ title, template, location, employeeName, crewName, checklist, notes, photos, failCount, error, assetType, assetName }) {
   const passCount = checklist.filter(c => c.status === "pass").length
   const naCount = checklist.filter(c => c.status === "na").length
   const templateLabel = INSPECTION_TEMPLATES.find(t => t.key === template)?.label || template
@@ -530,6 +649,7 @@ function StepReview({ title, template, location, employeeName, crewName, checkli
       <ReviewSection title="Inspection Info">
         <ReviewRow label="Title" value={title} />
         <ReviewRow label="Template" value={templateLabel} />
+        {assetName && <ReviewRow label={assetType === "vehicle" ? "Vehicle" : "Equipment"} value={assetName} />}
         {location && <ReviewRow label="Location" value={location} />}
         <ReviewRow label="Inspector" value={employeeName} />
         <ReviewRow label="Crew" value={crewName} />

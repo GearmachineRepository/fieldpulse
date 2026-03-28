@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // ═══════════════════════════════════════════
 // AddressLink — Clickable address that opens Google Maps
 // Use for any address/location display across the platform

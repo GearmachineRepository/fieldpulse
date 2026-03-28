@@ -40,7 +40,7 @@ export default function QRScanner({ open, onClose, onScan }) {
   )
 
   useEffect(() => {
-    if (!open) { stopCamera(); setError(null); return }
+    if (!open) { stopCamera(); return }
 
     let cancelled = false
 
@@ -77,7 +77,7 @@ export default function QRScanner({ open, onClose, onScan }) {
             scanLoop()
           }
           return
-        } catch (err) {
+        } catch {
           if (!cancelled) setError("Could not access camera. Please enter the code manually.")
           return
         }
@@ -192,7 +192,7 @@ export default function QRScanner({ open, onClose, onScan }) {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "16px 20px", background: "rgba(0,0,0,0.8)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#fff", fontWeight: 600, fontSize: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, color: T.card, fontWeight: 600, fontSize: 16 }}>
           <Camera size={20} />
           Scan QR Code
         </div>
@@ -203,14 +203,14 @@ export default function QRScanner({ open, onClose, onScan }) {
             padding: 8, cursor: "pointer", display: "flex",
           }}
         >
-          <X size={20} color="#fff" />
+          <X size={20} color={T.card} />
         </button>
       </div>
 
       {/* Camera view */}
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
         {error ? (
-          <div style={{ textAlign: "center", padding: "0 32px", color: "#fff" }}>
+          <div style={{ textAlign: "center", padding: "0 32px", color: T.card }}>
             <AlertCircle size={40} color={T.red} style={{ marginBottom: 16 }} />
             <p style={{ fontSize: 16, lineHeight: 1.5 }}>{error}</p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 20, flexWrap: "wrap" }}>
@@ -219,7 +219,7 @@ export default function QRScanner({ open, onClose, onScan }) {
                 style={{
                   padding: "14px 28px", borderRadius: 3,
                   border: "1.5px solid rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.1)",
-                  color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer",
+                  color: T.card, fontSize: 15, fontWeight: 600, cursor: "pointer",
                 }}
               >
                 Try Again
@@ -228,7 +228,7 @@ export default function QRScanner({ open, onClose, onScan }) {
                 onClick={() => { stopCamera(); onClose() }}
                 style={{
                   padding: "14px 28px", borderRadius: 3, border: "none",
-                  background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600,
+                  background: T.accent, color: T.card, fontSize: 15, fontWeight: 600,
                   cursor: "pointer",
                 }}
               >

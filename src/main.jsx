@@ -5,9 +5,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '@/hooks/useAuth.jsx'
-import { DataProvider } from '@/context/DataProvider.jsx'
 import App from '@/App.jsx'
-import '@/ui/tokens/index.css'
 import '@/global.css'
 import * as Sentry from '@sentry/react'
 
@@ -20,9 +18,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <DataProvider>
-          <App />
-        </DataProvider>
+        <App />
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,

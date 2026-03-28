@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════
 // Certifications API — Certification CRUD operations
 // ═══════════════════════════════════════════
-import { request } from './core.js'
+import { request, buildQuery } from './core.js'
 
 export const getCertifications = () => request('/certifications')
 export const getEmployeeCertifications = (employeeId) => request(`/certifications/employee/${employeeId}`)
-export const getExpiringCertifications = (days = 30) => request(`/certifications/expiring?days=${days}`)
+export const getExpiringCertifications = (days = 30) => request(`/certifications/expiring${buildQuery({ days })}`)
 export const createCertification = (data) => request('/certifications', { method: 'POST', body: JSON.stringify(data) })
 export const updateCertification = (id, data) => request(`/certifications/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 export const deleteCertification = (id) => request(`/certifications/${id}`, { method: 'DELETE' })

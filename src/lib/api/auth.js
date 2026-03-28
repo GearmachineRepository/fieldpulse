@@ -40,9 +40,6 @@ export const crewLogin = async (employeeId, pin) => {
   return r
 }
 
-// ── Crew login tiles (public) ──
-export const getCrewLoginTiles = () => request('/crews/login-tiles')
-
 // ── Session restore ──
 export const restoreSession = async () => {
   if (!getAuthToken()) return null
@@ -67,23 +64,3 @@ export const resetPassword = (accessToken, password) =>
     body: JSON.stringify({ accessToken, password }),
   })
 
-// ── Legacy (kept for backward compat) ──
-export const getAdminsList = () => request('/admins/list')
-
-export const verifyAdminPin = async (adminId, pin) => {
-  const r = await request('/auth/admin-pin', {
-    method: 'POST',
-    body: JSON.stringify({ adminId, pin }),
-  })
-  if (r.token) setAuthToken(r.token)
-  return r
-}
-
-export const verifyPin = async (vehicleId, pin) => {
-  const r = await request('/auth/verify-pin', {
-    method: 'POST',
-    body: JSON.stringify({ vehicleId, pin }),
-  })
-  if (r.token) setAuthToken(r.token)
-  return r
-}

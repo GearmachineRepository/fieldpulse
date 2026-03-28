@@ -28,6 +28,9 @@ export default function fieldDocRoutes(upload, uploadToStorage) {
     if (crewName) { params.push(crewName); where.push(`fd.crew_name = $${params.length}`) }
     if (status) { params.push(status); where.push(`fd.status = $${params.length}`) }
 
+    if (req.query.assetType) { params.push(req.query.assetType); where.push(`fd.asset_type = $${params.length}`) }
+    if (req.query.assetId) { params.push(req.query.assetId); where.push(`fd.asset_id = $${params.length}`) }
+
     const limit = Math.min(Math.max(parseInt(rawLimit) || 200, 1), 500)
     params.push(limit)
 
@@ -65,6 +68,9 @@ export default function fieldDocRoutes(upload, uploadToStorage) {
       checklist: row.checklist,
       status: row.status,
       metadata: row.metadata,
+      assetType: row.asset_type,
+      assetId: row.asset_id,
+      assetName: row.asset_name,
       photoCount: row.photo_count,
       photos: (row.photos || []).filter(p => p.id !== null),
       date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -117,6 +123,7 @@ export default function fieldDocRoutes(upload, uploadToStorage) {
       type, title, body, location, gpsLat, gpsLng,
       crewName, employeeId, employeeName,
       checklist, status, metadata,
+      assetType, assetId, assetName,
     } = req.body
 
     if (!type || !title) {
@@ -127,8 +134,9 @@ export default function fieldDocRoutes(upload, uploadToStorage) {
       `INSERT INTO field_docs (
          org_id, type, title, body, location, gps_lat, gps_lng,
          crew_name, employee_id, employee_name,
-         checklist, status, metadata
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+         checklist, status, metadata,
+         asset_type, asset_id, asset_name
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
        RETURNING *`,
       [
         orgId, type, title, body || null,
@@ -137,6 +145,7 @@ export default function fieldDocRoutes(upload, uploadToStorage) {
         checklist ? JSON.stringify(checklist) : null,
         status || 'submitted',
         metadata ? JSON.stringify(metadata) : '{}',
+        assetType || null, assetId || null, assetName || null,
       ]
     )
 

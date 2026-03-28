@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
             width: 52, height: 52, borderRadius: 3, background: T.accent, margin: "0 auto 14px",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <Leaf size={28} color="#fff" />
+            <Leaf size={28} color={T.card} />
           </div>
           <div style={{ fontSize: 26, fontWeight: 600, color: T.text, letterSpacing: "-0.5px" }}>CruPoint</div>
           <div style={{ fontSize: 14, color: T.textLight, marginTop: 4 }}>Set a new password</div>
@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
               </div>
               <button onClick={() => navigate("/login")} style={{
                 width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-                background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
+                background: T.accent, color: T.card, fontSize: 16, fontWeight: 600, fontFamily: T.font,
               }}>
                 Go to Sign In
               </button>
@@ -161,7 +161,7 @@ export default function ResetPasswordPage() {
 
                   <button onClick={handleSubmit} disabled={submitting || !password || !confirm} style={{
                     width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-                    background: T.accent, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
+                    background: T.accent, color: T.card, fontSize: 16, fontWeight: 600, fontFamily: T.font,
                     opacity: (submitting || !password || !confirm) ? 0.5 : 1,
                   }}>
                     {submitting ? "Updating..." : "Update Password"}

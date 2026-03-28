@@ -71,16 +71,16 @@ router.get('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
 /** @route POST /api/training — Create training session */
 router.post('/', requireAuth, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
-  const { title, description, trainer, training_date, duration_hours, location, type, status, notes } = req.body
+  const { title, description, trainer, trainingDate, durationHours, location, type, status, notes } = req.body
 
-  if (!title || !training_date) {
-    throw new AppError('title and training_date are required', 400)
+  if (!title || !trainingDate) {
+    throw new AppError('title and trainingDate are required', 400)
   }
 
   const r = await db.query(
     `INSERT INTO training_sessions (org_id, title, description, trainer, training_date, duration_hours, location, type, status, notes)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-    [orgId, title, description || null, trainer || null, training_date, duration_hours || null,
+    [orgId, title, description || null, trainer || null, trainingDate, durationHours || null,
      location || null, type || null, status || 'scheduled', notes || null]
   )
   res.json(r.rows[0])
@@ -89,10 +89,10 @@ router.post('/', requireAuth, asyncHandler(async (req, res) => {
 /** @route PUT /api/training/:id — Update training session */
 router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
-  const { title, description, trainer, training_date, duration_hours, location, type, status, notes } = req.body
+  const { title, description, trainer, trainingDate, durationHours, location, type, status, notes } = req.body
 
-  if (!title || !training_date) {
-    throw new AppError('title and training_date are required', 400)
+  if (!title || !trainingDate) {
+    throw new AppError('title and trainingDate are required', 400)
   }
 
   const r = await db.query(
@@ -102,7 +102,7 @@ router.put('/:id', requireAuth, validateIdParam, asyncHandler(async (req, res) =
          updated_at = now()
      WHERE id = $10 AND org_id = $11
      RETURNING *`,
-    [title, description || null, trainer || null, training_date, duration_hours || null,
+    [title, description || null, trainer || null, trainingDate, durationHours || null,
      location || null, type || null, status || 'scheduled', notes || null,
      req.params.id, orgId]
   )
@@ -138,13 +138,12 @@ router.get('/:id/signoffs', requireAuth, validateIdParam, asyncHandler(async (re
 /** @route POST /api/training/:id/signoffs — Add signoff (append-only, no UPDATE) */
 router.post('/:id/signoffs', requireAuth, validateIdParam, asyncHandler(async (req, res) => {
   const orgId = getOrgId(req)
-  const { employee_id, signature_data, notes } = req.body
+  const { employeeId, signatureData, notes } = req.body
 
-  if (!employee_id) {
-    throw new AppError('employee_id is required', 400)
+  if (!employeeId) {
+    throw new AppError('employeeId is required', 400)
   }
 
-  // Verify session belongs to org
   const session = await db.query(
     'SELECT id FROM training_sessions WHERE id = $1 AND org_id = $2',
     [req.params.id, orgId]
@@ -156,7 +155,7 @@ router.post('/:id/signoffs', requireAuth, validateIdParam, asyncHandler(async (r
   const r = await db.query(
     `INSERT INTO training_signoffs (org_id, training_session_id, employee_id, signature_data, notes)
      VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-    [orgId, req.params.id, employee_id, signature_data || null, notes || null]
+    [orgId, req.params.id, employeeId, signatureData || null, notes || null]
   )
   res.json(r.rows[0])
 }))

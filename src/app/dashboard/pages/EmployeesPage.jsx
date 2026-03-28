@@ -6,10 +6,10 @@
 import { useState, useEffect } from "react"
 import {
   UserPlus, Edit3, Shield, Eye, EyeOff, Search,
-  ChevronRight, Trash2, Phone, Mail, Hash, Award, Plus, Calendar, AlertTriangle,
+  ChevronRight, Trash2, Phone, Hash, Award, Plus, Calendar,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from "@/lib/api/employees.js"
 import { getCrews } from "@/lib/api/crews.js"
 import {
@@ -23,7 +23,7 @@ import {
 import s from "./EmployeesPage.module.css"
 
 export default function EmployeesPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const employees = usePageData("employees", { fetchFn: getEmployees })
   const crews = usePageData("crews", { fetchFn: getCrews })
 
@@ -34,7 +34,9 @@ export default function EmployeesPage() {
 
   const selectedEmployee = employees.data.find(e => e.id === selectedId) || null
 
-  useEffect(() => { setActiveTab("details") }, [selectedId])
+  useEffect(() => {
+    setActiveTab("details") // eslint-disable-line react-hooks/set-state-in-effect -- Reset tab on selection change
+  }, [selectedId])
 
   const filtered = employees.data.filter(e => {
     if (!searchQ) return true
@@ -192,11 +194,6 @@ export default function EmployeesPage() {
         />
       )}
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </div>
   )
 }
@@ -302,7 +299,7 @@ function CertificationsTab({ employee, toast }) {
     }
   }
 
-  useEffect(() => { fetchCerts() }, [employee.id])
+  useEffect(() => { fetchCerts() }, [employee.id]) // eslint-disable-line react-hooks/exhaustive-deps -- Refetch when employee changes; fetchCerts is stable
 
   const handleAdd = async (data) => {
     try {

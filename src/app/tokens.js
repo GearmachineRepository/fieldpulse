@@ -1,14 +1,6 @@
 // ═══════════════════════════════════════════
-// Design Tokens — JS Bridge
-//
-// Maps to CSS custom properties defined in
-// src/ui/tokens/colors.css + typography.css + spacing.css.
-//
-// Use CSS variables directly in CSS Modules.
-// Use this T object only for inline style={{}} that
-// hasn't been migrated to CSS Modules yet.
-//
-// Import as: import { T } from '@/app/tokens.js'
+// Design Tokens — JS bridge for inline styles.
+// Use CSS variables in CSS Modules instead.
 // ═══════════════════════════════════════════
 
 export const T = {

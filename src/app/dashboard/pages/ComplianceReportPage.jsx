@@ -4,7 +4,7 @@
 // Gets printed and shown to Cal OSHA inspectors
 // ═══════════════════════════════════════════
 
-import { useState, useMemo, useCallback } from "react"
+import { useMemo, useCallback } from "react"
 import {
   ClipboardCheck, Download, Printer, Users,
   CheckCircle2, AlertTriangle, Shield,

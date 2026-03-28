@@ -5,7 +5,7 @@
 // composing PageHeader + loading/empty states.
 // ═══════════════════════════════════════════
 
-import { PageHeader, EmptyMessage } from "./PageUI.jsx"
+import { PageHeader } from "./PageUI.jsx"
 import SkeletonRow from "./SkeletonRow.jsx"
 import SkeletonCard from "./SkeletonCard.jsx"
 import s from "./PageShell.module.css"

@@ -11,7 +11,7 @@ export default function SkeletonRow({ columns = 4, count = 5 }) {
       <div className={s.headerRow}>
         {Array.from({ length: columns }, (_, i) => (
           <div key={i} className={s.headerCell}>
-            <div className={s.bar} style={{ width: `${50 + Math.random() * 30}%` }} />
+            <div className={s.bar} style={{ width: `${50 + ((i * 37) % 30)}%` }} />
           </div>
         ))}
       </div>

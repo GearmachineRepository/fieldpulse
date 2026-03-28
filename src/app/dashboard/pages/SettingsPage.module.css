@@ -524,22 +524,6 @@
   cursor: not-allowed;
 }
 
-/* ── Toast ── */
-.toast {
-  position: fixed;
-  bottom: var(--space-5);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: var(--space-3) var(--space-5);
-  background: var(--t1);
-  color: var(--s1);
-  border-radius: var(--r);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  z-index: 1000;
-  white-space: nowrap;
-}
-
 /* ═══════════════════════════════════════════
    Users & Roles Section
    ═══════════════════════════════════════════ */

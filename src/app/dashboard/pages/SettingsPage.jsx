@@ -7,19 +7,19 @@ import { useState, useEffect } from "react"
 import {
   Building2, Users, Blocks, Link2, CreditCard,
   Bell, ChevronRight, ExternalLink, Search,
-  FlaskConical, Eye, EyeOff, LogOut, Plus, X,
-  Copy, UserPlus, Mail, Shield, Loader2, QrCode, Smartphone,
+  Eye, EyeOff, LogOut, X,
+  Copy, UserPlus, Mail, Loader2, QrCode, Smartphone,
 } from "lucide-react"
 import { useNavigate as useRouterNavigate } from "react-router-dom"
 import useAuth from "@/hooks/useAuth.jsx"
 import useModules from "@/hooks/useModules.jsx"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import useNavigation from "@/hooks/useNavigation.js"
 import CompanyQRModal from "../components/CompanyQRModal.jsx"
 import { getOrganization, updateOrganization } from "@/lib/api/organization.js"
 import { getInvitations, createInvitation, revokeInvitation, getOrgMembers } from "@/lib/api/invitations.js"
 import { getSDSManagerConnection, saveSDSManagerKey, syncSDSManagerLibrary } from "@/lib/api/integrations.js"
-import { PROVIDER_META, getProvidersByCategory } from "@/lib/integrations/index.js"
+import { getProvidersByCategory } from "@/lib/integrations/index.js"
 import PageShell from "../components/PageShell.jsx"
 import StatusBadge from "../components/StatusBadge.jsx"
 import IntegrationLogo from "../components/IntegrationLogo.jsx"
@@ -106,7 +106,7 @@ function CompanySection() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showQR, setShowQR] = useState(false)
-  const toast = useToast()
+  const toast = useGlobalToast()
 
   useEffect(() => {
     getOrganization()
@@ -122,7 +122,7 @@ function CompanySection() {
       })
       .catch(() => toast.show("Failed to load company details"))
       .finally(() => setLoading(false))
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Mount-only fetch; toast is stable
 
   const handleChange = (field) => (e) => {
     setForm(prev => ({ ...prev, [field]: e.target.value }))
@@ -215,11 +215,6 @@ function CompanySection() {
 
       <CompanyQRModal open={showQR} onClose={() => setShowQR(false)} />
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </div>
   )
 }
@@ -244,7 +239,7 @@ const ALL_PAGE_KEYS = [
 ]
 
 function UsersSection() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const [members, setMembers] = useState([])
   const [invitations, setInvitations] = useState([])
   const [loading, setLoading] = useState(true)
@@ -268,7 +263,7 @@ function UsersSection() {
     }
   }
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData() }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Mount-only fetch
 
   const handleInvite = async (e) => {
     e.preventDefault()
@@ -455,7 +450,7 @@ function UsersSection() {
 // ===================================================
 function ModulesSection() {
   const { allModules, isEnabled, toggleModule } = useModules()
-  const toast = useToast()
+  const toast = useGlobalToast()
   const [confirmDisable, setConfirmDisable] = useState(null)
 
   const handleToggle = async (mod, currentlyEnabled) => {
@@ -533,11 +528,6 @@ function ModulesSection() {
         />
       )}
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </div>
   )
 }
@@ -547,7 +537,7 @@ function ModulesSection() {
 // ===================================================
 function IntegrationsSection() {
   const { navigate } = useNavigation()
-  const toast = useToast()
+  const toast = useGlobalToast()
   const [showApiKey, setShowApiKey] = useState(false)
   const [apiKeyInput, setApiKeyInput] = useState("")
   const [sdsConnection, setSdsConnection] = useState(null)
@@ -717,9 +707,6 @@ function IntegrationsSection() {
         Integration connections are included in your subscription. API usage limits may apply for high-volume sync operations.
       </div>
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">{toast.message}</div>
-      )}
     </div>
   )
 }

@@ -58,7 +58,6 @@ router.post('/signup',
       return res.status(400).json({ error: 'Password must be at least 8 characters' })
     }
 
-    // Check if email already exists in admins table
     const existing = await db.query(
       'SELECT id FROM admins WHERE LOWER(email) = LOWER($1)',
       [email.trim()]
@@ -67,7 +66,6 @@ router.post('/signup',
       return res.status(409).json({ error: 'An account with this email already exists' })
     }
 
-    // Create Supabase Auth user
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email.trim(),
       password,
@@ -83,7 +81,6 @@ router.post('/signup',
       return res.status(400).json({ error: authError.message })
     }
 
-    // Create organization for the new user
     const slug = email.trim().split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 50)
       + '-' + Date.now().toString(36)
     const trialDays = 14
@@ -95,7 +92,6 @@ router.post('/signup',
     )
     const orgId = orgResult.rows[0].id
 
-    // Create admin record linked to the org
     const r = await db.query(
       `INSERT INTO admins (name, email, role, pin_hash, supabase_uid, trial_ends_at, org_id)
        VALUES ($1, $2, 'owner', '', $3, NOW() + INTERVAL '${trialDays} days', $4)
@@ -105,10 +101,9 @@ router.post('/signup',
 
     const admin = r.rows[0]
 
-    // Set the org owner
     await db.query('UPDATE organizations SET owner_id = $1 WHERE id = $2', [admin.id, orgId])
 
-    // Sign them in immediately
+    // Auto-login after signup so the user doesn't have to re-enter credentials
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
@@ -145,7 +140,6 @@ router.post('/login',
   asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
-    // Verify admin exists in our database first
     const r = await db.query(
       `SELECT a.id, a.name, a.email, a.role, a.permissions, a.supabase_uid, o.name AS company
        FROM admins a
@@ -160,7 +154,6 @@ router.post('/login',
 
     const admin = r.rows[0]
 
-    // Authenticate via Supabase Auth
     if (supabase && admin.supabase_uid) {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -262,13 +255,11 @@ router.post('/reset-password',
       return res.status(500).json({ error: 'Password reset not available' })
     }
 
-    // Verify the token and get the user
     const { data: { user }, error: verifyError } = await supabase.auth.getUser(accessToken)
     if (verifyError || !user) {
       return res.status(400).json({ error: 'Invalid or expired reset link' })
     }
 
-    // Update the password
     const { error } = await supabase.auth.admin.updateUserById(user.id, { password })
     if (error) {
       return res.status(400).json({ error: error.message })

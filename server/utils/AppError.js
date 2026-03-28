@@ -1,24 +1,11 @@
 // ═══════════════════════════════════════════
 // AppError — Structured operational errors
 //
-// Throw these for known, expected failures
-// (bad input, not found, unauthorized, etc.)
-// The global error handler treats these as safe
-// to send directly to the client.
-//
-// Programmer errors (bugs) should remain plain
-// Error objects — the handler logs them and
-// returns a generic 500.
+// Operational errors (bad input, not found, etc.)
+// are safe to send to the client. Programmer errors
+// remain plain Errors and produce a generic 500.
 // ═══════════════════════════════════════════
 
-/**
- * Application-level error with an HTTP status and machine-readable code.
- *
- * @extends Error
- * @example
- * throw new AppError('Chemical not found', 404, 'NOT_FOUND')
- * throw new AppError('firstName and lastName are required', 400)
- */
 export class AppError extends Error {
   /**
    * @param {string}  message    Human-readable description

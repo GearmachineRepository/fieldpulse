@@ -7,7 +7,6 @@ import db from '../db.js'
 import { requireAuth } from '../middleware/auth.js'
 import { validateBody, validateIdParam } from '../middleware/validate.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
-import { AppError } from '../utils/AppError.js'
 import { getOrgId } from '../utils/db.js'
 
 const router = Router()

@@ -11,9 +11,9 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  ArrowLeft, ArrowRight, Check, MapPin, Camera, X,
+  ArrowLeft, ArrowRight, Check, Camera, X,
   Loader2, AlertTriangle, Car, HardHat, Eye, Wrench,
-  Building, Navigation, Shield, Users, FileText,
+  Building, Navigation, Shield,
 } from "lucide-react"
 import { T } from "@/app/tokens.js"
 import useAuth from "@/hooks/useAuth.jsx"
@@ -31,7 +31,7 @@ const INCIDENT_TYPES = [
 ]
 
 export default function IncidentReportForm({ onClose, onSubmitted }) {
-  const { employee, crew, vehicle } = useAuth()
+  const { employee, crew, vehicle: _vehicle } = useAuth()
   const [step, setStep] = useState(0)
 
   // Form state
@@ -62,22 +62,25 @@ export default function IncidentReportForm({ onClose, onSubmitted }) {
 
   // Get GPS + weather
   useEffect(() => {
+    let active = true
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
+          if (!active) return
           const coords = { lat: pos.coords.latitude.toFixed(5), lng: pos.coords.longitude.toFixed(5) }
           setGps(coords)
           if (!location) setLocation(`GPS: ${coords.lat}, ${coords.lng}`)
           try {
             const w = await getWeatherByCoords(pos.coords.latitude, pos.coords.longitude)
-            setWeather(w)
-          } catch { setWeather(getSimulatedWeather()) }
+            if (active) setWeather(w)
+          } catch { if (active) setWeather(getSimulatedWeather()) }
         },
-        () => setWeather(getSimulatedWeather()),
+        () => { if (active) setWeather(getSimulatedWeather()) },
         { timeout: 8000 }
       )
-    } else { setWeather(getSimulatedWeather()) }
-  }, [])
+    } else { if (active) setWeather(getSimulatedWeather()) } // eslint-disable-line react-hooks/set-state-in-effect -- Fallback when no geolocation
+    return () => { active = false }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- Mount-only GPS + weather fetch
 
   // Navigation
   const canAdvance = () => {
@@ -208,7 +211,7 @@ export default function IncidentReportForm({ onClose, onSubmitted }) {
         {step < 3 ? (
           <button onClick={next} disabled={!canAdvance()} style={{
             flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.accent, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+            background: T.accent, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: canAdvance() ? 1 : 0.4, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             Next <ArrowRight size={18} />
@@ -216,7 +219,7 @@ export default function IncidentReportForm({ onClose, onSubmitted }) {
         ) : (
           <button onClick={handleSubmit} disabled={submitting} style={{
             flex: 2, padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-            background: T.red, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font,
+            background: T.red, color: T.card, fontSize: 15, fontWeight: 600, fontFamily: T.font,
             opacity: submitting ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             {submitting ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> Submitting...</> : <><Shield size={18} /> Submit Report</>}
@@ -311,7 +314,7 @@ function StepType({ incidentType, setIncidentType, title, setTitle, incidentDate
             fontSize: 12, fontWeight: 600, textTransform: "uppercase", cursor: "pointer",
             border: severity === s ? "none" : `1.5px solid ${T.border}`,
             background: severity === s ? (s === "critical" || s === "high" ? T.red : s === "medium" ? T.amber : T.accent) : T.card,
-            color: severity === s ? "#fff" : T.textLight,
+            color: severity === s ? T.card : T.textLight,
           }}>{s}</button>
         ))}
       </div>
@@ -337,7 +340,7 @@ function StepType({ incidentType, setIncidentType, title, setTitle, incidentDate
           background: injuryOccurred ? T.red : T.border, position: "relative", transition: "background 0.15s",
         }}>
           <div style={{
-            width: 20, height: 20, borderRadius: "50%", background: "#fff",
+            width: 20, height: 20, borderRadius: "50%", background: T.card,
             position: "absolute", top: 2, left: injuryOccurred ? 22 : 2, transition: "left 0.15s",
           }} />
         </button>

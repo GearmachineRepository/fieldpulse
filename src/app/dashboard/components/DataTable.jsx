@@ -1,6 +1,6 @@
 import s from "./DataTable.module.css"
 
-export default function DataTable({ headers, children, emptyMessage }) {
+export default function DataTable({ headers, children, emptyMessage: _emptyMessage }) {
   return (
     <div className={s.wrap}>
       <table className={s.table}>

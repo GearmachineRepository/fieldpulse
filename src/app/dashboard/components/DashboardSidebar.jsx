@@ -11,7 +11,6 @@ import { SECTIONS, getSectionPages, isSinglePage } from "@/app/dashboard/nav-sec
 import useModules from "@/hooks/useModules.jsx"
 import useAuth from "@/hooks/useAuth.jsx"
 import useRole from "@/hooks/useRole.js"
-import { APP } from "@/config/app.js"
 import s from "./DashboardSidebar.module.css"
 
 export default function DashboardSidebar({ activePage, activeSection, onNavigate, onSelectSection, open, onClose }) {

@@ -56,10 +56,10 @@ export default function FieldLoginScreen({ companyName, onUnregister }) {
               width: 40, height: 40, borderRadius: 3, background: T.accent,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <Leaf size={22} color="#fff" />
+              <Leaf size={22} color={T.card} />
             </div>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 600, color: "#fff" }}>CruPoint</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: T.card }}>CruPoint</div>
               <div style={{ fontSize: 12, color: "#64748B" }}>Field App</div>
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function FieldLoginScreen({ companyName, onUnregister }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Building2 size={16} color={T.accent} />
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{companyName || "Connected"}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: T.card }}>{companyName || "Connected"}</div>
               <div style={{ fontSize: 11, color: "#64748B" }}>Device registered</div>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function FieldLoginScreen({ companyName, onUnregister }) {
                         <div key={emp.id} style={{
                           width: 32, height: 32, borderRadius: "50%", border: "2px solid #fff",
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 11, fontWeight: 600, color: "#fff", marginLeft: i > 0 ? -8 : 0,
+                          fontSize: 11, fontWeight: 600, color: T.card, marginLeft: i > 0 ? -8 : 0,
                           background: ["#2F6FED", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED"][i % 5],
                         }}>
                           {emp.first_name[0]}{emp.last_name[0]}
@@ -172,7 +172,7 @@ export default function FieldLoginScreen({ companyName, onUnregister }) {
                       width: 40, height: 40, borderRadius: 3,
                       background: emp.is_crew_lead ? T.accent : T.blue,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 14, fontWeight: 600, color: "#fff",
+                      fontSize: 14, fontWeight: 600, color: T.card,
                     }}>
                       {emp.first_name[0]}{emp.last_name[0]}
                     </div>
@@ -208,7 +208,7 @@ export default function FieldLoginScreen({ companyName, onUnregister }) {
                 <div style={{
                   width: 56, height: 56, borderRadius: 3, background: T.accent, margin: "0 auto 10px",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 20, fontWeight: 600, color: "#fff",
+                  fontSize: 20, fontWeight: 600, color: T.card,
                 }}>
                   {selectedEmp.first_name[0]}{selectedEmp.last_name[0]}
                 </div>
@@ -242,7 +242,7 @@ export default function FieldLoginScreen({ companyName, onUnregister }) {
             {error && <div style={{ fontSize: 13, fontWeight: 600, color: T.red, textAlign: "center", marginBottom: 12 }}>{error}</div>}
             <button onClick={handleSubmit} disabled={submitting || pin.length < 4} style={{
               width: "100%", padding: "14px", borderRadius: 3, border: "none", cursor: "pointer",
-              background: T.blue, color: "#fff", fontSize: 16, fontWeight: 600, fontFamily: T.font,
+              background: T.blue, color: T.card, fontSize: 16, fontWeight: 600, fontFamily: T.font,
               opacity: (submitting || pin.length < 4) ? 0.5 : 1,
             }}>
               {submitting ? "Signing in..." : "Sign In"}

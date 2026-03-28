@@ -9,7 +9,7 @@ import {
   Clock, Plus, Trash2, Edit3, LayoutList, CalendarRange,
 } from "lucide-react"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import { getEmployees } from "@/lib/api/employees.js"
 import {
   getCertifications, createCertification, updateCertification, deleteCertification,
@@ -47,7 +47,7 @@ function formatDate(d) {
 }
 
 export default function CertificationsPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const employees = usePageData("employees", { fetchFn: getEmployees })
   const certs = usePageData("certifications", {
     fetchFn: getCertifications,
@@ -270,11 +270,6 @@ export default function CertificationsPage() {
         />
       )}
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">
-          {toast.message}
-        </div>
-      )}
     </PageShell>
   )
 }

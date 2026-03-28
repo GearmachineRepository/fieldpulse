@@ -8,11 +8,11 @@ import {
   AlertTriangle, Plus, Search, Edit3, Trash2, Lock,
   Calendar, MapPin, Shield, FileText, Users, Eye,
   Camera, X, Upload, Image as ImageIcon, Car, HardHat,
-  Zap, Building, CircleDot, CheckCircle2, Clock,
+  Zap, Building, CircleDot, Clock,
 } from "lucide-react"
 import AddressLink from "../components/AddressLink.jsx"
 import usePageData from "@/hooks/usePageData.js"
-import useToast from "@/hooks/useToast.js"
+import { useGlobalToast } from "@/hooks/ToastContext.jsx"
 import {
   getIncidents, createIncident, updateIncident, deleteIncident, lockIncident,
   getIncidentPhotos, uploadIncidentPhoto, deleteIncidentPhoto,
@@ -26,7 +26,7 @@ import StatusBadge from "../components/StatusBadge.jsx"
 import TabBar from "../components/TabBar.jsx"
 import WizardLayout from "../components/WizardLayout.jsx"
 import {
-  Modal, ModalFooter, ConfirmModal, FormField, SelectField, TextareaField,
+  Modal, ConfirmModal, FormField, SelectField, TextareaField,
 } from "../components/PageUI.jsx"
 import s from "./IncidentsPage.module.css"
 
@@ -95,7 +95,7 @@ function photoUrl(filename) {
 }
 
 export default function IncidentsPage() {
-  const toast = useToast()
+  const toast = useGlobalToast()
   const incidents = usePageData("incidents", {
     fetchFn: getIncidents,
     createFn: createIncident,
@@ -325,9 +325,6 @@ export default function IncidentsPage() {
         />
       )}
 
-      {toast.message && (
-        <div className={s.toast} role="status" aria-live="polite">{toast.message}</div>
-      )}
     </>
   )
 }
@@ -534,7 +531,7 @@ function WizardStep2({ form, updateForm }) {
 }
 
 // Step 3: Scene Photos
-function WizardStep3({ form, updateForm }) {
+function WizardStep3({ form, updateForm: _updateForm }) {
   const isVehicle = form.incidentType === "vehicle-accident"
 
   const slots = useMemo(() => {

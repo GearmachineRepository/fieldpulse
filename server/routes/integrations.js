@@ -18,7 +18,7 @@ router.get('/sds-manager', requireAuth, asyncHandler(async (req, res) => {
   const r = await db.query(
     `SELECT id, provider, status, config, connected_at, last_sync_at
      FROM integration_connections
-     WHERE company_id = $1 AND provider = 'sds_manager'
+     WHERE org_id = $1 AND provider = 'sds_manager'
      LIMIT 1`,
     [orgId]
   )
@@ -50,10 +50,9 @@ router.post('/sds-manager', requireAuth, asyncHandler(async (req, res) => {
 
   const configJson = JSON.stringify({ api_key: apiKey.trim() })
 
-  // Check if connection already exists
   const existing = await db.query(
     `SELECT id FROM integration_connections
-     WHERE company_id = $1 AND provider = 'sds_manager'
+     WHERE org_id = $1 AND provider = 'sds_manager'
      LIMIT 1`,
     [orgId]
   )
@@ -69,14 +68,14 @@ router.post('/sds-manager', requireAuth, asyncHandler(async (req, res) => {
     )
   } else {
     r = await db.query(
-      `INSERT INTO integration_connections (company_id, provider, status, config, connected_at)
+      `INSERT INTO integration_connections (org_id, provider, status, config, connected_at)
        VALUES ($1, 'sds_manager', 'active', $2, NOW())
        RETURNING id`,
       [orgId, configJson]
     )
   }
 
-  res.json({ ok: true, id: r.rows[0].id })
+  res.json({ success: true, id: r.rows[0].id })
 }))
 
 /** @route DELETE /api/integrations/sds-manager — Disconnect */
@@ -85,10 +84,10 @@ router.delete('/sds-manager', requireAuth, asyncHandler(async (req, res) => {
   await db.query(
     `UPDATE integration_connections
      SET status = 'disconnected', config = '{}'
-     WHERE company_id = $1 AND provider = 'sds_manager'`,
+     WHERE org_id = $1 AND provider = 'sds_manager'`,
     [orgId]
   )
-  res.json({ ok: true })
+  res.json({ success: true })
 }))
 
 /** @route POST /api/integrations/sds-manager/search — Proxy search to SDS Manager API */
@@ -103,7 +102,7 @@ router.post('/sds-manager/search', requireAuth, asyncHandler(async (req, res) =>
   // Get API key from integration_connections
   const conn = await db.query(
     `SELECT config FROM integration_connections
-     WHERE company_id = $1 AND provider = 'sds_manager' AND status = 'active'
+     WHERE org_id = $1 AND provider = 'sds_manager' AND status = 'active'
      LIMIT 1`,
     [orgId]
   )
@@ -113,14 +112,6 @@ router.post('/sds-manager/search', requireAuth, asyncHandler(async (req, res) =>
   }
 
   // TODO: Replace with real SDS Manager API call when ready
-  // const apiKey = conn.rows[0].config.api_key
-  // const response = await fetch(`${SDS_MANAGER_BASE}/search?q=${encodeURIComponent(query)}`, {
-  //   headers: { 'Authorization': `Bearer ${apiKey}` }
-  // })
-  // const data = await response.json()
-  // return res.json(data.results.map(mapSDSManagerResponse))
-
-  // For now, return empty results with a message
   res.json({ results: [], message: 'SDS Manager search connected — real API results will appear when the integration goes live.' })
 }))
 
@@ -130,7 +121,7 @@ router.post('/sds-manager/sync', requireAuth, asyncHandler(async (req, res) => {
 
   const conn = await db.query(
     `SELECT config FROM integration_connections
-     WHERE company_id = $1 AND provider = 'sds_manager' AND status = 'active'
+     WHERE org_id = $1 AND provider = 'sds_manager' AND status = 'active'
      LIMIT 1`,
     [orgId]
   )
@@ -143,11 +134,11 @@ router.post('/sds-manager/sync', requireAuth, asyncHandler(async (req, res) => {
   // Update last_sync_at timestamp
   await db.query(
     `UPDATE integration_connections SET last_sync_at = NOW()
-     WHERE company_id = $1 AND provider = 'sds_manager'`,
+     WHERE org_id = $1 AND provider = 'sds_manager'`,
     [orgId]
   )
 
-  res.json({ ok: true, synced: 0, message: 'Sync infrastructure ready — records will sync when the integration goes live.' })
+  res.json({ success: true, synced: 0, message: 'Sync infrastructure ready — records will sync when the integration goes live.' })
 }))
 
 export default router
