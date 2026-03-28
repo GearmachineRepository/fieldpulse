@@ -4,6 +4,36 @@
 // falls back to simulated data for testing
 // ═══════════════════════════════════════════
 
+export interface WeatherData {
+  temp: number
+  humidity: number
+  windSpeed: number
+  windDir: string
+  conditions: string
+  simulated: boolean
+}
+
+interface WxRule {
+  op: '>' | '<' | '=='
+  value: number | string
+  label?: string
+}
+
+interface WxRestrictions {
+  temp?: WxRule
+  humidity?: WxRule
+  windSpeed?: WxRule
+  conditions?: WxRule
+}
+
+interface ChemicalWithWx {
+  wxRestrictions?: WxRestrictions
+}
+
+interface RestrictionResult extends WxRule {
+  field: string
+}
+
 const WIND_DIRS = [
   'N',
   'NNE',
@@ -26,7 +56,7 @@ const WIND_DIRS = [
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY
 
 // Simulated weather for testing without API key
-export function getSimulatedWeather() {
+export function getSimulatedWeather(): WeatherData {
   return {
     temp: Math.round(68 + Math.random() * 15),
     humidity: Math.round(35 + Math.random() * 35),
@@ -38,7 +68,7 @@ export function getSimulatedWeather() {
 }
 
 // Real weather from OpenWeatherMap
-export async function getWeatherByCoords(lat, lon) {
+export async function getWeatherByCoords(lat: number, lon: number): Promise<WeatherData> {
   if (!API_KEY) {
     // No API key configured — fall back to simulated data
     return getSimulatedWeather()
@@ -75,18 +105,18 @@ export async function getWeatherByCoords(lat, lon) {
       simulated: false,
     }
   } catch (err) {
-    console.error('Weather fetch failed, using simulated:', err.message)
+    console.error('Weather fetch failed, using simulated:', (err as Error).message)
     return getSimulatedWeather()
   }
 }
 
 // Check chemical restrictions against current weather
-export function checkRestrictions(chemical, wx) {
+export function checkRestrictions(chemical: ChemicalWithWx, wx: WeatherData): RestrictionResult[] {
   const r = chemical.wxRestrictions
   if (!r) return []
 
-  const results = []
-  const checks = [
+  const results: RestrictionResult[] = []
+  const checks: { key: string; wxVal: number | string; rule?: WxRule }[] = [
     { key: 'temp', wxVal: wx.temp, rule: r.temp },
     { key: 'humidity', wxVal: wx.humidity, rule: r.humidity },
     { key: 'windSpeed', wxVal: wx.windSpeed, rule: r.windSpeed },

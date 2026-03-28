@@ -31,8 +31,9 @@ import {
   Blocks,
 } from 'lucide-react'
 import { ALL_MODULES } from '@/app/modules.js'
+import type { NavSection, NavPage, ModuleConfig } from '@/types'
 
-export const SECTIONS = [
+export const SECTIONS: NavSection[] = [
   {
     key: 'dashboard',
     label: 'Dashboard',
@@ -120,28 +121,28 @@ export const SECTIONS = [
 ]
 
 // -- Reverse lookup: pageKey -> sectionKey --
-export const PAGE_TO_SECTION = {}
+export const PAGE_TO_SECTION: Record<string, string> = {}
 for (const section of SECTIONS) {
   for (const page of section.pages) {
     PAGE_TO_SECTION[page.key] = section.key
   }
 }
 // Add module pages dynamically
-ALL_MODULES.forEach((m) => {
+ALL_MODULES.forEach((m: ModuleConfig) => {
   PAGE_TO_SECTION[`mod-${m.key}`] = 'modules'
 })
 
 // -- Helper: is this a single-page section? --
-export function isSinglePage(section) {
+export function isSinglePage(section: NavSection): boolean {
   return section.pages.length === 1 && section.pages[0].key === section.key
 }
 
 // -- Get the pages for a section (handles dynamic modules) --
-export function getSectionPages(sectionKey) {
+export function getSectionPages(sectionKey: string): NavPage[] {
   const section = SECTIONS.find((s) => s.key === sectionKey)
   if (!section) return []
   if (section.dynamic) {
-    return ALL_MODULES.map((m) => ({
+    return ALL_MODULES.map((m: ModuleConfig) => ({
       key: `mod-${m.key}`,
       label: m.label,
       icon: m.icon,
@@ -153,10 +154,10 @@ export function getSectionPages(sectionKey) {
 }
 
 // -- Resolve page title from any page key --
-export function resolvePageTitle(pageKey) {
+export function resolvePageTitle(pageKey?: string): string {
   if (pageKey === 'dashboard') return 'Dashboard'
   if (pageKey?.startsWith('mod-')) {
-    const mod = ALL_MODULES.find((m) => `mod-${m.key}` === pageKey)
+    const mod = ALL_MODULES.find((m: ModuleConfig) => `mod-${m.key}` === pageKey)
     return mod?.label || 'Module'
   }
   for (const section of SECTIONS) {

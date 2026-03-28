@@ -1,20 +1,20 @@
 // ═══════════════════════════════════════════
-// dateUtils.js — Single source of truth for
+// dateUtils — Single source of truth for
 // all date formatting & helpers across the app
 // ═══════════════════════════════════════════
 
 // ── ISO date string: YYYY-MM-DD in LOCAL time (avoids UTC off-by-one) ──
-export function getLocalDate() {
+export function getLocalDate(): string {
   return new Date().toLocaleDateString('en-CA')
 }
 
 // ── Day-of-week index (0 = Sunday … 6 = Saturday) ──
-export function getLocalDow() {
+export function getLocalDow(): number {
   return new Date().getDay()
 }
 
 // ── ISO date string for an arbitrary day-of-week in the current week ──
-export function getDateForDow(dow) {
+export function getDateForDow(dow: number): string {
   const today = new Date()
   const target = new Date(today)
   target.setDate(today.getDate() + (dow - today.getDay()))
@@ -22,25 +22,25 @@ export function getDateForDow(dow) {
 }
 
 // ── "March 4" — used in route day tabs, log headers ──
-export function formatDateDisplay(dateStr) {
+export function formatDateDisplay(dateStr: string): string {
   const d = new Date(dateStr + 'T12:00:00')
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
 }
 
 // ── "Monday, March 4" — used in crew clock-in / daily headers ──
-export function formatDateFull(dateStr) {
+export function formatDateFull(dateStr?: string): string {
   const d = new Date((dateStr || getLocalDate()) + 'T12:00:00')
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 }
 
 // ── "Mar 4, 2025" — used in list cards ──
-export function formatDateShort(dateStr) {
+export function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr + 'T12:00:00')
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 // ── Today's greeting: "Good morning / afternoon / evening" ──
-export function getGreeting() {
+export function getGreeting(): string {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
   if (h < 17) return 'Good afternoon'
@@ -48,7 +48,7 @@ export function getGreeting() {
 }
 
 // ── "Mar 4" date + "9:41 AM" time from a full timestamp ──
-export function formatTimestamp(isoString) {
+export function formatTimestamp(isoString: string): { date: string; time: string } {
   const d = new Date(isoString)
   return {
     date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),

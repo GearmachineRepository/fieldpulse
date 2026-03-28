@@ -6,9 +6,25 @@ export const PROVIDERS = {
   SDS_MANAGER: 'sds_manager',
   ADP: 'adp',
   GUSTO: 'gusto',
+} as const
+
+export type ProviderKey = (typeof PROVIDERS)[keyof typeof PROVIDERS]
+
+export interface ProviderMeta {
+  name: string
+  description: string
+  category: string
+  logoUrl: string
+  docsUrl: string
+  status: string
+  scopes: string[]
 }
 
-export const PROVIDER_META = {
+export interface ProviderWithKey extends ProviderMeta {
+  key: string
+}
+
+export const PROVIDER_META: Record<ProviderKey, ProviderMeta> = {
   [PROVIDERS.QUICKBOOKS]: {
     name: 'QuickBooks',
     description: 'Sync completed jobs and hours to invoices and payroll',
@@ -57,8 +73,8 @@ export const PROVIDER_META = {
 }
 
 // Group providers by category for UI display
-export function getProvidersByCategory() {
-  const groups = {}
+export function getProvidersByCategory(): Record<string, ProviderWithKey[]> {
+  const groups: Record<string, ProviderWithKey[]> = {}
   for (const [key, meta] of Object.entries(PROVIDER_META)) {
     const cat = meta.category
     if (!groups[cat]) groups[cat] = []

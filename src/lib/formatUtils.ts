@@ -6,7 +6,7 @@
  * US state name → two-letter abbreviation map.
  * Returns the input unchanged if not found.
  */
-const STATE_MAP = {
+const STATE_MAP: Record<string, string> = {
   alabama: 'AL',
   alaska: 'AK',
   arizona: 'AZ',
@@ -60,7 +60,7 @@ const STATE_MAP = {
   'district of columbia': 'DC',
 }
 
-export function abbreviateState(input) {
+export function abbreviateState(input: string | null | undefined): string {
   if (!input) return 'CA'
   const trimmed = input.trim()
   if (trimmed.length <= 2) return trimmed.toUpperCase()
@@ -71,7 +71,7 @@ export function abbreviateState(input) {
  * Formats byte count to human-readable file size.
  * e.g. 1536 → "1.5 KB", 2621440 → "2.5 MB"
  */
-export function formatFileSize(bytes) {
+export function formatFileSize(bytes: number | null | undefined): string {
   if (!bytes) return '0 B'
   const units = ['B', 'KB', 'MB', 'GB']
   let i = 0
@@ -84,7 +84,7 @@ export function formatFileSize(bytes) {
 }
 
 /** Color presets for groups, categories, and tags */
-export const ITEM_COLORS = [
+export const ITEM_COLORS: readonly string[] = [
   '#2F6FED',
   '#3B82F6',
   '#F59E0B',
@@ -98,13 +98,15 @@ export const ITEM_COLORS = [
 ]
 
 /** Standard asset statuses shared across fleet and equipment */
-export const ASSET_STATUSES = ['Active', 'Out of Service', 'Retired']
+export const ASSET_STATUSES = ['Active', 'Out of Service', 'Retired'] as const
+
+export type AssetStatus = (typeof ASSET_STATUSES)[number]
 
 /**
  * Maps an asset status string to a StatusBadge variant.
  * Used by FleetPage and EquipmentPage.
  */
-export function getStatusVariant(status) {
+export function getStatusVariant(status: string): string {
   switch (status) {
     case 'Active':
       return 'green'
