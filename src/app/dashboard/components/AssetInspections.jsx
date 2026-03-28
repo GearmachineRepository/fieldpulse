@@ -3,13 +3,20 @@
 // Used in Fleet and Equipment detail panels
 // ═══════════════════════════════════════════
 
-import { useState } from "react"
+import { useState } from 'react'
 import {
-  CheckCircle, XCircle, FileText, MapPin, User, Users,
-  ClipboardList, Camera, AlertTriangle,
-} from "lucide-react"
-import { Modal } from "./PageUI.jsx"
-import s from "./AssetInspections.module.css"
+  CheckCircle,
+  XCircle,
+  FileText,
+  MapPin,
+  User,
+  Users,
+  ClipboardList,
+  Camera,
+  AlertTriangle,
+} from 'lucide-react'
+import { Modal } from './PageUI.jsx'
+import s from './AssetInspections.module.css'
 
 // ── Inspection List ──
 export function AssetInspectionList({ inspections, loading }) {
@@ -34,14 +41,14 @@ export function AssetInspectionList({ inspections, loading }) {
   return (
     <>
       <div className={s.list}>
-        {inspections.map(doc => {
+        {inspections.map((doc) => {
           const passCount = doc.metadata?.passCount || 0
           const failCount = doc.metadata?.failCount || 0
-          const isFlagged = doc.status === "flagged"
+          const isFlagged = doc.status === 'flagged'
           return (
             <button
               key={doc.id}
-              className={`${s.card} ${isFlagged ? s.cardFlagged : ""}`}
+              className={`${s.card} ${isFlagged ? s.cardFlagged : ''}`}
               onClick={() => setSelected(doc)}
             >
               <div className={s.cardTop}>
@@ -60,9 +67,7 @@ export function AssetInspectionList({ inspections, loading }) {
                     <XCircle size={12} /> {failCount} fail
                   </span>
                 )}
-                {doc.employeeName && (
-                  <span className={s.statMeta}>by {doc.employeeName}</span>
-                )}
+                {doc.employeeName && <span className={s.statMeta}>by {doc.employeeName}</span>}
                 {doc.photoCount > 0 && (
                   <span className={s.statMeta}>
                     <Camera size={11} /> {doc.photoCount}
@@ -74,12 +79,7 @@ export function AssetInspectionList({ inspections, loading }) {
         })}
       </div>
 
-      {selected && (
-        <InspectionDetailModal
-          doc={selected}
-          onClose={() => setSelected(null)}
-        />
-      )}
+      {selected && <InspectionDetailModal doc={selected} onClose={() => setSelected(null)} />}
     </>
   )
 }
@@ -87,10 +87,10 @@ export function AssetInspectionList({ inspections, loading }) {
 // ── Inspection Detail Modal ──
 function InspectionDetailModal({ doc, onClose }) {
   const checklist = doc.checklist || []
-  const passCount = checklist.filter(c => c.status === "pass").length
-  const failCount = checklist.filter(c => c.status === "fail").length
-  const naCount = checklist.filter(c => c.status === "na").length
-  const isFlagged = doc.status === "flagged"
+  const passCount = checklist.filter((c) => c.status === 'pass').length
+  const failCount = checklist.filter((c) => c.status === 'fail').length
+  const naCount = checklist.filter((c) => c.status === 'na').length
+  const isFlagged = doc.status === 'flagged'
   const photos = doc.photos || []
 
   return (
@@ -111,7 +111,10 @@ function InspectionDetailModal({ doc, onClose }) {
         {isFlagged && (
           <div className={s.flagWarning}>
             <AlertTriangle size={14} />
-            <span>{failCount} item{failCount !== 1 ? "s" : ""} failed — this inspection is flagged for review</span>
+            <span>
+              {failCount} item{failCount !== 1 ? 's' : ''} failed — this inspection is flagged for
+              review
+            </span>
           </div>
         )}
 
@@ -123,8 +126,8 @@ function InspectionDetailModal({ doc, onClose }) {
           <DField icon={ClipboardList} label="Template" value={doc.metadata?.template} />
           {doc.assetName && (
             <DField
-              icon={doc.assetType === "vehicle" ? FileText : FileText}
-              label={doc.assetType === "vehicle" ? "Vehicle" : "Equipment"}
+              icon={doc.assetType === 'vehicle' ? FileText : FileText}
+              label={doc.assetType === 'vehicle' ? 'Vehicle' : 'Equipment'}
               value={doc.assetName}
             />
           )}
@@ -139,12 +142,16 @@ function InspectionDetailModal({ doc, onClose }) {
             <div className={s.checklistWrap}>
               {checklist.map((c, i) => (
                 <div key={i} className={s.checkRow}>
-                  <span className={
-                    c.status === "pass" ? s.checkPass :
-                    c.status === "fail" ? s.checkFail :
-                    s.checkNA
-                  }>
-                    {c.status === "pass" ? "PASS" : c.status === "fail" ? "FAIL" : "N/A"}
+                  <span
+                    className={
+                      c.status === 'pass'
+                        ? s.checkPass
+                        : c.status === 'fail'
+                          ? s.checkFail
+                          : s.checkNA
+                    }
+                  >
+                    {c.status === 'pass' ? 'PASS' : c.status === 'fail' ? 'FAIL' : 'N/A'}
                   </span>
                   <div className={s.checkContent}>
                     <span className={s.checkItem}>{c.item}</span>

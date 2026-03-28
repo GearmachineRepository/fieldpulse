@@ -58,7 +58,9 @@ async function migrate() {
     console.log('  ✓ resources table created')
 
     await pool.query('CREATE INDEX IF NOT EXISTS idx_resources_category ON resources(category_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_resources_pinned ON resources(pinned DESC, created_at DESC)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_resources_pinned ON resources(pinned DESC, created_at DESC)',
+    )
     console.log('  ✓ Indexes created')
 
     // Seed default categories

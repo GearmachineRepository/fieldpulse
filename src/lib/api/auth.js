@@ -63,4 +63,3 @@ export const resetPassword = (accessToken, password) =>
     method: 'POST',
     body: JSON.stringify({ accessToken, password }),
   })
-

@@ -13,5 +13,5 @@ const ESCAPE_MAP = {
 
 export function escapeHtml(str) {
   if (str == null) return ''
-  return String(str).replace(/[&<>"']/g, ch => ESCAPE_MAP[ch])
+  return String(str).replace(/[&<>"']/g, (ch) => ESCAPE_MAP[ch])
 }

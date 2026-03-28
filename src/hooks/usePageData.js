@@ -36,7 +36,7 @@ export default function usePageData(cacheKey, config) {
 
   // Check cache for initial data
   const cached = cache.get(cacheKey)
-  const hasFreshCache = cached && (Date.now() - cached.timestamp < CACHE_TTL)
+  const hasFreshCache = cached && Date.now() - cached.timestamp < CACHE_TTL
 
   const [data, setData] = useState(hasFreshCache ? cached.data : [])
   const [loading, setLoading] = useState(!hasFreshCache)
@@ -70,28 +70,37 @@ export default function usePageData(cacheKey, config) {
   }, [cacheKey])
 
   // ── Create → auto-refresh ──
-  const create = useCallback(async (payload) => {
-    if (!createRef.current) throw new Error('No createFn provided')
-    const result = await createRef.current(payload)
-    await refresh()
-    return result
-  }, [refresh])
+  const create = useCallback(
+    async (payload) => {
+      if (!createRef.current) throw new Error('No createFn provided')
+      const result = await createRef.current(payload)
+      await refresh()
+      return result
+    },
+    [refresh],
+  )
 
   // ── Update → auto-refresh ──
-  const update = useCallback(async (id, payload) => {
-    if (!updateRef.current) throw new Error('No updateFn provided')
-    const result = await updateRef.current(id, payload)
-    await refresh()
-    return result
-  }, [refresh])
+  const update = useCallback(
+    async (id, payload) => {
+      if (!updateRef.current) throw new Error('No updateFn provided')
+      const result = await updateRef.current(id, payload)
+      await refresh()
+      return result
+    },
+    [refresh],
+  )
 
   // ── Delete → auto-refresh ──
-  const remove = useCallback(async (id) => {
-    if (!deleteRef.current) throw new Error('No deleteFn provided')
-    const result = await deleteRef.current(id)
-    await refresh()
-    return result
-  }, [refresh])
+  const remove = useCallback(
+    async (id) => {
+      if (!deleteRef.current) throw new Error('No deleteFn provided')
+      const result = await deleteRef.current(id)
+      await refresh()
+      return result
+    },
+    [refresh],
+  )
 
   // ── Auto-fetch on mount (if no fresh cache) ──
   useEffect(() => {

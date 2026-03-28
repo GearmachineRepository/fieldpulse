@@ -2,8 +2,8 @@
 // Placeholder Page — "Coming soon" for unbuilt pages
 // ═══════════════════════════════════════════
 
-import { FileText } from "lucide-react"
-import s from "./PlaceholderPage.module.css"
+import { FileText } from 'lucide-react'
+import s from './PlaceholderPage.module.css'
 
 export default function PlaceholderPage({ title }) {
   return (

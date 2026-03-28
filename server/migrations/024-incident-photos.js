@@ -44,8 +44,12 @@ async function migrate() {
     console.log('  ✓ Created incident_photos table')
 
     // 2. Create indexes
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_incident_photos_incident ON incident_photos(incident_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_incident_photos_org ON incident_photos(org_id)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_incident_photos_incident ON incident_photos(incident_id)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_incident_photos_org ON incident_photos(org_id)',
+    )
     console.log('  ✓ Created indexes')
 
     console.log('\n  Migration complete.\n')

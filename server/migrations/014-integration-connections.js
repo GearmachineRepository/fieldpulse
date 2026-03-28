@@ -42,7 +42,9 @@ async function migrate() {
     console.log('  ✓ Created integration_connections table')
 
     // 2. Create index
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_integration_connections_company ON integration_connections(company_id)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_integration_connections_company ON integration_connections(company_id)',
+    )
     console.log('  ✓ Created indexes')
 
     // 3. Enable RLS

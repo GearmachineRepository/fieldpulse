@@ -6,8 +6,8 @@
 // until current step is complete.
 // ═══════════════════════════════════════════
 
-import { Check } from "lucide-react"
-import s from "./WizardLayout.module.css"
+import { Check } from 'lucide-react'
+import s from './WizardLayout.module.css'
 
 /**
  * @param {{
@@ -48,10 +48,10 @@ export default function WizardLayout({
               key={step.key}
               className={[
                 s.step,
-                isActive ? s.stepActive : "",
-                isCompleted ? s.stepCompleted : "",
-                isFuture ? s.stepFuture : "",
-              ].join(" ")}
+                isActive ? s.stepActive : '',
+                isCompleted ? s.stepCompleted : '',
+                isFuture ? s.stepFuture : '',
+              ].join(' ')}
             >
               <div className={s.stepDot}>
                 {isCompleted ? <Check size={12} /> : <span>{i + 1}</span>}
@@ -68,12 +68,7 @@ export default function WizardLayout({
 
       {/* Navigation */}
       <div className={s.nav}>
-        <button
-          className={s.backBtn}
-          onClick={onBack}
-          disabled={isFirst}
-          type="button"
-        >
+        <button className={s.backBtn} onClick={onBack} disabled={isFirst} type="button">
           Back
         </button>
 
@@ -84,15 +79,10 @@ export default function WizardLayout({
             disabled={!canAdvance || submitting}
             type="button"
           >
-            {submitting ? "Submitting..." : "Submit"}
+            {submitting ? 'Submitting...' : 'Submit'}
           </button>
         ) : (
-          <button
-            className={s.nextBtn}
-            onClick={onNext}
-            disabled={!canAdvance}
-            type="button"
-          >
+          <button className={s.nextBtn} onClick={onNext} disabled={!canAdvance} type="button">
             Next
           </button>
         )}

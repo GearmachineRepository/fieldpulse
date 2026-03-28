@@ -42,7 +42,9 @@ async function migrate() {
     `)
     console.log('  ✓ Created account_photos table')
 
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_account_photos_account ON account_photos(account_id)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_account_photos_account ON account_photos(account_id)',
+    )
     await pool.query('CREATE INDEX IF NOT EXISTS idx_account_photos_org ON account_photos(org_id)')
     console.log('  ✓ Created indexes')
 

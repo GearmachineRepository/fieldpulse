@@ -13,8 +13,12 @@ export default {
     await db.query('CREATE INDEX IF NOT EXISTS idx_dashboard_pins_org ON dashboard_pins(org_id)')
 
     // Drop and recreate the unique constraint with the new column name
-    await db.query('ALTER TABLE dashboard_pins DROP CONSTRAINT IF EXISTS dashboard_pins_company_id_card_key_key')
-    await db.query('ALTER TABLE dashboard_pins ADD CONSTRAINT dashboard_pins_org_id_card_key_key UNIQUE(org_id, card_key)')
+    await db.query(
+      'ALTER TABLE dashboard_pins DROP CONSTRAINT IF EXISTS dashboard_pins_company_id_card_key_key',
+    )
+    await db.query(
+      'ALTER TABLE dashboard_pins ADD CONSTRAINT dashboard_pins_org_id_card_key_key UNIQUE(org_id, card_key)',
+    )
 
     // RLS policy — drop old, create new
     await db.query('DROP POLICY IF EXISTS dashboard_pins_company_isolation ON dashboard_pins')
@@ -26,10 +30,14 @@ export default {
     // ── integration_connections ──
     await db.query('ALTER TABLE integration_connections RENAME COLUMN company_id TO org_id')
     await db.query('DROP INDEX IF EXISTS idx_integration_connections_company')
-    await db.query('CREATE INDEX IF NOT EXISTS idx_integration_connections_org ON integration_connections(org_id)')
+    await db.query(
+      'CREATE INDEX IF NOT EXISTS idx_integration_connections_org ON integration_connections(org_id)',
+    )
 
     // RLS policy — drop old, create new
-    await db.query('DROP POLICY IF EXISTS integration_connections_company_isolation ON integration_connections')
+    await db.query(
+      'DROP POLICY IF EXISTS integration_connections_company_isolation ON integration_connections',
+    )
     await db.query(`
       CREATE POLICY integration_connections_org_isolation ON integration_connections
         USING (org_id = current_setting('app.org_id')::uuid)

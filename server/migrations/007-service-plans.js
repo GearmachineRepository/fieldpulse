@@ -57,11 +57,21 @@ async function migrate() {
     `)
     console.log('  ✓ Created service_exceptions table')
 
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_sp_account ON service_plans(account_id) WHERE active = true')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_sp_route ON service_plans(route_id) WHERE active = true')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_sp_status ON service_plans(status) WHERE active = true')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_se_plan ON service_exceptions(service_plan_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_se_dates ON service_exceptions(date_start, date_end)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_sp_account ON service_plans(account_id) WHERE active = true',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_sp_route ON service_plans(route_id) WHERE active = true',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_sp_status ON service_plans(status) WHERE active = true',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_se_plan ON service_exceptions(service_plan_id)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_se_dates ON service_exceptions(date_start, date_end)',
+    )
     console.log('  ✓ Created indexes')
 
     console.log('\n  Done. Run: npm run dev\n')

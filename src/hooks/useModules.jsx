@@ -24,9 +24,7 @@ const ModulesContext = createContext(null)
 
 export function ModulesProvider({ children }) {
   // Start with static registry as default
-  const [enabledKeys, setEnabledKeys] = useState(
-    () => new Set(ENABLED_MODULES.map(m => m.key))
-  )
+  const [enabledKeys, setEnabledKeys] = useState(() => new Set(ENABLED_MODULES.map((m) => m.key)))
   const [loaded, setLoaded] = useState(false)
   const fetched = useRef(false)
 
@@ -36,11 +34,13 @@ export function ModulesProvider({ children }) {
     fetched.current = true
 
     getModules()
-      .then(rows => {
+      .then((rows) => {
         if (rows.length > 0) {
           // API returned org-specific state — use it
           const keys = new Set()
-          rows.forEach(r => { if (r.enabled) keys.add(r.module_key) })
+          rows.forEach((r) => {
+            if (r.enabled) keys.add(r.module_key)
+          })
           setEnabledKeys(keys)
         }
         // If no rows, org hasn't configured modules yet — keep static defaults
@@ -51,16 +51,13 @@ export function ModulesProvider({ children }) {
       .finally(() => setLoaded(true))
   }, [])
 
-  const isEnabled = useCallback(
-    (key) => enabledKeys.has(key),
-    [enabledKeys]
-  )
+  const isEnabled = useCallback((key) => enabledKeys.has(key), [enabledKeys])
 
-  const enabledModules = ALL_MODULES.filter(m => enabledKeys.has(m.key))
+  const enabledModules = ALL_MODULES.filter((m) => enabledKeys.has(m.key))
 
   const toggleModule = useCallback(async (key, enabled) => {
     // Optimistic update
-    setEnabledKeys(prev => {
+    setEnabledKeys((prev) => {
       const next = new Set(prev)
       if (enabled) next.add(key)
       else next.delete(key)
@@ -71,17 +68,21 @@ export function ModulesProvider({ children }) {
       await apiToggle(key, enabled)
       // Background re-fetch to confirm server state
       getModules()
-        .then(rows => {
+        .then((rows) => {
           if (rows.length > 0) {
             const keys = new Set()
-            rows.forEach(r => { if (r.enabled) keys.add(r.module_key) })
+            rows.forEach((r) => {
+              if (r.enabled) keys.add(r.module_key)
+            })
             setEnabledKeys(keys)
           }
         })
-        .catch(() => { /* keep optimistic state */ })
+        .catch(() => {
+          /* keep optimistic state */
+        })
     } catch {
       // Revert on failure
-      setEnabledKeys(prev => {
+      setEnabledKeys((prev) => {
         const next = new Set(prev)
         if (enabled) next.delete(key)
         else next.add(key)
@@ -106,7 +107,7 @@ export default function useModules() {
   const ctx = useContext(ModulesContext)
   // Fallback for components outside the provider (e.g. field app)
   if (!ctx) {
-    const enabledSet = new Set(ENABLED_MODULES.map(m => m.key))
+    const enabledSet = new Set(ENABLED_MODULES.map((m) => m.key))
     return {
       isEnabled: (key) => enabledSet.has(key),
       enabledModules: ENABLED_MODULES,

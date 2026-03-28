@@ -4,16 +4,21 @@
 import { request, buildQuery, multipartRequest } from './core.js'
 
 // Categories
-export const getResourceCategories    = ()      => request('/resources/categories')
-export const createResourceCategory   = (d)     => request('/resources/categories', { method: 'POST', body: JSON.stringify(d) })
-export const updateResourceCategory   = (id, d) => request(`/resources/categories/${id}`, { method: 'PUT', body: JSON.stringify(d) })
-export const deleteResourceCategory   = (id)    => request(`/resources/categories/${id}`, { method: 'DELETE' })
+export const getResourceCategories = () => request('/resources/categories')
+export const createResourceCategory = (d) =>
+  request('/resources/categories', { method: 'POST', body: JSON.stringify(d) })
+export const updateResourceCategory = (id, d) =>
+  request(`/resources/categories/${id}`, { method: 'PUT', body: JSON.stringify(d) })
+export const deleteResourceCategory = (id) =>
+  request(`/resources/categories/${id}`, { method: 'DELETE' })
 
 // Resources
-export const getResources       = (params = {}) => request(`/resources${buildQuery(params)}`)
-export const createResource     = (d)     => request('/resources', { method: 'POST', body: JSON.stringify(d) })
-export const updateResource     = (id, d) => request(`/resources/${id}`, { method: 'PUT', body: JSON.stringify(d) })
-export const deleteResource     = (id)    => request(`/resources/${id}`, { method: 'DELETE' })
+export const getResources = (params = {}) => request(`/resources${buildQuery(params)}`)
+export const createResource = (d) =>
+  request('/resources', { method: 'POST', body: JSON.stringify(d) })
+export const updateResource = (id, d) =>
+  request(`/resources/${id}`, { method: 'PUT', body: JSON.stringify(d) })
+export const deleteResource = (id) => request(`/resources/${id}`, { method: 'DELETE' })
 
 export const uploadResource = async (file, metadata = {}) => {
   const fd = new FormData()
@@ -33,6 +38,11 @@ export const replaceResourceFile = async (id, file) => {
 }
 
 // Resource → Account linking (reverse direction)
-export const getResourceAccounts      = (resourceId) => request(`/resources/${resourceId}/accounts`)
-export const linkResourceToAccount    = (resourceId, accountId) => request(`/resources/${resourceId}/accounts`, { method: 'POST', body: JSON.stringify({ accountId }) })
-export const unlinkResourceFromAccount = (resourceId, accountId) => request(`/resources/${resourceId}/accounts/${accountId}`, { method: 'DELETE' })
+export const getResourceAccounts = (resourceId) => request(`/resources/${resourceId}/accounts`)
+export const linkResourceToAccount = (resourceId, accountId) =>
+  request(`/resources/${resourceId}/accounts`, {
+    method: 'POST',
+    body: JSON.stringify({ accountId }),
+  })
+export const unlinkResourceFromAccount = (resourceId, accountId) =>
+  request(`/resources/${resourceId}/accounts/${accountId}`, { method: 'DELETE' })

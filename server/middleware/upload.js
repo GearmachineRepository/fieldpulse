@@ -19,7 +19,11 @@ import { MAX_UPLOAD_SIZE_BYTES, ALLOWED_FILE_TYPES } from '../constants/index.js
 const BUCKET = 'uploads'
 
 const ALLOWED_MIMES = new Set([
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/heic',
   'application/pdf',
 ])
 
@@ -63,12 +67,10 @@ async function uploadFileToSupabase(file) {
   const ext = path.extname(file.originalname).toLowerCase()
   const filename = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext}`
 
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(filename, file.buffer, {
-      contentType: file.mimetype,
-      upsert: false,
-    })
+  const { error } = await supabase.storage.from(BUCKET).upload(filename, file.buffer, {
+    contentType: file.mimetype,
+    upsert: false,
+  })
 
   if (error) {
     logger.error({ err: error, filename }, 'Supabase Storage upload failed')
@@ -92,7 +94,9 @@ export function uploadToStorage(req, res, next) {
 
   if (req.file?.buffer) {
     uploads.push(
-      uploadFileToSupabase(req.file).then(name => { req.file.filename = name })
+      uploadFileToSupabase(req.file).then((name) => {
+        req.file.filename = name
+      }),
     )
   }
 
@@ -100,7 +104,9 @@ export function uploadToStorage(req, res, next) {
     for (const file of req.files) {
       if (file.buffer) {
         uploads.push(
-          uploadFileToSupabase(file).then(name => { file.filename = name })
+          uploadFileToSupabase(file).then((name) => {
+            file.filename = name
+          }),
         )
       }
     }
@@ -108,5 +114,7 @@ export function uploadToStorage(req, res, next) {
 
   if (uploads.length === 0) return next()
 
-  Promise.all(uploads).then(() => next()).catch(next)
+  Promise.all(uploads)
+    .then(() => next())
+    .catch(next)
 }

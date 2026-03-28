@@ -11,7 +11,10 @@ import { getOrgId } from '../utils/db.js'
 const router = Router()
 
 /** @route GET /api/reports/pur — PUR (Pesticide Use Report) summary */
-router.get('/pur', requireAuth, asyncHandler(async (req, res) => {
+router.get(
+  '/pur',
+  requireAuth,
+  asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
     const { month, year, start: startParam, end: endParam } = req.query
     let start, end
@@ -20,7 +23,8 @@ router.get('/pur', requireAuth, asyncHandler(async (req, res) => {
       start = startParam
       end = endParam
     } else {
-      if (!month || !year) return res.status(400).json({ error: 'month and year (or start and end) required' })
+      if (!month || !year)
+        return res.status(400).json({ error: 'month and year (or start and end) required' })
       start = `${year}-${String(month).padStart(2, '0')}-01`
       end = new Date(year, month, 0).toISOString().split('T')[0]
     }
@@ -32,14 +36,21 @@ router.get('/pur', requireAuth, asyncHandler(async (req, res) => {
        WHERE sl.created_at >= $1::date AND sl.created_at < ($2::date + interval '1 day')
          AND sl.org_id = $3
        ORDER BY slp.chemical_name`,
-      [start, end, orgId]
+      [start, end, orgId],
     )
 
     const byProduct = {}
     for (const row of result.rows) {
       const key = `${row.chemical_name}|${row.epa}`
       if (!byProduct[key]) {
-        byProduct[key] = { name: row.chemical_name, epa: row.epa, totalAmount: 0, unit: '', appCount: 0, applications: [] }
+        byProduct[key] = {
+          name: row.chemical_name,
+          epa: row.epa,
+          totalAmount: 0,
+          unit: '',
+          appCount: 0,
+          applications: [],
+        }
       }
       const match = row.amount.match(/^([\d.]+)\s*(.*)$/)
       if (match) {
@@ -48,59 +59,83 @@ router.get('/pur', requireAuth, asyncHandler(async (req, res) => {
       }
       byProduct[key].appCount++
       byProduct[key].applications.push({
-        date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        crew: row.crew_name, property: row.property, amount: row.amount,
+        date: new Date(row.created_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+        crew: row.crew_name,
+        property: row.property,
+        amount: row.amount,
       })
     }
 
     res.json({
-      month: month ? parseInt(month) : null, year: year ? parseInt(year) : null,
+      month: month ? parseInt(month) : null,
+      year: year ? parseInt(year) : null,
       products: Object.values(byProduct),
       totalApplications: result.rows.length,
     })
-}))
+  }),
+)
 
 /** @route GET /api/reports/rosters — Roster attendance report */
-router.get('/rosters', requireAuth, asyncHandler(async (req, res) => {
+router.get(
+  '/rosters',
+  requireAuth,
+  asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
     const { start, end } = req.query
     if (!start || !end) return res.status(400).json({ error: 'start and end required' })
 
-    const result = await db.query(`
+    const result = await db.query(
+      `
       SELECT r.id, r.crew_name, r.submitted_by_name, r.work_date, r.notes,
         COALESCE((SELECT json_agg(json_build_object('employeeId',m.employee_id,'name',m.employee_name,'present',m.present))
           FROM daily_roster_members m WHERE m.roster_id = r.id), '[]') AS members
       FROM daily_crew_rosters r
       WHERE r.work_date >= $1 AND r.work_date <= $2 AND r.org_id = $3
-      ORDER BY r.work_date DESC, r.crew_name`, [start, end, orgId])
+      ORDER BY r.work_date DESC, r.crew_name`,
+      [start, end, orgId],
+    )
 
     const byCrewDate = {}
     for (const row of result.rows) {
       const key = row.crew_name
       if (!byCrewDate[key]) {
-        byCrewDate[key] = { crewName: key, daysWorked: 0, totalMembers: new Set(), totalAbsences: 0, rosters: [] }
+        byCrewDate[key] = {
+          crewName: key,
+          daysWorked: 0,
+          totalMembers: new Set(),
+          totalAbsences: 0,
+          rosters: [],
+        }
       }
       byCrewDate[key].daysWorked++
-      const members = (row.members || []).filter(m => m.employeeId !== null)
-      const presentMembers = members.filter(m => m.present !== false)
-      const absentMembers = members.filter(m => m.present === false)
-      presentMembers.forEach(m => byCrewDate[key].totalMembers.add(m.name))
+      const members = (row.members || []).filter((m) => m.employeeId !== null)
+      const presentMembers = members.filter((m) => m.present !== false)
+      const absentMembers = members.filter((m) => m.present === false)
+      presentMembers.forEach((m) => byCrewDate[key].totalMembers.add(m.name))
       byCrewDate[key].totalAbsences += absentMembers.length
       byCrewDate[key].rosters.push({
-        date: new Date(row.work_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        date: new Date(row.work_date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
         lead: row.submitted_by_name,
         memberCount: presentMembers.length,
         absentCount: absentMembers.length,
-        members: presentMembers.map(m => m.name),
-        absent: absentMembers.map(m => m.name),
+        members: presentMembers.map((m) => m.name),
+        absent: absentMembers.map((m) => m.name),
       })
     }
 
-    const crews = Object.values(byCrewDate).map(c => ({
-      ...c, totalMembers: c.totalMembers.size,
+    const crews = Object.values(byCrewDate).map((c) => ({
+      ...c,
+      totalMembers: c.totalMembers.size,
     }))
 
     res.json({ start, end, totalRosters: result.rows.length, crews })
-}))
+  }),
+)
 
 export default router

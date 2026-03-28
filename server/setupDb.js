@@ -22,7 +22,9 @@ async function setup() {
 
   // Validate DB name to prevent SQL injection in CREATE DATABASE
   if (!isSafeDbName(dbName)) {
-    console.error(`  ✗ Invalid database name "${dbName}" — only alphanumeric and underscores allowed.`)
+    console.error(
+      `  ✗ Invalid database name "${dbName}" — only alphanumeric and underscores allowed.`,
+    )
     process.exit(1)
   }
 
@@ -43,7 +45,9 @@ async function setup() {
     })
 
     try {
-      const dbCheck = await adminPool.query('SELECT 1 FROM pg_database WHERE datname = $1', [dbName])
+      const dbCheck = await adminPool.query('SELECT 1 FROM pg_database WHERE datname = $1', [
+        dbName,
+      ])
       if (dbCheck.rows.length === 0) {
         console.log(`  Creating database "${dbName}"...`)
         // Safe because we validated dbName above
@@ -77,13 +81,22 @@ async function setup() {
 
     // Set real bcrypt hashes for seed data
     const vehiclePin = await bcrypt.hash('1234', 10)
-    await pool.query('UPDATE vehicles SET pin_hash = $1 WHERE pin_hash = $2', [vehiclePin, '$2a$10$placeholder'])
+    await pool.query('UPDATE vehicles SET pin_hash = $1 WHERE pin_hash = $2', [
+      vehiclePin,
+      '$2a$10$placeholder',
+    ])
 
     const adminPin = await bcrypt.hash('0000', 10)
-    await pool.query('UPDATE admins SET pin_hash = $1 WHERE pin_hash = $2', [adminPin, '$2a$10$placeholder'])
+    await pool.query('UPDATE admins SET pin_hash = $1 WHERE pin_hash = $2', [
+      adminPin,
+      '$2a$10$placeholder',
+    ])
 
     const empPin = await bcrypt.hash('1111', 10)
-    await pool.query('UPDATE employees SET pin_hash = $1 WHERE pin_hash = $2', [empPin, '$2a$10$placeholder'])
+    await pool.query('UPDATE employees SET pin_hash = $1 WHERE pin_hash = $2', [
+      empPin,
+      '$2a$10$placeholder',
+    ])
 
     // Warn about default PINs
     console.log('\n  ⚠ WARNING: Default PINs are set (1234, 0000, 1111).')
@@ -91,15 +104,29 @@ async function setup() {
 
     // Ensure indexes exist
     try {
-      await pool.query('CREATE INDEX IF NOT EXISTS idx_spray_logs_created ON spray_logs(created_at DESC)')
-      await pool.query('CREATE INDEX IF NOT EXISTS idx_spray_logs_vehicle ON spray_logs(vehicle_id)')
+      await pool.query(
+        'CREATE INDEX IF NOT EXISTS idx_spray_logs_created ON spray_logs(created_at DESC)',
+      )
+      await pool.query(
+        'CREATE INDEX IF NOT EXISTS idx_spray_logs_vehicle ON spray_logs(vehicle_id)',
+      )
       await pool.query('CREATE INDEX IF NOT EXISTS idx_spray_logs_crew ON spray_logs(crew_name)')
-      await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_rosters_date ON daily_crew_rosters(work_date DESC)')
-      await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_rosters_crew ON daily_crew_rosters(crew_id)')
-      await pool.query('CREATE INDEX IF NOT EXISTS idx_daily_roster_members_roster ON daily_roster_members(roster_id)')
-      await pool.query('ALTER TABLE daily_roster_members ADD COLUMN IF NOT EXISTS present BOOLEAN DEFAULT true')
+      await pool.query(
+        'CREATE INDEX IF NOT EXISTS idx_daily_rosters_date ON daily_crew_rosters(work_date DESC)',
+      )
+      await pool.query(
+        'CREATE INDEX IF NOT EXISTS idx_daily_rosters_crew ON daily_crew_rosters(crew_id)',
+      )
+      await pool.query(
+        'CREATE INDEX IF NOT EXISTS idx_daily_roster_members_roster ON daily_roster_members(roster_id)',
+      )
+      await pool.query(
+        'ALTER TABLE daily_roster_members ADD COLUMN IF NOT EXISTS present BOOLEAN DEFAULT true',
+      )
       await pool.query('ALTER TABLE employees ADD COLUMN IF NOT EXISTS cert_number VARCHAR(100)')
-    } catch { /* tables/columns already exist */ }
+    } catch {
+      /* tables/columns already exist */
+    }
 
     // Create uploads directory
     const uploadsDir = path.join(__dirname, '..', 'uploads')

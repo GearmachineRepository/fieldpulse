@@ -39,7 +39,9 @@ async function migrate() {
     console.log('  ✓ Created dashboard_pins table')
 
     // 2. Create index
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_dashboard_pins_company ON dashboard_pins(company_id)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_dashboard_pins_company ON dashboard_pins(company_id)',
+    )
     console.log('  ✓ Created indexes')
 
     // 3. Enable RLS

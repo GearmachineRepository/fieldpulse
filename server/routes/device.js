@@ -39,7 +39,8 @@ const codeLimiter = rateLimit({
 
 // ── Public: verify a registration code ──
 
-router.post('/verify-code',
+router.post(
+  '/verify-code',
   codeLimiter,
   validateBody({ code: { required: true, type: 'string' } }),
   asyncHandler(async (req, res) => {
@@ -54,7 +55,7 @@ router.post('/verify-code',
        WHERE UPPER(rc.code) = $1
          AND rc.revoked = false
          AND (rc.expires_at IS NULL OR rc.expires_at > NOW())`,
-      [trimmed]
+      [trimmed],
     )
 
     if (rows.length === 0) {
@@ -81,12 +82,13 @@ router.post('/verify-code',
         orgId: row.org_id,
       },
     })
-  })
+  }),
 )
 
 // ── Protected: list active codes for this org ──
 
-router.get('/codes',
+router.get(
+  '/codes',
   requireAuth,
   asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
@@ -95,22 +97,24 @@ router.get('/codes',
        FROM registration_codes
        WHERE org_id = $1
        ORDER BY created_at DESC`,
-      [orgId]
+      [orgId],
     )
     res.json(rows)
-  })
+  }),
 )
 
 // ── Protected: create a new registration code ──
 
-router.post('/codes',
+router.post(
+  '/codes',
   requireAuth,
   asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
     const { label, expiresIn } = req.body // expiresIn: "1h", "24h", "7d", "30d", or null (never)
 
     // Generate unique code (retry on collision)
-    let code, attempts = 0
+    let code,
+      attempts = 0
     while (attempts < 10) {
       code = generateCode()
       const exists = await db.query('SELECT 1 FROM registration_codes WHERE code = $1', [code])
@@ -135,16 +139,17 @@ router.post('/codes',
       `INSERT INTO registration_codes (org_id, code, label, expires_at, created_by)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, code, label, expires_at, revoked, created_at`,
-      [orgId, code, label || null, expiresAt, req.user?.id || null]
+      [orgId, code, label || null, expiresAt, req.user?.id || null],
     )
 
     res.status(201).json(rows[0])
-  })
+  }),
 )
 
 // ── Protected: revoke a code ──
 
-router.delete('/codes/:id',
+router.delete(
+  '/codes/:id',
   requireAuth,
   asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
@@ -153,7 +158,7 @@ router.delete('/codes/:id',
     const { rowCount } = await db.query(
       `UPDATE registration_codes SET revoked = true
        WHERE id = $1 AND org_id = $2 AND revoked = false`,
-      [id, orgId]
+      [id, orgId],
     )
 
     if (rowCount === 0) {
@@ -161,12 +166,13 @@ router.delete('/codes/:id',
     }
 
     res.json({ success: true })
-  })
+  }),
 )
 
 // ── Protected: generate QR code for a specific registration code ──
 
-router.get('/codes/:id/qr',
+router.get(
+  '/codes/:id/qr',
   requireAuth,
   asyncHandler(async (req, res) => {
     const orgId = getOrgId(req)
@@ -177,7 +183,7 @@ router.get('/codes/:id/qr',
        FROM registration_codes rc
        JOIN organizations o ON o.id = rc.org_id
        WHERE rc.id = $1 AND rc.org_id = $2`,
-      [id, orgId]
+      [id, orgId],
     )
 
     if (rows.length === 0) {
@@ -201,7 +207,7 @@ router.get('/codes/:id/qr',
       code: rows[0].code,
       company: rows[0].org_name || 'CruPoint',
     })
-  })
+  }),
 )
 
 export default router

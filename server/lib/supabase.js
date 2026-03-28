@@ -19,13 +19,14 @@ if (!url || !serviceKey) {
   logger.warn('SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — Supabase client unavailable')
 }
 
-const supabase = url && serviceKey
-  ? createClient(url, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
-  : null
+const supabase =
+  url && serviceKey
+    ? createClient(url, serviceKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      })
+    : null
 
 export default supabase

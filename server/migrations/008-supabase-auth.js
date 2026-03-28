@@ -46,7 +46,7 @@ async function migrate() {
 
     // 2. Get existing admins that need Supabase Auth users
     const admins = await pool.query(
-      'SELECT id, name, email, role, password_hash FROM admins WHERE active = true AND email IS NOT NULL AND supabase_uid IS NULL'
+      'SELECT id, name, email, role, password_hash FROM admins WHERE active = true AND email IS NOT NULL AND supabase_uid IS NULL',
     )
 
     if (admins.rows.length === 0) {
@@ -57,7 +57,7 @@ async function migrate() {
       // Check if a Supabase Auth user with this email already exists
       const { data: existingUsers } = await supabase.auth.admin.listUsers()
       const existing = existingUsers?.users?.find(
-        u => u.email?.toLowerCase() === admin.email.toLowerCase()
+        (u) => u.email?.toLowerCase() === admin.email.toLowerCase(),
       )
 
       let uid
@@ -80,7 +80,10 @@ async function migrate() {
         })
 
         if (error) {
-          console.error(`  ✗ Failed to create Supabase Auth user for ${admin.email}:`, error.message)
+          console.error(
+            `  ✗ Failed to create Supabase Auth user for ${admin.email}:`,
+            error.message,
+          )
           continue
         }
         uid = data.user.id

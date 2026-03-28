@@ -15,18 +15,18 @@ import pinoHttp from 'pino-http'
 import db from './db.js'
 import { logger } from './utils/logger.js'
 
-import authRoutes      from './routes/auth.js'
-import adminsRoutes    from './routes/admins.js'
-import vehicleRoutes   from './routes/vehicles.js'
-import crewRoutes      from './routes/crews.js'
-import employeeRoutes  from './routes/employees.js'
+import authRoutes from './routes/auth.js'
+import adminsRoutes from './routes/admins.js'
+import vehicleRoutes from './routes/vehicles.js'
+import crewRoutes from './routes/crews.js'
+import employeeRoutes from './routes/employees.js'
 import equipmentRoutes from './routes/equipment.js'
-import chemicalRoutes  from './routes/chemicals.js'
-import sprayLogRoutes  from './routes/sprayLogs.js'
-import rosterRoutes    from './routes/rosters.js'
-import reportRoutes    from './routes/reports.js'
-import accountRoutes   from './routes/accounts.js'
-import routeRoutes     from './routes/routes.js'
+import chemicalRoutes from './routes/chemicals.js'
+import sprayLogRoutes from './routes/sprayLogs.js'
+import rosterRoutes from './routes/rosters.js'
+import reportRoutes from './routes/reports.js'
+import accountRoutes from './routes/accounts.js'
+import routeRoutes from './routes/routes.js'
 import deviceRoutes from './routes/device.js'
 import accountGroupRoutes from './routes/accountGroups.js'
 import scheduleEventRoutes from './routes/scheduleEvents.js'
@@ -51,7 +51,7 @@ import { notFound, errorHandler } from './middleware/error.js'
 dotenv.config()
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const app  = express()
+const app = express()
 const PORT = process.env.PORT || 3001
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -59,7 +59,7 @@ const isDev = process.env.NODE_ENV !== 'production'
 const REQUIRED_ENV = ['DB_HOST', 'DB_NAME', 'DB_USER']
 if (!isDev) REQUIRED_ENV.push('JWT_SECRET', 'ALLOWED_ORIGINS')
 
-const missing = REQUIRED_ENV.filter(k => !process.env[k])
+const missing = REQUIRED_ENV.filter((k) => !process.env[k])
 if (missing.length > 0) {
   logger.fatal(`Missing required environment variables: ${missing.join(', ')}`)
   logger.fatal('Copy .env.example to .env and fill in the values.')
@@ -71,53 +71,78 @@ if (process.env.SENTRY_DSN) {
 }
 
 // ── Request logging ──
-app.use(pinoHttp({
-  logger,
-  autoLogging: false,
-  serializers: {
-    req: (req) => ({ method: req.method, url: req.url }),
-    res: (res) => ({ statusCode: res.statusCode }),
-  },
-}))
+app.use(
+  pinoHttp({
+    logger,
+    autoLogging: false,
+    serializers: {
+      req: (req) => ({ method: req.method, url: req.url }),
+      res: (res) => ({ statusCode: res.statusCode }),
+    },
+  }),
+)
 
 // ── Security headers via helmet ──
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", ...(isDev ? ["'unsafe-eval'", "'unsafe-inline'"] : [])],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'data:', 'blob:', 'https://tile.openstreetmap.org', 'https://*.tile.openstreetmap.org', 'https://cdnjs.cloudflare.com'],
-      connectSrc: ["'self'", 'https://api.openweathermap.org', 'https://geocoding.geo.census.gov', 'https://nominatim.openstreetmap.org'],
-      fontSrc: ["'self'"],
-      frameAncestors: ["'self'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", ...(isDev ? ["'unsafe-eval'", "'unsafe-inline'"] : [])],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: [
+          "'self'",
+          'data:',
+          'blob:',
+          'https://tile.openstreetmap.org',
+          'https://*.tile.openstreetmap.org',
+          'https://cdnjs.cloudflare.com',
+        ],
+        connectSrc: [
+          "'self'",
+          'https://api.openweathermap.org',
+          'https://geocoding.geo.census.gov',
+          'https://nominatim.openstreetmap.org',
+        ],
+        fontSrc: ["'self'"],
+        frameAncestors: ["'self'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
     },
-  },
-  crossOriginOpenerPolicy: { policy: 'same-origin' },
-}))
+    crossOriginOpenerPolicy: { policy: 'same-origin' },
+  }),
+)
 
 // ── CORS ──
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,https://localhost:5173,http://localhost:3001')
-  .split(',').map(o => o.trim())
+const ALLOWED_ORIGINS = (
+  process.env.ALLOWED_ORIGINS ||
+  'http://localhost:5173,https://localhost:5173,http://localhost:3001'
+)
+  .split(',')
+  .map((o) => o.trim())
 
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true)
-    cb(new Error(`CORS: Origin ${origin} not allowed`))
-  },
-  credentials: true,
-}))
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true)
+      cb(new Error(`CORS: Origin ${origin} not allowed`))
+    },
+    credentials: true,
+  }),
+)
 
 // ── Global rate limiter — prevent resource exhaustion ──
-app.use('/api/', rateLimit({
-  windowMs: 60_000,
-  max: isDev ? 1000 : 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests — slow down' },
-}))
+app.use(
+  '/api/',
+  rateLimit({
+    windowMs: 60_000,
+    max: isDev ? 1000 : 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests — slow down' },
+  }),
+)
 
 // ── Body parsing ──
 app.use(express.json({ limit: '1mb' }))
@@ -134,29 +159,32 @@ if (process.env.SUPABASE_URL) {
     res.redirect(publicUrl)
   })
 } else {
-  app.use('/uploads', express.static(uploadsDir, {
-    setHeaders: (res) => {
-      res.setHeader('Content-Disposition', 'attachment')
-    },
-  }))
+  app.use(
+    '/uploads',
+    express.static(uploadsDir, {
+      setHeaders: (res) => {
+        res.setHeader('Content-Disposition', 'attachment')
+      },
+    }),
+  )
 }
 
 // ── Routes — public (no auth required) ──
-app.use('/api/auth',   authRoutes)
+app.use('/api/auth', authRoutes)
 app.use('/api/admins', adminsRoutes)
-app.use('/sds',        sdsPublicRoutes)
+app.use('/sds', sdsPublicRoutes)
 
 // ── Routes — protected (auth applied inside each router) ──
-app.use('/api/crews',  crewRoutes)
-app.use('/api/vehicles',   vehicleRoutes)
-app.use('/api/employees',  employeeRoutes(upload, uploadToStorage))
-app.use('/api/equipment',  equipmentRoutes)
-app.use('/api/chemicals',  chemicalRoutes)
+app.use('/api/crews', crewRoutes)
+app.use('/api/vehicles', vehicleRoutes)
+app.use('/api/employees', employeeRoutes(upload, uploadToStorage))
+app.use('/api/equipment', equipmentRoutes)
+app.use('/api/chemicals', chemicalRoutes)
 app.use('/api/spray-logs', sprayLogRoutes(upload, uploadToStorage))
-app.use('/api/rosters',    rosterRoutes)
-app.use('/api/reports',    reportRoutes)
-app.use('/api/accounts',   accountRoutes)
-app.use('/api/routes',     routeRoutes(upload, uploadToStorage))
+app.use('/api/rosters', rosterRoutes)
+app.use('/api/reports', reportRoutes)
+app.use('/api/accounts', accountRoutes)
+app.use('/api/routes', routeRoutes(upload, uploadToStorage))
 app.use('/api/device', deviceRoutes)
 app.use('/api/account-groups', accountGroupRoutes)
 app.use('/api/schedule-events', scheduleEventRoutes)
@@ -224,7 +252,7 @@ function gracefulShutdown(signal) {
 }
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
-process.on('SIGINT',  () => gracefulShutdown('SIGINT'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 
 process.on('unhandledRejection', (reason) => {
   logger.error({ err: reason }, 'Unhandled promise rejection')

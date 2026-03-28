@@ -3,60 +3,68 @@
 // Matches EquipmentPage pattern with vehicle-specific columns
 // ═══════════════════════════════════════════
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from 'react'
 import {
-  Truck, Plus, Search, Edit3, Trash2,
-  Hash, Calendar, CreditCard, Wrench, Users, Settings,
-} from "lucide-react"
-import usePageData from "@/hooks/usePageData.js"
-import { useGlobalToast } from "@/hooks/ToastContext.jsx"
-import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from "@/lib/api/vehicles.js"
-import { getFieldDocs } from "@/lib/api/fieldDocs.js"
-import { AssetInspectionList } from "../components/AssetInspections.jsx"
-import { getCrews } from "@/lib/api/crews.js"
-import PageShell from "../components/PageShell.jsx"
-import DataTable from "../components/DataTable.jsx"
-import SlidePanel from "../components/SlidePanel.jsx"
-import StatusBadge from "../components/StatusBadge.jsx"
-import TabBar from "../components/TabBar.jsx"
-import {
-  Modal, ModalFooter, ConfirmModal, FormField, SelectField,
-} from "../components/PageUI.jsx"
-import s from "./FleetPage.module.css"
-import { ASSET_STATUSES, getStatusVariant } from "@/lib/formatUtils.js"
+  Truck,
+  Plus,
+  Search,
+  Edit3,
+  Trash2,
+  Hash,
+  Calendar,
+  CreditCard,
+  Wrench,
+  Users,
+  Settings,
+} from 'lucide-react'
+import usePageData from '@/hooks/usePageData.js'
+import { useGlobalToast } from '@/hooks/ToastContext.jsx'
+import { getVehicles, createVehicle, updateVehicle, deleteVehicle } from '@/lib/api/vehicles.js'
+import { getFieldDocs } from '@/lib/api/fieldDocs.js'
+import { AssetInspectionList } from '../components/AssetInspections.jsx'
+import { getCrews } from '@/lib/api/crews.js'
+import PageShell from '../components/PageShell.jsx'
+import DataTable from '../components/DataTable.jsx'
+import SlidePanel from '../components/SlidePanel.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
+import TabBar from '../components/TabBar.jsx'
+import { Modal, ModalFooter, ConfirmModal, FormField, SelectField } from '../components/PageUI.jsx'
+import s from './FleetPage.module.css'
+import { ASSET_STATUSES, getStatusVariant } from '@/lib/formatUtils.js'
 
 const ts = DataTable.s
 
 export default function FleetPage() {
   const toast = useGlobalToast()
-  const vehicles = usePageData("vehicles", {
+  const vehicles = usePageData('vehicles', {
     fetchFn: getVehicles,
     createFn: createVehicle,
     updateFn: updateVehicle,
     deleteFn: deleteVehicle,
   })
-  const crews = usePageData("crews", { fetchFn: getCrews })
+  const crews = usePageData('crews', { fetchFn: getCrews })
 
-  const [searchQ, setSearchQ] = useState("")
-  const [crewFilter, setCrewFilter] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
+  const [searchQ, setSearchQ] = useState('')
+  const [crewFilter, setCrewFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [editing, setEditing] = useState(null)
 
-  const selectedVehicle = vehicles.data.find(v => v.id === selectedId) || null
+  const selectedVehicle = vehicles.data.find((v) => v.id === selectedId) || null
 
-  const filtered = vehicles.data.filter(v => {
+  const filtered = vehicles.data.filter((v) => {
     if (searchQ) {
       const q = searchQ.toLowerCase()
       if (
         !v.name.toLowerCase().includes(q) &&
-        !(v.make_model || "").toLowerCase().includes(q) &&
-        !(v.license_plate || "").toLowerCase().includes(q) &&
-        !(v.truck_number || "").toLowerCase().includes(q)
-      ) return false
+        !(v.make_model || '').toLowerCase().includes(q) &&
+        !(v.license_plate || '').toLowerCase().includes(q) &&
+        !(v.truck_number || '').toLowerCase().includes(q)
+      )
+        return false
     }
-    if (crewFilter && (v.crew_name || "") !== crewFilter) return false
-    if (statusFilter && (v.status || "Active") !== statusFilter) return false
+    if (crewFilter && (v.crew_name || '') !== crewFilter) return false
+    if (statusFilter && (v.status || 'Active') !== statusFilter) return false
     return true
   })
 
@@ -64,37 +72,37 @@ export default function FleetPage() {
     try {
       if (editing.id) {
         await vehicles.update(editing.id, data)
-        toast.show("Updated")
+        toast.show('Updated')
       } else {
         await vehicles.create(data)
-        toast.show("Added")
+        toast.show('Added')
       }
       setEditing(null)
     } catch (err) {
-      toast.show(err.message || "Failed to save")
+      toast.show(err.message || 'Failed to save')
     }
   }
 
   const handleDelete = async (id) => {
     try {
       await vehicles.remove(id)
-      toast.show("Removed")
+      toast.show('Removed')
       setEditing(null)
       if (selectedId === id) setSelectedId(null)
     } catch {
-      toast.show("Failed to remove")
+      toast.show('Failed to remove')
     }
   }
 
   // Build unique crew names for the filter dropdown
-  const crewNames = [...new Set(vehicles.data.map(v => v.crew_name).filter(Boolean))].sort()
+  const crewNames = [...new Set(vehicles.data.map((v) => v.crew_name).filter(Boolean))].sort()
 
   return (
     <>
       <PageShell
         title="Fleet"
         count={vehicles.data.length}
-        countLabel={`vehicle${vehicles.data.length !== 1 ? "s" : ""}`}
+        countLabel={`vehicle${vehicles.data.length !== 1 ? 's' : ''}`}
         loading={vehicles.loading && !vehicles.data.length}
         skeleton="table"
         empty={vehicles.data.length === 0}
@@ -116,49 +124,61 @@ export default function FleetPage() {
             <input
               type="text"
               value={searchQ}
-              onChange={e => setSearchQ(e.target.value)}
+              onChange={(e) => setSearchQ(e.target.value)}
               placeholder="Search by name, plate, or make..."
               className={s.searchInput}
             />
           </div>
           <select
             value={crewFilter}
-            onChange={e => setCrewFilter(e.target.value)}
+            onChange={(e) => setCrewFilter(e.target.value)}
             className={s.filterSelect}
           >
             <option value="">All Crews</option>
-            {crewNames.map(c => <option key={c} value={c}>{c}</option>)}
+            {crewNames.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className={s.filterSelect}
           >
             <option value="">All Statuses</option>
-            {ASSET_STATUSES.map(st => <option key={st} value={st}>{st}</option>)}
+            {ASSET_STATUSES.map((st) => (
+              <option key={st} value={st}>
+                {st}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Data Table */}
         <DataTable
           headers={[
-            { label: "Vehicle" },
-            { label: "Make / Model" },
-            { label: "Year" },
-            { label: "License Plate" },
-            { label: "Assigned Crew" },
-            { label: "Status" },
+            { label: 'Vehicle' },
+            { label: 'Make / Model' },
+            { label: 'Year' },
+            { label: 'License Plate' },
+            { label: 'Assigned Crew' },
+            { label: 'Status' },
           ]}
         >
           {filtered.length === 0 ? (
-            <tr><td colSpan={6} className={ts.empty}>No vehicles match your filters.</td></tr>
+            <tr>
+              <td colSpan={6} className={ts.empty}>
+                No vehicles match your filters.
+              </td>
+            </tr>
           ) : (
-            filtered.map(v => (
+            filtered.map((v) => (
               <tr
                 key={v.id}
                 className={ts.tr}
                 onClick={() => setSelectedId(v.id)}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: 'pointer' }}
               >
                 <td className={ts.td}>
                   <div className={s.nameCell}>
@@ -166,28 +186,20 @@ export default function FleetPage() {
                       <Truck size={16} color="var(--amb)" />
                     </div>
                     <div>
-                      <span style={{ fontWeight: "var(--font-semibold)" }}>{v.name}</span>
-                      {v.truck_number && (
-                        <div className={s.truckNum}>#{v.truck_number}</div>
-                      )}
+                      <span style={{ fontWeight: 'var(--font-semibold)' }}>{v.name}</span>
+                      {v.truck_number && <div className={s.truckNum}>#{v.truck_number}</div>}
                     </div>
                   </div>
                 </td>
-                <td className={ts.td}>
-                  {v.make_model || <span className={ts.tdMuted}>—</span>}
-                </td>
-                <td className={`${ts.td} ${ts.tdMono}`}>
-                  {v.year || "—"}
-                </td>
-                <td className={`${ts.td} ${ts.tdMono}`}>
-                  {v.license_plate || "—"}
-                </td>
+                <td className={ts.td}>{v.make_model || <span className={ts.tdMuted}>—</span>}</td>
+                <td className={`${ts.td} ${ts.tdMono}`}>{v.year || '—'}</td>
+                <td className={`${ts.td} ${ts.tdMono}`}>{v.license_plate || '—'}</td>
                 <td className={ts.td}>
                   {v.crew_name || <span className={ts.tdMuted}>Unassigned</span>}
                 </td>
                 <td className={ts.td}>
-                  <StatusBadge variant={getStatusVariant(v.status || "Active")}>
-                    {v.status || "Active"}
+                  <StatusBadge variant={getStatusVariant(v.status || 'Active')}>
+                    {v.status || 'Active'}
                   </StatusBadge>
                 </td>
               </tr>
@@ -200,7 +212,7 @@ export default function FleetPage() {
       <SlidePanel
         open={!!selectedVehicle}
         onClose={() => setSelectedId(null)}
-        title={selectedVehicle?.name || "Vehicle"}
+        title={selectedVehicle?.name || 'Vehicle'}
       >
         {selectedVehicle && (
           <VehicleDetail
@@ -221,37 +233,46 @@ export default function FleetPage() {
           onDelete={editing.id ? () => handleDelete(editing.id) : undefined}
         />
       )}
-
     </>
   )
 }
-
 
 // ===================================================
 // Vehicle Detail — shown in SlidePanel with tabs
 // ===================================================
 function VehicleDetail({ vehicle, onEdit, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [tab, setTab] = useState("info")
+  const [tab, setTab] = useState('info')
   const [inspections, setInspections] = useState([])
   const [loadingInspections, setLoadingInspections] = useState(false)
 
   // Fetch inspections linked to this vehicle
   useEffect(() => {
-    if (tab !== "inspections" || !vehicle?.id) return
+    if (tab !== 'inspections' || !vehicle?.id) return
     let active = true
     setLoadingInspections(true) // eslint-disable-line react-hooks/set-state-in-effect -- Loading flag before async fetch
-    getFieldDocs({ type: "inspection", assetType: "vehicle", assetId: vehicle.id })
-      .then(docs => { if (active) setInspections(docs || []) })
-      .catch(() => { if (active) setInspections([]) })
-      .finally(() => { if (active) setLoadingInspections(false) })
-    return () => { active = false }
+    getFieldDocs({ type: 'inspection', assetType: 'vehicle', assetId: vehicle.id })
+      .then((docs) => {
+        if (active) setInspections(docs || [])
+      })
+      .catch(() => {
+        if (active) setInspections([])
+      })
+      .finally(() => {
+        if (active) setLoadingInspections(false)
+      })
+    return () => {
+      active = false
+    }
   }, [tab, vehicle?.id])
 
   const tabs = [
-    { key: "info", label: "Info" },
-    { key: "inspections", label: `Inspections${inspections.length ? ` (${inspections.length})` : ""}` },
-    { key: "maintenance", label: "Maintenance" },
+    { key: 'info', label: 'Info' },
+    {
+      key: 'inspections',
+      label: `Inspections${inspections.length ? ` (${inspections.length})` : ''}`,
+    },
+    { key: 'maintenance', label: 'Maintenance' },
   ]
 
   if (confirmDelete) {
@@ -259,7 +280,10 @@ function VehicleDetail({ vehicle, onEdit, onDelete }) {
       <ConfirmModal
         title={`Remove "${vehicle.name}"?`}
         message="This will deactivate the vehicle. Logs are preserved."
-        onConfirm={() => { onDelete(); setConfirmDelete(false) }}
+        onConfirm={() => {
+          onDelete()
+          setConfirmDelete(false)
+        }}
         onCancel={() => setConfirmDelete(false)}
       />
     )
@@ -278,7 +302,7 @@ function VehicleDetail({ vehicle, onEdit, onDelete }) {
 
       <TabBar tabs={tabs} active={tab} onChange={setTab} />
 
-      {tab === "info" && (
+      {tab === 'info' && (
         <div className={s.fieldList}>
           <DetailField icon={Truck} label="Make / Model" value={vehicle.make_model} />
           <DetailField icon={Calendar} label="Year" value={vehicle.year} mono />
@@ -286,15 +310,15 @@ function VehicleDetail({ vehicle, onEdit, onDelete }) {
           <DetailField icon={Hash} label="Truck #" value={vehicle.truck_number} mono />
           <DetailField icon={Wrench} label="VIN" value={vehicle.vin} mono />
           <DetailField icon={Users} label="Assigned Crew" value={vehicle.crew_name} />
-          <DetailField icon={Settings} label="Status" value={vehicle.status || "Active"} />
+          <DetailField icon={Settings} label="Status" value={vehicle.status || 'Active'} />
         </div>
       )}
 
-      {tab === "inspections" && (
+      {tab === 'inspections' && (
         <AssetInspectionList inspections={inspections} loading={loadingInspections} />
       )}
 
-      {tab === "maintenance" && (
+      {tab === 'maintenance' && (
         <div className={s.emptyTab}>
           <Wrench size={28} strokeWidth={1} className={s.emptyTabIcon} />
           <div className={s.emptyTabTitle}>No maintenance logs yet</div>
@@ -313,29 +337,26 @@ function DetailField({ icon: Icon, label, value, mono }) {
       </div>
       <div>
         <div className={s.fieldLabel}>{label}</div>
-        <div className={`${s.fieldValue} ${mono ? s.mono : ""}`}>
-          {value || "\u2014"}
-        </div>
+        <div className={`${s.fieldValue} ${mono ? s.mono : ''}`}>{value || '\u2014'}</div>
       </div>
     </div>
   )
 }
-
 
 // ===================================================
 // Vehicle Modal — Create / Edit
 // ===================================================
 function VehicleModal({ vehicle, crews, onClose, onSave, onDelete }) {
   const isEdit = !!vehicle.id
-  const [name, setName]           = useState(vehicle.name || "")
-  const [crewName, setCrewName]   = useState(vehicle.crew_name || "")
-  const [plate, setPlate]         = useState(vehicle.license_plate || "")
-  const [vin, setVin]             = useState(vehicle.vin || "")
-  const [makeModel, setMakeModel] = useState(vehicle.make_model || "")
-  const [year, setYear]           = useState(vehicle.year ? String(vehicle.year) : "")
-  const [truckNum, setTruckNum]   = useState(vehicle.truck_number || "")
-  const [status, setStatus]       = useState(vehicle.status || "Active")
-  const [saving, setSaving]       = useState(false)
+  const [name, setName] = useState(vehicle.name || '')
+  const [crewName, setCrewName] = useState(vehicle.crew_name || '')
+  const [plate, setPlate] = useState(vehicle.license_plate || '')
+  const [vin, setVin] = useState(vehicle.vin || '')
+  const [makeModel, setMakeModel] = useState(vehicle.make_model || '')
+  const [year, setYear] = useState(vehicle.year ? String(vehicle.year) : '')
+  const [truckNum, setTruckNum] = useState(vehicle.truck_number || '')
+  const [status, setStatus] = useState(vehicle.status || 'Active')
+  const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const handleSubmit = async () => {
@@ -349,7 +370,7 @@ function VehicleModal({ vehicle, crews, onClose, onSave, onDelete }) {
       makeModel: makeModel || undefined,
       year: year || undefined,
       truckNumber: truckNum || undefined,
-      status: status || "Active",
+      status: status || 'Active',
     })
     setSaving(false)
   }
@@ -366,10 +387,21 @@ function VehicleModal({ vehicle, crews, onClose, onSave, onDelete }) {
   }
 
   return (
-    <Modal title={isEdit ? "Edit Vehicle" : "Add Vehicle"} onClose={onClose}>
-      <FormField label="Vehicle Name *" value={name} onChange={setName} autoFocus placeholder="e.g. Truck 1" />
+    <Modal title={isEdit ? 'Edit Vehicle' : 'Add Vehicle'} onClose={onClose}>
+      <FormField
+        label="Vehicle Name *"
+        value={name}
+        onChange={setName}
+        autoFocus
+        placeholder="e.g. Truck 1"
+      />
       <div className={s.formRow}>
-        <FormField label="Make / Model" value={makeModel} onChange={setMakeModel} placeholder="e.g. Ford F-150" />
+        <FormField
+          label="Make / Model"
+          value={makeModel}
+          onChange={setMakeModel}
+          placeholder="e.g. Ford F-150"
+        />
         <FormField label="Year" value={year} onChange={setYear} placeholder="e.g. 2022" />
       </div>
       <div className={s.formRow}>
@@ -383,13 +415,13 @@ function VehicleModal({ vehicle, crews, onClose, onSave, onDelete }) {
           value={crewName}
           onChange={setCrewName}
           placeholder="Unassigned"
-          options={crews.map(c => ({ value: c.name, label: c.name }))}
+          options={crews.map((c) => ({ value: c.name, label: c.name }))}
         />
         <SelectField
           label="Status"
           value={status}
           onChange={setStatus}
-          options={ASSET_STATUSES.map(st => ({ value: st, label: st }))}
+          options={ASSET_STATUSES.map((st) => ({ value: st, label: st }))}
         />
       </div>
       <ModalFooter

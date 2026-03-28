@@ -3,10 +3,10 @@
 // Reusable across SDS, Equipment, Documents, etc.
 // ═══════════════════════════════════════════
 
-import { useState } from "react"
-import { Plus, Trash2, Pencil, Check, X } from "lucide-react"
-import { Modal } from "./PageUI.jsx"
-import s from "./CategoryManager.module.css"
+import { useState } from 'react'
+import { Plus, Trash2, Pencil, Check, X } from 'lucide-react'
+import { Modal } from './PageUI.jsx'
+import s from './CategoryManager.module.css'
 
 /**
  * @param {{
@@ -16,10 +16,10 @@ import s from "./CategoryManager.module.css"
  *   scopeLabel?: string,
  * }} props
  */
-export default function CategoryManager({ open, onClose, categories, scopeLabel = "Categories" }) {
-  const [newName, setNewName] = useState("")
+export default function CategoryManager({ open, onClose, categories, scopeLabel = 'Categories' }) {
+  const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState(null)
-  const [editName, setEditName] = useState("")
+  const [editName, setEditName] = useState('')
   const [saving, setSaving] = useState(false)
 
   if (!open) return null
@@ -29,8 +29,10 @@ export default function CategoryManager({ open, onClose, categories, scopeLabel 
     setSaving(true)
     try {
       await categories.create(newName.trim())
-      setNewName("")
-    } catch { /* dupe name etc */ }
+      setNewName('')
+    } catch {
+      /* dupe name etc */
+    }
     setSaving(false)
   }
 
@@ -40,7 +42,9 @@ export default function CategoryManager({ open, onClose, categories, scopeLabel 
     try {
       await categories.update(id, editName.trim())
       setEditingId(null)
-    } catch { /* */ }
+    } catch {
+      /* */
+    }
     setSaving(false)
   }
 
@@ -49,7 +53,9 @@ export default function CategoryManager({ open, onClose, categories, scopeLabel 
     setSaving(true)
     try {
       await categories.remove(id)
-    } catch { /* */ }
+    } catch {
+      /* */
+    }
     setSaving(false)
   }
 
@@ -64,15 +70,18 @@ export default function CategoryManager({ open, onClose, categories, scopeLabel 
         {categories.data.length === 0 && (
           <div className={s.empty}>No categories yet. Add one below.</div>
         )}
-        {categories.data.map(cat => (
+        {categories.data.map((cat) => (
           <div key={cat.id} className={s.row}>
             {editingId === cat.id ? (
               <div className={s.editRow}>
                 <input
                   className={s.editInput}
                   value={editName}
-                  onChange={e => setEditName(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter") handleRename(cat.id); if (e.key === "Escape") setEditingId(null) }}
+                  onChange={(e) => setEditName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleRename(cat.id)
+                    if (e.key === 'Escape') setEditingId(null)
+                  }}
                   autoFocus
                 />
                 <button className={s.iconBtn} onClick={() => handleRename(cat.id)} title="Save">
@@ -89,7 +98,11 @@ export default function CategoryManager({ open, onClose, categories, scopeLabel 
                   <button className={s.iconBtn} onClick={() => startEdit(cat)} title="Rename">
                     <Pencil size={13} />
                   </button>
-                  <button className={`${s.iconBtn} ${s.deleteBtn}`} onClick={() => handleDelete(cat.id)} title="Remove">
+                  <button
+                    className={`${s.iconBtn} ${s.deleteBtn}`}
+                    onClick={() => handleDelete(cat.id)}
+                    title="Remove"
+                  >
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -104,8 +117,10 @@ export default function CategoryManager({ open, onClose, categories, scopeLabel 
         <input
           className={s.addInput}
           value={newName}
-          onChange={e => setNewName(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter") handleAdd() }}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleAdd()
+          }}
           placeholder="New category name..."
         />
         <button className={s.addBtn} onClick={handleAdd} disabled={!newName.trim() || saving}>

@@ -33,10 +33,10 @@ export function formatSprayLog(row) {
       conditions: row.wx_conditions,
     },
     products: (row.products || [])
-      .filter(p => p.id !== null)
-      .map(p => ({ name: p.chemicalName, epa: p.epa, ozConcentrate: p.amount })),
-    photos: (row.photos || []).filter(p => p.id !== null),
-    members: (row.members || []).filter(m => m.id !== null),
+      .filter((p) => p.id !== null)
+      .map((p) => ({ name: p.chemicalName, epa: p.epa, ozConcentrate: p.amount })),
+    photos: (row.photos || []).filter((p) => p.id !== null),
+    members: (row.members || []).filter((m) => m.id !== null),
     status: 'synced',
   }
 }

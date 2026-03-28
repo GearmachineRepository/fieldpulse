@@ -5,62 +5,79 @@
 // QR code integration, GHS pictograms, staleness color
 // ═══════════════════════════════════════════
 
-import { useState } from "react"
+import { useState } from 'react'
 import {
-  FlaskConical, Search, Plus, QrCode, FileText,
-  Settings2, Edit3, AlertTriangle, ExternalLink,
-  MoreVertical, Trash2, Link2,
-} from "lucide-react"
-import usePageData from "@/hooks/usePageData.js"
-import { useGlobalToast } from "@/hooks/ToastContext.jsx"
-import useCategories from "@/hooks/useCategories.js"
-import { getSdsEntries, createSdsEntry, updateSdsEntry, deleteSdsEntry } from "@/lib/api/sds.js"
-import { searchSDSManagerAPI } from "@/lib/api/integrations.js"
-import PageShell from "../components/PageShell.jsx"
-import StatusBadge from "../components/StatusBadge.jsx"
-import CategoryManager from "../components/CategoryManager.jsx"
-import SDSQRModal from "../components/SDSQRModal.jsx"
-import { GHSRow } from "../components/GHSPictograms.jsx"
-import {
-  Modal, ModalFooter, ConfirmModal, FormField, SelectField,
-} from "../components/PageUI.jsx"
-import s from "./SDSPage.module.css"
+  FlaskConical,
+  Search,
+  Plus,
+  QrCode,
+  FileText,
+  Settings2,
+  Edit3,
+  AlertTriangle,
+  ExternalLink,
+  MoreVertical,
+  Trash2,
+  Link2,
+} from 'lucide-react'
+import usePageData from '@/hooks/usePageData.js'
+import { useGlobalToast } from '@/hooks/ToastContext.jsx'
+import useCategories from '@/hooks/useCategories.js'
+import { getSdsEntries, createSdsEntry, updateSdsEntry, deleteSdsEntry } from '@/lib/api/sds.js'
+import { searchSDSManagerAPI } from '@/lib/api/integrations.js'
+import PageShell from '../components/PageShell.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
+import CategoryManager from '../components/CategoryManager.jsx'
+import SDSQRModal from '../components/SDSQRModal.jsx'
+import { GHSRow } from '../components/GHSPictograms.jsx'
+import { Modal, ModalFooter, ConfirmModal, FormField, SelectField } from '../components/PageUI.jsx'
+import s from './SDSPage.module.css'
 
-const FILTER_PILLS = ["All", "Herbicides", "Pesticides", "Fertilizers", "Solvents", "Other"]
+const FILTER_PILLS = ['All', 'Herbicides', 'Pesticides', 'Fertilizers', 'Solvents', 'Other']
 
-const SIGNAL_WORDS = ["Danger", "Warning", "Caution"]
+const SIGNAL_WORDS = ['Danger', 'Warning', 'Caution']
 
 const CHEMICAL_TYPES = [
-  "Herbicide", "Pesticide", "Insecticide", "Fungicide",
-  "Fertilizer", "Solvent", "Surfactant", "Other",
+  'Herbicide',
+  'Pesticide',
+  'Insecticide',
+  'Fungicide',
+  'Fertilizer',
+  'Solvent',
+  'Surfactant',
+  'Other',
 ]
 
 function getStalenessColor(dateStr) {
-  if (!dateStr) return "var(--t3)"
+  if (!dateStr) return 'var(--t3)'
   const age = (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24 * 365)
-  if (age < 1) return "var(--grn)"
-  if (age < 2) return "var(--amb)"
-  return "var(--red)"
+  if (age < 1) return 'var(--grn)'
+  if (age < 2) return 'var(--amb)'
+  return 'var(--red)'
 }
 
 function getStalenessLabel(dateStr) {
-  if (!dateStr) return "No date"
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  if (!dateStr) return 'No date'
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 export default function SDSPage() {
   const toast = useGlobalToast()
-  const sds = usePageData("sds", {
+  const sds = usePageData('sds', {
     fetchFn: getSdsEntries,
     createFn: createSdsEntry,
     updateFn: updateSdsEntry,
     deleteFn: deleteSdsEntry,
   })
-  const categories = useCategories("sds")
+  const categories = useCategories('sds')
 
-  const [searchQ, setSearchQ] = useState("")
-  const [activeFilter, setActiveFilter] = useState("All")
-  const [mode, setMode] = useState("library") // "library" | "search"
+  const [searchQ, setSearchQ] = useState('')
+  const [activeFilter, setActiveFilter] = useState('All')
+  const [mode, setMode] = useState('library') // "library" | "search"
   const [manageOpen, setManageOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [qrModal, setQrModal] = useState(null)
@@ -71,20 +88,21 @@ export default function SDSPage() {
   const [searching, setSearching] = useState(false)
 
   // Filter library entries
-  const filtered = sds.data.filter(c => {
+  const filtered = sds.data.filter((c) => {
     if (searchQ) {
       const q = searchQ.toLowerCase()
       if (
-        !(c.name || "").toLowerCase().includes(q) &&
-        !(c.type || "").toLowerCase().includes(q) &&
-        !(c.active_ingredient || "").toLowerCase().includes(q) &&
-        !(c.epa || "").toLowerCase().includes(q) &&
-        !(c.manufacturer || "").toLowerCase().includes(q)
-      ) return false
+        !(c.name || '').toLowerCase().includes(q) &&
+        !(c.type || '').toLowerCase().includes(q) &&
+        !(c.active_ingredient || '').toLowerCase().includes(q) &&
+        !(c.epa || '').toLowerCase().includes(q) &&
+        !(c.manufacturer || '').toLowerCase().includes(q)
+      )
+        return false
     }
-    if (activeFilter !== "All") {
+    if (activeFilter !== 'All') {
       const filterType = activeFilter.slice(0, -1) // "Herbicides" → "Herbicide"
-      if ((c.type || "Other") !== filterType) return false
+      if ((c.type || 'Other') !== filterType) return false
     }
     return true
   })
@@ -93,24 +111,24 @@ export default function SDSPage() {
     try {
       if (editing.id) {
         await sds.update(editing.id, data)
-        toast.show("SDS updated")
+        toast.show('SDS updated')
       } else {
         await sds.create(data)
-        toast.show("SDS added")
+        toast.show('SDS added')
       }
       setEditing(null)
     } catch (err) {
-      toast.show(err.message || "Failed to save")
+      toast.show(err.message || 'Failed to save')
     }
   }
 
   const handleDelete = async (id) => {
     try {
       await sds.remove(id)
-      toast.show("SDS removed")
+      toast.show('SDS removed')
       setEditing(null)
     } catch {
-      toast.show("Failed to remove")
+      toast.show('Failed to remove')
     }
   }
 
@@ -122,7 +140,7 @@ export default function SDSPage() {
       setSearchResults(data.results || [])
       if (data.message) toast.show(data.message)
     } catch (err) {
-      toast.show(err.message || "SDS Manager search unavailable — connect in Settings")
+      toast.show(err.message || 'SDS Manager search unavailable — connect in Settings')
       setSearchResults([])
     } finally {
       setSearching(false)
@@ -154,8 +172,8 @@ export default function SDSPage() {
           <input
             type="text"
             value={searchQ}
-            onChange={e => setSearchQ(e.target.value)}
-            onKeyDown={e => mode === "search" && e.key === "Enter" && handleSDSManagerSearch()}
+            onChange={(e) => setSearchQ(e.target.value)}
+            onKeyDown={(e) => mode === 'search' && e.key === 'Enter' && handleSDSManagerSearch()}
             placeholder="Search by chemical name, brand, or CAS number..."
             className={s.searchBarInput}
           />
@@ -165,14 +183,14 @@ export default function SDSPage() {
         <div className={s.modeRow}>
           <div className={s.modeToggle}>
             <button
-              className={`${s.modePill} ${mode === "library" ? s.modePillActive : ""}`}
-              onClick={() => setMode("library")}
+              className={`${s.modePill} ${mode === 'library' ? s.modePillActive : ''}`}
+              onClick={() => setMode('library')}
             >
               My Library
             </button>
             <button
-              className={`${s.modePill} ${mode === "search" ? s.modePillActive : ""}`}
-              onClick={() => setMode("search")}
+              className={`${s.modePill} ${mode === 'search' ? s.modePillActive : ''}`}
+              onClick={() => setMode('search')}
             >
               Search SDS Manager
             </button>
@@ -180,12 +198,12 @@ export default function SDSPage() {
         </div>
 
         {/* ── Filter Pills (library mode) ── */}
-        {mode === "library" && (
+        {mode === 'library' && (
           <div className={s.filterPills}>
-            {FILTER_PILLS.map(pill => (
+            {FILTER_PILLS.map((pill) => (
               <button
                 key={pill}
-                className={`${s.filterPill} ${activeFilter === pill ? s.filterPillActive : ""}`}
+                className={`${s.filterPill} ${activeFilter === pill ? s.filterPillActive : ''}`}
                 onClick={() => setActiveFilter(pill)}
               >
                 {pill}
@@ -195,7 +213,7 @@ export default function SDSPage() {
         )}
 
         {/* ── Library Mode Content ── */}
-        {mode === "library" && (
+        {mode === 'library' && (
           <>
             {sds.loading && !sds.data.length ? (
               <div className={s.loadingGrid}>
@@ -212,17 +230,14 @@ export default function SDSPage() {
                 <FlaskConical size={48} strokeWidth={1} className={s.emptyIcon} />
                 <div className={s.emptyTitle}>No Safety Data Sheets yet</div>
                 <div className={s.emptyDesc}>
-                  Upload Safety Data Sheets to make them searchable by your field crews.
-                  Each SDS can generate a QR code for posting in trucks and job sites.
+                  Upload Safety Data Sheets to make them searchable by your field crews. Each SDS
+                  can generate a QR code for posting in trucks and job sites.
                 </div>
                 <div className={s.emptyActions}>
                   <button className={s.addBtn} onClick={() => setEditing({})}>
                     <Plus size={14} /> Add SDS
                   </button>
-                  <button
-                    className={s.secondaryBtn}
-                    onClick={() => setMode("search")}
-                  >
+                  <button className={s.secondaryBtn} onClick={() => setMode('search')}>
                     <Link2 size={14} /> Search SDS Manager
                   </button>
                 </div>
@@ -231,13 +246,11 @@ export default function SDSPage() {
               <div className={s.emptyState}>
                 <Search size={48} strokeWidth={1} className={s.emptyIcon} />
                 <div className={s.emptyTitle}>No matches found</div>
-                <div className={s.emptyDesc}>
-                  Try a different search term or filter.
-                </div>
+                <div className={s.emptyDesc}>Try a different search term or filter.</div>
               </div>
             ) : (
               <div className={s.grid}>
-                {filtered.map(chem => (
+                {filtered.map((chem) => (
                   <SDSCard
                     key={chem.id}
                     chem={chem}
@@ -255,7 +268,7 @@ export default function SDSPage() {
         )}
 
         {/* ── Search SDS Manager Mode ── */}
-        {mode === "search" && (
+        {mode === 'search' && (
           <div className={s.searchModeContent}>
             {searching ? (
               <div className={s.emptyState}>
@@ -266,8 +279,8 @@ export default function SDSPage() {
                 {searchResults.map((item, i) => (
                   <div key={i} className={`${s.card} ${s.importCard}`}>
                     <div className={s.cardBody}>
-                      <div className={s.cardName}>{item.product_name || "Unknown"}</div>
-                      <div className={s.cardMfg}>{item.manufacturer || "Unknown manufacturer"}</div>
+                      <div className={s.cardName}>{item.product_name || 'Unknown'}</div>
+                      <div className={s.cardMfg}>{item.manufacturer || 'Unknown manufacturer'}</div>
                       {item.cas_number && (
                         <div className={s.cardDetail}>
                           CAS: <span className={s.mono}>{item.cas_number}</span>
@@ -287,8 +300,8 @@ export default function SDSPage() {
                 <FlaskConical size={48} strokeWidth={1} className={s.emptyIcon} />
                 <div className={s.emptyTitle}>Search SDS Manager</div>
                 <div className={s.emptyDesc}>
-                  Connect SDS Manager in Settings to search a database of millions of Safety Data Sheets.
-                  Type a chemical name above and press Enter to search.
+                  Connect SDS Manager in Settings to search a database of millions of Safety Data
+                  Sheets. Type a chemical name above and press Enter to search.
                 </div>
                 <button
                   className={s.addBtn}
@@ -328,11 +341,9 @@ export default function SDSPage() {
         categories={categories}
         scopeLabel="SDS Categories"
       />
-
     </>
   )
 }
-
 
 // ===================================================
 // SDS Card — Redesigned with GHS, staleness, QR
@@ -340,27 +351,41 @@ export default function SDSPage() {
 function SDSCard({ chem, onEdit, onQR, onDelete, kebabOpen, onKebab, onKebabClose }) {
   return (
     <div className={s.card}>
-      <div className={s.cardBody} onClick={onEdit} role="button" tabIndex={0}
-        onKeyDown={e => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onEdit())}
+      <div
+        className={s.cardBody}
+        onClick={onEdit}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onEdit())}
       >
         <div className={s.cardHeader}>
           <div>
             <div className={s.cardName}>{chem.name}</div>
-            {chem.manufacturer && (
-              <div className={s.cardMfg}>{chem.manufacturer}</div>
-            )}
+            {chem.manufacturer && <div className={s.cardMfg}>{chem.manufacturer}</div>}
           </div>
-          <div className={s.cardActions} onClick={e => e.stopPropagation()}>
+          <div className={s.cardActions} onClick={(e) => e.stopPropagation()}>
             <div className={s.kebabWrap}>
               <button className={s.kebabBtn} onClick={onKebab} title="More actions">
                 <MoreVertical size={14} />
               </button>
               {kebabOpen && (
                 <div className={s.kebabMenu}>
-                  <button className={s.kebabItem} onClick={() => { onEdit(); onKebabClose() }}>
+                  <button
+                    className={s.kebabItem}
+                    onClick={() => {
+                      onEdit()
+                      onKebabClose()
+                    }}
+                  >
                     <Edit3 size={13} /> Edit
                   </button>
-                  <button className={`${s.kebabItem} ${s.kebabItemDanger}`} onClick={() => { onDelete(); onKebabClose() }}>
+                  <button
+                    className={`${s.kebabItem} ${s.kebabItemDanger}`}
+                    onClick={() => {
+                      onDelete()
+                      onKebabClose()
+                    }}
+                  >
                     <Trash2 size={13} /> Delete
                   </button>
                 </div>
@@ -380,7 +405,7 @@ function SDSCard({ chem, onEdit, onQR, onDelete, kebabOpen, onKebab, onKebabClos
         <div className={s.cardMeta}>
           {chem.type && <StatusBadge>{chem.type}</StatusBadge>}
           {chem.signal_word && (
-            <StatusBadge variant={chem.signal_word === "Danger" ? "red" : "amber"}>
+            <StatusBadge variant={chem.signal_word === 'Danger' ? 'red' : 'amber'}>
               <AlertTriangle size={10} /> {chem.signal_word}
             </StatusBadge>
           )}
@@ -408,8 +433,13 @@ function SDSCard({ chem, onEdit, onQR, onDelete, kebabOpen, onKebab, onKebabClos
 
       <div className={s.cardFooter}>
         {chem.sds_url ? (
-          <a href={chem.sds_url} target="_blank" rel="noopener noreferrer" className={s.cardAction}
-            onClick={e => e.stopPropagation()}>
+          <a
+            href={chem.sds_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={s.cardAction}
+            onClick={(e) => e.stopPropagation()}
+          >
             <FileText size={14} /> View PDF <ExternalLink size={10} />
           </a>
         ) : (
@@ -417,7 +447,13 @@ function SDSCard({ chem, onEdit, onQR, onDelete, kebabOpen, onKebab, onKebabClos
             <FileText size={14} /> No PDF
           </span>
         )}
-        <button className={s.cardAction} onClick={e => { e.stopPropagation(); onQR() }}>
+        <button
+          className={s.cardAction}
+          onClick={(e) => {
+            e.stopPropagation()
+            onQR()
+          }}
+        >
           <QrCode size={14} /> QR Code
         </button>
       </div>
@@ -425,22 +461,21 @@ function SDSCard({ chem, onEdit, onQR, onDelete, kebabOpen, onKebab, onKebabClos
   )
 }
 
-
 // ===================================================
 // SDS Modal — Create / Edit
 // ===================================================
 function SDSModal({ item, onClose, onSave, onDelete }) {
   const isEdit = !!item.id
-  const [name, setName] = useState(item.name || "")
-  const [type, setType] = useState(item.type || "")
-  const [epa, setEpa] = useState(item.epa || "")
-  const [activeIngredient, setActiveIngredient] = useState(item.active_ingredient || "")
-  const [signalWord, setSignalWord] = useState(item.signal_word || "")
+  const [name, setName] = useState(item.name || '')
+  const [type, setType] = useState(item.type || '')
+  const [epa, setEpa] = useState(item.epa || '')
+  const [activeIngredient, setActiveIngredient] = useState(item.active_ingredient || '')
+  const [signalWord, setSignalWord] = useState(item.signal_word || '')
   const [restricted, setRestricted] = useState(item.restricted || false)
-  const [sdsUrl, setSdsUrl] = useState(item.sds_url || "")
-  const [labelUrl, setLabelUrl] = useState(item.label_url || "")
-  const [manufacturer, setManufacturer] = useState(item.manufacturer || "")
-  const [casNumber, setCasNumber] = useState(item.cas_number || "")
+  const [sdsUrl, setSdsUrl] = useState(item.sds_url || '')
+  const [labelUrl, setLabelUrl] = useState(item.label_url || '')
+  const [manufacturer, setManufacturer] = useState(item.manufacturer || '')
+  const [casNumber, setCasNumber] = useState(item.cas_number || '')
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -474,7 +509,7 @@ function SDSModal({ item, onClose, onSave, onDelete }) {
   }
 
   return (
-    <Modal title={isEdit ? "Edit SDS" : "Add SDS"} onClose={onClose}>
+    <Modal title={isEdit ? 'Edit SDS' : 'Add SDS'} onClose={onClose}>
       <FormField
         label="Chemical / Product Name *"
         value={name}
@@ -502,14 +537,14 @@ function SDSModal({ item, onClose, onSave, onDelete }) {
           value={type}
           onChange={setType}
           placeholder="Select type"
-          options={CHEMICAL_TYPES.map(t => ({ value: t, label: t }))}
+          options={CHEMICAL_TYPES.map((t) => ({ value: t, label: t }))}
         />
         <SelectField
           label="Signal Word"
           value={signalWord}
           onChange={setSignalWord}
           placeholder="Select signal word"
-          options={SIGNAL_WORDS.map(w => ({ value: w, label: w }))}
+          options={SIGNAL_WORDS.map((w) => ({ value: w, label: w }))}
         />
       </div>
       <div className={s.formRow}>
@@ -544,7 +579,7 @@ function SDSModal({ item, onClose, onSave, onDelete }) {
         <input
           type="checkbox"
           checked={restricted}
-          onChange={e => setRestricted(e.target.checked)}
+          onChange={(e) => setRestricted(e.target.checked)}
         />
         <span>Restricted Use Pesticide</span>
       </label>

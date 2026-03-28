@@ -5,10 +5,10 @@
 // composing PageHeader + loading/empty states.
 // ═══════════════════════════════════════════
 
-import { PageHeader } from "./PageUI.jsx"
-import SkeletonRow from "./SkeletonRow.jsx"
-import SkeletonCard from "./SkeletonCard.jsx"
-import s from "./PageShell.module.css"
+import { PageHeader } from './PageUI.jsx'
+import SkeletonRow from './SkeletonRow.jsx'
+import SkeletonCard from './SkeletonCard.jsx'
+import s from './PageShell.module.css'
 
 /**
  * @param {{
@@ -34,7 +34,7 @@ export default function PageShell({
   countLabel,
   actions,
   loading = false,
-  skeleton = "table",
+  skeleton = 'table',
   skeletonCount = 5,
   empty = false,
   emptyIcon: EmptyIcon,
@@ -53,7 +53,7 @@ export default function PageShell({
 
       {loading ? (
         <div className={s.skeletonWrap}>
-          {skeleton === "table" ? (
+          {skeleton === 'table' ? (
             <SkeletonRow columns={4} count={skeletonCount} />
           ) : (
             <SkeletonCard count={skeletonCount} />

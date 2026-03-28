@@ -6,8 +6,7 @@
 import { request } from './core.js'
 
 /** Get SDS Manager connection status + masked key */
-export const getSDSManagerConnection = () =>
-  request('/integrations/sds-manager')
+export const getSDSManagerConnection = () => request('/integrations/sds-manager')
 
 /** Save SDS Manager API key */
 export const saveSDSManagerKey = (apiKey) =>
@@ -17,8 +16,7 @@ export const saveSDSManagerKey = (apiKey) =>
   })
 
 /** Disconnect SDS Manager */
-export const disconnectSDSManager = () =>
-  request('/integrations/sds-manager', { method: 'DELETE' })
+export const disconnectSDSManager = () => request('/integrations/sds-manager', { method: 'DELETE' })
 
 /** Search SDS Manager (server-proxied) */
 export const searchSDSManagerAPI = (query) =>

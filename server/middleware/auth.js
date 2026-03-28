@@ -15,7 +15,9 @@ const DEFAULT_SECRET = 'crupoint-change-me-in-production'
 const SECRET = process.env.JWT_SECRET
 
 if (process.env.NODE_ENV === 'production' && (!SECRET || SECRET === DEFAULT_SECRET)) {
-  logger.fatal('JWT_SECRET is not set or is using the insecure default. Refusing to start in production.')
+  logger.fatal(
+    'JWT_SECRET is not set or is using the insecure default. Refusing to start in production.',
+  )
   process.exit(1)
 }
 
@@ -38,12 +40,15 @@ export function signToken(payload) {
 async function verifySupabaseToken(token) {
   if (!supabase) return null
 
-  const { data: { user }, error } = await supabase.auth.getUser(token)
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token)
   if (error || !user) return null
 
   const r = await db.query(
     'SELECT id, name, email, role, org_id FROM admins WHERE supabase_uid = $1 AND active = true',
-    [user.id]
+    [user.id],
   )
   if (!r.rows.length) return null
 

@@ -34,11 +34,14 @@ export function getDeviceRegistration() {
 }
 
 export function setDeviceRegistration(company) {
-  localStorage.setItem(DEVICE_KEY, JSON.stringify({
-    companyName: company.name,
-    companyCode: company.code,
-    registeredAt: new Date().toISOString(),
-  }))
+  localStorage.setItem(
+    DEVICE_KEY,
+    JSON.stringify({
+      companyName: company.name,
+      companyCode: company.code,
+      registeredAt: new Date().toISOString(),
+    }),
+  )
 }
 
 export function clearDeviceRegistration() {

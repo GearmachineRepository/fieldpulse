@@ -1,4 +1,4 @@
-import s from "./DataTable.module.css"
+import s from './DataTable.module.css'
 
 export default function DataTable({ headers, children, emptyMessage: _emptyMessage }) {
   return (
@@ -10,7 +10,7 @@ export default function DataTable({ headers, children, emptyMessage: _emptyMessa
               {headers.map((h, i) => (
                 <th
                   key={i}
-                  className={`${s.th} ${h.right ? s.thRight : ""}`}
+                  className={`${s.th} ${h.right ? s.thRight : ''}`}
                   style={h.width ? { width: h.width } : undefined}
                 >
                   {h.label ?? h}
@@ -19,9 +19,7 @@ export default function DataTable({ headers, children, emptyMessage: _emptyMessa
             </tr>
           </thead>
         )}
-        <tbody>
-          {children}
-        </tbody>
+        <tbody>{children}</tbody>
       </table>
     </div>
   )

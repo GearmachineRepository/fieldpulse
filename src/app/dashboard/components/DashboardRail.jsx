@@ -5,16 +5,14 @@
 // as an overlay (doesn't shift other elements).
 // ═══════════════════════════════════════════
 
-import { Fragment } from "react"
-import { SECTIONS } from "@/app/dashboard/nav-sections.js"
-import useModules from "@/hooks/useModules.jsx"
-import s from "./DashboardRail.module.css"
+import { Fragment } from 'react'
+import { SECTIONS } from '@/app/dashboard/nav-sections.js'
+import useModules from '@/hooks/useModules.jsx'
+import s from './DashboardRail.module.css'
 
 export default function DashboardRail({ activeSection, onSelectSection }) {
   const { enabledModules } = useModules()
-  const sections = SECTIONS.filter(sec =>
-    !(sec.dynamic && enabledModules.length === 0)
-  )
+  const sections = SECTIONS.filter((sec) => !(sec.dynamic && enabledModules.length === 0))
 
   return (
     <div className={s.wrapper}>
@@ -35,15 +33,15 @@ export default function DashboardRail({ activeSection, onSelectSection }) {
         <div className={s.nav}>
           {sections.map((section) => {
             const active = activeSection === section.key
-            const showSep = section.key === "modules" || section.key === "settings"
+            const showSep = section.key === 'modules' || section.key === 'settings'
 
             return (
               <Fragment key={section.key}>
                 {showSep && <div className={s.sep} />}
                 <button
-                  className={`${s.item} ${active ? s.active : ""}`}
+                  className={`${s.item} ${active ? s.active : ''}`}
                   onClick={() => onSelectSection(section.key)}
-                  aria-current={active ? "true" : undefined}
+                  aria-current={active ? 'true' : undefined}
                 >
                   <span className={s.itemIcon}>
                     <section.icon size={16} />

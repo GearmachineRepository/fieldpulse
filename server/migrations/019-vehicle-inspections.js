@@ -63,13 +63,27 @@ async function migrate() {
     console.log('  ✓ Created work_orders table')
 
     // 3. Create indexes
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_vehicle_inspections_company ON vehicle_inspections(company_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_vehicle_inspections_vehicle ON vehicle_inspections(vehicle_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_vehicle_inspections_date ON vehicle_inspections(company_id, inspection_date)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_work_orders_company ON work_orders(company_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_work_orders_vehicle ON work_orders(vehicle_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_work_orders_inspection ON work_orders(inspection_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_work_orders_status ON work_orders(company_id, status)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_vehicle_inspections_company ON vehicle_inspections(company_id)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_vehicle_inspections_vehicle ON vehicle_inspections(vehicle_id)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_vehicle_inspections_date ON vehicle_inspections(company_id, inspection_date)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_work_orders_company ON work_orders(company_id)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_work_orders_vehicle ON work_orders(vehicle_id)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_work_orders_inspection ON work_orders(inspection_id)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_work_orders_status ON work_orders(company_id, status)',
+    )
     console.log('  ✓ Created indexes')
 
     // 4. Enable RLS on vehicle_inspections

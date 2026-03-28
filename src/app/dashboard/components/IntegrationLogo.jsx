@@ -2,9 +2,9 @@
 // Integration Logo — Clearbit-powered with fallback
 // ═══════════════════════════════════════════
 
-import { useState } from "react"
-import { PROVIDER_META } from "@/lib/integrations/index.js"
-import s from "./IntegrationLogo.module.css"
+import { useState } from 'react'
+import { PROVIDER_META } from '@/lib/integrations/index.js'
+import s from './IntegrationLogo.module.css'
 
 export default function IntegrationLogo({ provider, size = 40 }) {
   const [error, setError] = useState(false)
@@ -12,11 +12,8 @@ export default function IntegrationLogo({ provider, size = 40 }) {
 
   if (error || !meta?.logoUrl) {
     return (
-      <div
-        className={s.fallback}
-        style={{ width: size, height: size, fontSize: size * 0.4 }}
-      >
-        {meta?.name?.[0] || "?"}
+      <div className={s.fallback} style={{ width: size, height: size, fontSize: size * 0.4 }}>
+        {meta?.name?.[0] || '?'}
       </div>
     )
   }

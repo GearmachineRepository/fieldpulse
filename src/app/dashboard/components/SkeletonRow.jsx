@@ -2,7 +2,7 @@
 // SkeletonRow — Table skeleton loading
 // ═══════════════════════════════════════════
 
-import s from "./SkeletonRow.module.css"
+import s from './SkeletonRow.module.css'
 
 export default function SkeletonRow({ columns = 4, count = 5 }) {
   return (
@@ -20,10 +20,7 @@ export default function SkeletonRow({ columns = 4, count = 5 }) {
         <div key={row} className={s.row}>
           {Array.from({ length: columns }, (_, col) => (
             <div key={col} className={s.cell}>
-              <div
-                className={s.bar}
-                style={{ width: `${40 + ((row * 17 + col * 31) % 40)}%` }}
-              />
+              <div className={s.bar} style={{ width: `${40 + ((row * 17 + col * 31) % 40)}%` }} />
             </div>
           ))}
         </div>

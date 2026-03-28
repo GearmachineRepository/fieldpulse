@@ -6,9 +6,9 @@
 // below 860px viewport width.
 // ═══════════════════════════════════════════
 
-import { ArrowLeft } from "lucide-react"
-import TabBar from "./TabBar.jsx"
-import s from "./DetailLayout.module.css"
+import { ArrowLeft } from 'lucide-react'
+import TabBar from './TabBar.jsx'
+import s from './DetailLayout.module.css'
 
 /**
  * @param {{
@@ -29,18 +29,16 @@ export default function DetailLayout({
   onTabChange,
   hasSelection = true,
   onBack,
-  emptyMessage = "Select an item to view details.",
+  emptyMessage = 'Select an item to view details.',
   children,
 }) {
   return (
     <div className={s.layout}>
       {/* Left panel — list */}
-      <div className={`${s.sidebar} ${hasSelection ? s.sidebarHideMobile : ""}`}>
-        {sidebar}
-      </div>
+      <div className={`${s.sidebar} ${hasSelection ? s.sidebarHideMobile : ''}`}>{sidebar}</div>
 
       {/* Right panel — detail */}
-      <div className={`${s.detail} ${!hasSelection ? s.detailHideMobile : ""}`}>
+      <div className={`${s.detail} ${!hasSelection ? s.detailHideMobile : ''}`}>
         {hasSelection ? (
           <>
             {onBack && (

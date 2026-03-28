@@ -4,55 +4,62 @@
 // Gets printed and shown to Cal OSHA inspectors
 // ═══════════════════════════════════════════
 
-import { useMemo, useCallback } from "react"
+import { useMemo, useCallback } from 'react'
 import {
-  ClipboardCheck, Download, Printer, Users,
-  CheckCircle2, AlertTriangle, Shield,
-  Award, GraduationCap, Clock, XCircle,
-} from "lucide-react"
-import usePageData from "@/hooks/usePageData.js"
-import { getEmployees } from "@/lib/api/employees.js"
-import { getCertifications } from "@/lib/api/certifications.js"
-import { getTrainingSessions } from "@/lib/api/training.js"
-import { getIncidents } from "@/lib/api/incidents.js"
-import PageShell from "../components/PageShell.jsx"
-import StatCard from "../components/StatCard.jsx"
-import StatusBadge from "../components/StatusBadge.jsx"
-import s from "./ComplianceReportPage.module.css"
+  ClipboardCheck,
+  Download,
+  Printer,
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+  Shield,
+  Award,
+  GraduationCap,
+  Clock,
+  XCircle,
+} from 'lucide-react'
+import usePageData from '@/hooks/usePageData.js'
+import { getEmployees } from '@/lib/api/employees.js'
+import { getCertifications } from '@/lib/api/certifications.js'
+import { getTrainingSessions } from '@/lib/api/training.js'
+import { getIncidents } from '@/lib/api/incidents.js'
+import PageShell from '../components/PageShell.jsx'
+import StatCard from '../components/StatCard.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
+import s from './ComplianceReportPage.module.css'
 
 // ── Helpers ──
 
 function getExpiryStatus(expiryDate) {
-  if (!expiryDate) return "valid"
+  if (!expiryDate) return 'valid'
   const now = new Date()
   const expiry = new Date(expiryDate)
   const daysUntil = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24))
-  if (daysUntil < 0) return "expired"
-  if (daysUntil <= 30) return "expiring"
-  return "valid"
+  if (daysUntil < 0) return 'expired'
+  if (daysUntil <= 30) return 'expiring'
+  return 'valid'
 }
 
 function formatDate(d) {
-  if (!d) return "\u2014"
-  return new Date(d).toLocaleDateString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
+  if (!d) return '\u2014'
+  return new Date(d).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   })
 }
 
 function downloadCSV(filename, headers, rows) {
   const escape = (v) => {
-    const str = String(v ?? "")
-    return str.includes(",") || str.includes('"') || str.includes("\n")
+    const str = String(v ?? '')
+    return str.includes(',') || str.includes('"') || str.includes('\n')
       ? `"${str.replace(/"/g, '""')}"`
       : str
   }
-  const lines = [
-    headers.map(escape).join(","),
-    ...rows.map(r => r.map(escape).join(",")),
-  ]
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" })
+  const lines = [headers.map(escape).join(','), ...rows.map((r) => r.map(escape).join(','))]
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
-  const a = document.createElement("a")
+  const a = document.createElement('a')
   a.href = url
   a.download = filename
   a.click()
@@ -62,21 +69,23 @@ function downloadCSV(filename, headers, rows) {
 // ── Component ──
 
 export default function ComplianceReportPage() {
-  const employees = usePageData("employees", { fetchFn: getEmployees })
-  const certs = usePageData("certifications", { fetchFn: getCertifications })
-  const training = usePageData("training", { fetchFn: getTrainingSessions })
-  const incidents = usePageData("incidents", { fetchFn: getIncidents })
+  const employees = usePageData('employees', { fetchFn: getEmployees })
+  const certs = usePageData('certifications', { fetchFn: getCertifications })
+  const training = usePageData('training', { fetchFn: getTrainingSessions })
+  const incidents = usePageData('incidents', { fetchFn: getIncidents })
 
   const loading = employees.loading || certs.loading || training.loading || incidents.loading
 
   // ── Certification Stats ──
   const certStats = useMemo(() => {
     const all = certs.data
-    let valid = 0, expiring = 0, expired = 0
+    let valid = 0,
+      expiring = 0,
+      expired = 0
     for (const c of all) {
       const status = getExpiryStatus(c.expiry_date)
-      if (status === "valid") valid++
-      else if (status === "expiring") expiring++
+      if (status === 'valid') valid++
+      else if (status === 'expiring') expiring++
       else expired++
     }
     return { total: all.length, valid, expiring, expired }
@@ -85,11 +94,11 @@ export default function ComplianceReportPage() {
   // ── Training Stats ──
   const trainingStats = useMemo(() => {
     const all = training.data
-    const completed = all.filter(t => t.status === "completed").length
-    const scheduled = all.filter(t => t.status === "scheduled").length
+    const completed = all.filter((t) => t.status === 'completed').length
+    const scheduled = all.filter((t) => t.status === 'scheduled').length
     // Unique employees with signoffs (signoff_count > 0 on completed sessions)
     const totalSignoffs = all
-      .filter(t => t.status === "completed")
+      .filter((t) => t.status === 'completed')
       .reduce((sum, t) => sum + (t.signoff_count || 0), 0)
     return { total: all.length, completed, scheduled, totalSignoffs }
   }, [training.data])
@@ -98,13 +107,13 @@ export default function ComplianceReportPage() {
   const incidentStats = useMemo(() => {
     const now = new Date()
     const yearStart = new Date(now.getFullYear(), 0, 1)
-    const ytd = incidents.data.filter(i => new Date(i.incident_date) >= yearStart)
-    const open = ytd.filter(i => i.status === "open" || i.status === "investigating").length
-    const withInjury = ytd.filter(i => i.injury_occurred).length
+    const ytd = incidents.data.filter((i) => new Date(i.incident_date) >= yearStart)
+    const open = ytd.filter((i) => i.status === 'open' || i.status === 'investigating').length
+    const withInjury = ytd.filter((i) => i.injury_occurred).length
 
     const severity = { low: 0, medium: 0, high: 0, critical: 0 }
     for (const i of ytd) {
-      const sev = i.severity || "low"
+      const sev = i.severity || 'low'
       if (severity[sev] !== undefined) severity[sev]++
     }
     return { totalYTD: ytd.length, open, withInjury, severity }
@@ -113,12 +122,10 @@ export default function ComplianceReportPage() {
   // ── Compliance Score ──
   const complianceScore = useMemo(() => {
     // Score based on: valid certs / total certs (weighted 60%) + completed training / total training (weighted 40%)
-    const certRatio = certStats.total > 0
-      ? (certStats.valid + certStats.expiring) / certStats.total
-      : 1
-    const trainingRatio = trainingStats.total > 0
-      ? trainingStats.completed / trainingStats.total
-      : 1
+    const certRatio =
+      certStats.total > 0 ? (certStats.valid + certStats.expiring) / certStats.total : 1
+    const trainingRatio =
+      trainingStats.total > 0 ? trainingStats.completed / trainingStats.total : 1
 
     // If no data at all, show N/A
     if (certStats.total === 0 && trainingStats.total === 0) return null
@@ -141,11 +148,13 @@ export default function ComplianceReportPage() {
       const entry = employeeCertMap.get(empId)
       entry.count++
       const status = getExpiryStatus(c.expiry_date)
-      if (status === "expired") entry.hasExpired = true
-      if (status === "expiring") entry.hasExpiring = true
+      if (status === 'expired') entry.hasExpired = true
+      if (status === 'expiring') entry.hasExpiring = true
     }
 
-    let fullyCompliant = 0, partial = 0, nonCompliant = 0
+    let fullyCompliant = 0,
+      partial = 0,
+      nonCompliant = 0
     for (const [, entry] of employeeCertMap) {
       if (entry.hasExpired) nonCompliant++
       else if (entry.hasExpiring) partial++
@@ -159,38 +168,38 @@ export default function ComplianceReportPage() {
 
   // ── Export CSV ──
   const handleExportCSV = useCallback(() => {
-    const headers = [
-      "Section", "Metric", "Value",
-    ]
+    const headers = ['Section', 'Metric', 'Value']
     const rows = [
-      ["Overview", "Total Employees", topStats.total],
-      ["Overview", "Fully Compliant", topStats.fullyCompliant],
-      ["Overview", "Partial Compliance", topStats.partial],
-      ["Overview", "Non-Compliant", topStats.nonCompliant],
-      ["Overview", "Compliance Score", complianceScore != null ? `${complianceScore}%` : "N/A"],
-      ["Certifications", "Total", certStats.total],
-      ["Certifications", "Valid", certStats.valid],
-      ["Certifications", "Expiring (30 days)", certStats.expiring],
-      ["Certifications", "Expired", certStats.expired],
-      ["Training", "Total Sessions", trainingStats.total],
-      ["Training", "Completed", trainingStats.completed],
-      ["Training", "Scheduled", trainingStats.scheduled],
-      ["Training", "Total Signoffs", trainingStats.totalSignoffs],
-      ["Incidents YTD", "Total", incidentStats.totalYTD],
-      ["Incidents YTD", "Open / Unresolved", incidentStats.open],
-      ["Incidents YTD", "Involving Injury", incidentStats.withInjury],
-      ["Incidents YTD", "Low Severity", incidentStats.severity.low],
-      ["Incidents YTD", "Medium Severity", incidentStats.severity.medium],
-      ["Incidents YTD", "High Severity", incidentStats.severity.high],
-      ["Incidents YTD", "Critical Severity", incidentStats.severity.critical],
+      ['Overview', 'Total Employees', topStats.total],
+      ['Overview', 'Fully Compliant', topStats.fullyCompliant],
+      ['Overview', 'Partial Compliance', topStats.partial],
+      ['Overview', 'Non-Compliant', topStats.nonCompliant],
+      ['Overview', 'Compliance Score', complianceScore != null ? `${complianceScore}%` : 'N/A'],
+      ['Certifications', 'Total', certStats.total],
+      ['Certifications', 'Valid', certStats.valid],
+      ['Certifications', 'Expiring (30 days)', certStats.expiring],
+      ['Certifications', 'Expired', certStats.expired],
+      ['Training', 'Total Sessions', trainingStats.total],
+      ['Training', 'Completed', trainingStats.completed],
+      ['Training', 'Scheduled', trainingStats.scheduled],
+      ['Training', 'Total Signoffs', trainingStats.totalSignoffs],
+      ['Incidents YTD', 'Total', incidentStats.totalYTD],
+      ['Incidents YTD', 'Open / Unresolved', incidentStats.open],
+      ['Incidents YTD', 'Involving Injury', incidentStats.withInjury],
+      ['Incidents YTD', 'Low Severity', incidentStats.severity.low],
+      ['Incidents YTD', 'Medium Severity', incidentStats.severity.medium],
+      ['Incidents YTD', 'High Severity', incidentStats.severity.high],
+      ['Incidents YTD', 'Critical Severity', incidentStats.severity.critical],
     ]
 
     // Also append individual cert rows
     for (const c of certs.data) {
-      const empName = `${c.first_name || ""} ${c.last_name || ""}`.trim()
+      const empName = `${c.first_name || ''} ${c.last_name || ''}`.trim()
       const status = getExpiryStatus(c.expiry_date)
       rows.push([
-        "Cert Detail", empName, `${c.name} — ${status} — expires ${formatDate(c.expiry_date)}`,
+        'Cert Detail',
+        empName,
+        `${c.name} — ${status} — expires ${formatDate(c.expiry_date)}`,
       ])
     }
 
@@ -204,10 +213,10 @@ export default function ComplianceReportPage() {
 
   // ── Severity variant helper ──
   function sevVariant(sev) {
-    if (sev === "critical") return "red"
-    if (sev === "high") return "amber"
-    if (sev === "medium") return "amber"
-    return "gray"
+    if (sev === 'critical') return 'red'
+    if (sev === 'high') return 'amber'
+    if (sev === 'medium') return 'amber'
+    return 'gray'
   }
 
   return (
@@ -241,7 +250,12 @@ export default function ComplianceReportPage() {
                 className={s.scoreFill}
                 strokeDasharray={`${complianceScore}, 100`}
                 style={{
-                  stroke: complianceScore >= 80 ? "var(--grn)" : complianceScore >= 60 ? "var(--amb)" : "var(--red)",
+                  stroke:
+                    complianceScore >= 80
+                      ? 'var(--grn)'
+                      : complianceScore >= 60
+                        ? 'var(--amb)'
+                        : 'var(--red)',
                 }}
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
@@ -253,7 +267,11 @@ export default function ComplianceReportPage() {
             <div className={s.scoreDesc}>
               Based on certification validity (60%) and training completion (40%).
               {certStats.expired > 0 && (
-                <span className={s.scoreWarn}> {certStats.expired} expired cert{certStats.expired !== 1 ? "s" : ""} need attention.</span>
+                <span className={s.scoreWarn}>
+                  {' '}
+                  {certStats.expired} expired cert{certStats.expired !== 1 ? 's' : ''} need
+                  attention.
+                </span>
               )}
             </div>
           </div>
@@ -263,9 +281,24 @@ export default function ComplianceReportPage() {
       {/* Stat Row */}
       <div className={s.statsRow}>
         <StatCard label="Total Employees" value={topStats.total} color="var(--amb)" icon={Users} />
-        <StatCard label="Fully Compliant" value={topStats.fullyCompliant} color="var(--grn)" icon={CheckCircle2} />
-        <StatCard label="Partial Compliance" value={topStats.partial} color="var(--amb)" icon={AlertTriangle} />
-        <StatCard label="Non-Compliant" value={topStats.nonCompliant} color="var(--red)" icon={Shield} />
+        <StatCard
+          label="Fully Compliant"
+          value={topStats.fullyCompliant}
+          color="var(--grn)"
+          icon={CheckCircle2}
+        />
+        <StatCard
+          label="Partial Compliance"
+          value={topStats.partial}
+          color="var(--amb)"
+          icon={AlertTriangle}
+        />
+        <StatCard
+          label="Non-Compliant"
+          value={topStats.nonCompliant}
+          color="var(--red)"
+          icon={Shield}
+        />
       </div>
 
       {/* Section 1 — Certifications */}
@@ -308,13 +341,22 @@ export default function ComplianceReportPage() {
                   .sort((a, b) => {
                     // Expired first, then expiring, then valid
                     const order = { expired: 0, expiring: 1, valid: 2 }
-                    return (order[getExpiryStatus(a.expiry_date)] ?? 2) - (order[getExpiryStatus(b.expiry_date)] ?? 2)
+                    return (
+                      (order[getExpiryStatus(a.expiry_date)] ?? 2) -
+                      (order[getExpiryStatus(b.expiry_date)] ?? 2)
+                    )
                   })
-                  .map(c => {
+                  .map((c) => {
                     const status = getExpiryStatus(c.expiry_date)
-                    const variant = status === "expired" ? "red" : status === "expiring" ? "amber" : "green"
-                    const label = status === "expired" ? "Expired" : status === "expiring" ? "Expiring" : "Valid"
-                    const empName = `${c.first_name || ""} ${c.last_name || ""}`.trim()
+                    const variant =
+                      status === 'expired' ? 'red' : status === 'expiring' ? 'amber' : 'green'
+                    const label =
+                      status === 'expired'
+                        ? 'Expired'
+                        : status === 'expiring'
+                          ? 'Expiring'
+                          : 'Valid'
+                    const empName = `${c.first_name || ''} ${c.last_name || ''}`.trim()
                     return (
                       <div key={c.id} className={s.certRow}>
                         <div className={s.certName}>
@@ -368,26 +410,30 @@ export default function ComplianceReportPage() {
                 </div>
               </div>
               {/* Per-session progress bars */}
-              {training.data.map(session => {
-                const pct = trainingStats.total > 0 && session.status === "completed" ? 100
-                  : session.status === "in-progress" ? 50 : 0
+              {training.data.map((session) => {
+                const pct =
+                  trainingStats.total > 0 && session.status === 'completed'
+                    ? 100
+                    : session.status === 'in-progress'
+                      ? 50
+                      : 0
                 return (
                   <div key={session.id} className={s.progressRow}>
                     <div className={s.progressLabel}>
                       <span>{session.title}</span>
-                      <span className={s.progressSub}>{session.training_type || "General"}</span>
+                      <span className={s.progressSub}>{session.training_type || 'General'}</span>
                     </div>
                     <div className={s.progressBarWrap}>
                       <div
                         className={s.progressBarFill}
                         style={{
                           width: `${pct}%`,
-                          background: pct === 100 ? "var(--grn)" : "var(--amb)",
+                          background: pct === 100 ? 'var(--grn)' : 'var(--amb)',
                         }}
                       />
                     </div>
                     <span className={s.progressPercent}>
-                      {session.signoff_count || 0} sign{session.signoff_count === 1 ? "" : "s"}
+                      {session.signoff_count || 0} sign{session.signoff_count === 1 ? '' : 's'}
                     </span>
                   </div>
                 )
@@ -434,7 +480,7 @@ export default function ComplianceReportPage() {
               </div>
               {/* Severity Breakdown */}
               <div className={s.severityGrid}>
-                {["critical", "high", "medium", "low"].map(sev => {
+                {['critical', 'high', 'medium', 'low'].map((sev) => {
                   const count = incidentStats.severity[sev]
                   return (
                     <div key={sev} className={s.severityItem}>

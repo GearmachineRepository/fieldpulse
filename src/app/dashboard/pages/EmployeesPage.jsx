@@ -3,46 +3,64 @@
 // Uses DetailLayout, usePageData, skeleton loading
 // ═══════════════════════════════════════════
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from 'react'
 import {
-  UserPlus, Edit3, Shield, Eye, EyeOff, Search,
-  ChevronRight, Trash2, Phone, Hash, Award, Plus, Calendar,
-} from "lucide-react"
-import usePageData from "@/hooks/usePageData.js"
-import { useGlobalToast } from "@/hooks/ToastContext.jsx"
-import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from "@/lib/api/employees.js"
-import { getCrews } from "@/lib/api/crews.js"
+  UserPlus,
+  Edit3,
+  Shield,
+  Eye,
+  EyeOff,
+  Search,
+  ChevronRight,
+  Trash2,
+  Phone,
+  Hash,
+  Award,
+  Plus,
+  Calendar,
+} from 'lucide-react'
+import usePageData from '@/hooks/usePageData.js'
+import { useGlobalToast } from '@/hooks/ToastContext.jsx'
 import {
-  getEmployeeCertifications, createCertification, deleteCertification,
-} from "@/lib/api/certifications.js"
-import DetailLayout from "../components/DetailLayout.jsx"
-import StatusBadge from "../components/StatusBadge.jsx"
+  getEmployees,
+  createEmployee,
+  updateEmployee,
+  deleteEmployee,
+} from '@/lib/api/employees.js'
+import { getCrews } from '@/lib/api/crews.js'
 import {
-  Modal, ModalFooter, ConfirmModal, FormField, SelectField,
-} from "../components/PageUI.jsx"
-import s from "./EmployeesPage.module.css"
+  getEmployeeCertifications,
+  createCertification,
+  deleteCertification,
+} from '@/lib/api/certifications.js'
+import DetailLayout from '../components/DetailLayout.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
+import { Modal, ModalFooter, ConfirmModal, FormField, SelectField } from '../components/PageUI.jsx'
+import s from './EmployeesPage.module.css'
 
 export default function EmployeesPage() {
   const toast = useGlobalToast()
-  const employees = usePageData("employees", { fetchFn: getEmployees })
-  const crews = usePageData("crews", { fetchFn: getCrews })
+  const employees = usePageData('employees', { fetchFn: getEmployees })
+  const crews = usePageData('crews', { fetchFn: getCrews })
 
   const [selectedId, setSelectedId] = useState(null)
-  const [searchQ, setSearchQ] = useState("")
-  const [activeTab, setActiveTab] = useState("details")
+  const [searchQ, setSearchQ] = useState('')
+  const [activeTab, setActiveTab] = useState('details')
   const [editing, setEditing] = useState(null)
 
-  const selectedEmployee = employees.data.find(e => e.id === selectedId) || null
+  const selectedEmployee = employees.data.find((e) => e.id === selectedId) || null
 
   useEffect(() => {
-    setActiveTab("details") // eslint-disable-line react-hooks/set-state-in-effect -- Reset tab on selection change
+    setActiveTab('details') // eslint-disable-line react-hooks/set-state-in-effect -- Reset tab on selection change
   }, [selectedId])
 
-  const filtered = employees.data.filter(e => {
+  const filtered = employees.data.filter((e) => {
     if (!searchQ) return true
     const q = searchQ.toLowerCase()
-    return `${e.first_name} ${e.last_name}`.toLowerCase().includes(q)
-      || (e.phone || "").toLowerCase().includes(q)
+    return (
+      `${e.first_name} ${e.last_name}`.toLowerCase().includes(q) ||
+      (e.phone || '').toLowerCase().includes(q)
+    )
   })
 
   const handleSave = async (data, photoFile) => {
@@ -50,15 +68,15 @@ export default function EmployeesPage() {
       if (editing.id) {
         await updateEmployee(editing.id, data, photoFile)
         await employees.refresh()
-        toast.show("Updated")
+        toast.show('Updated')
       } else {
         await createEmployee(data, photoFile)
         await employees.refresh()
-        toast.show("Added")
+        toast.show('Added')
       }
       setEditing(null)
     } catch (err) {
-      toast.show(err.message || "Failed to save")
+      toast.show(err.message || 'Failed to save')
     }
   }
 
@@ -66,17 +84,17 @@ export default function EmployeesPage() {
     try {
       await deleteEmployee(id)
       await employees.refresh()
-      toast.show("Removed")
+      toast.show('Removed')
       setEditing(null)
       if (selectedId === id) setSelectedId(null)
     } catch {
-      toast.show("Failed to remove")
+      toast.show('Failed to remove')
     }
   }
 
   const detailTabs = [
-    { key: "details", label: "Details" },
-    { key: "certifications", label: "Certifications" },
+    { key: 'details', label: 'Details' },
+    { key: 'certifications', label: 'Certifications' },
   ]
 
   // -- Sidebar --
@@ -87,7 +105,7 @@ export default function EmployeesPage() {
         <input
           type="text"
           value={searchQ}
-          onChange={e => setSearchQ(e.target.value)}
+          onChange={(e) => setSearchQ(e.target.value)}
           placeholder="Search employees..."
           className={s.searchInput}
         />
@@ -111,17 +129,15 @@ export default function EmployeesPage() {
             </div>
           ))
         ) : filtered.length === 0 ? (
-          <div className={s.listEmpty}>
-            {searchQ ? "No matches." : "No employees yet."}
-          </div>
+          <div className={s.listEmpty}>{searchQ ? 'No matches.' : 'No employees yet.'}</div>
         ) : (
-          filtered.map(emp => {
-            const crew = crews.data.find(c => c.id === emp.default_crew_id)
+          filtered.map((emp) => {
+            const crew = crews.data.find((c) => c.id === emp.default_crew_id)
             const isActive = selectedId === emp.id
             return (
               <button
                 key={emp.id}
-                className={`${s.listItem} ${isActive ? s.listItemActive : ""}`}
+                className={`${s.listItem} ${isActive ? s.listItemActive : ''}`}
                 onClick={() => setSelectedId(emp.id)}
                 type="button"
               >
@@ -131,21 +147,18 @@ export default function EmployeesPage() {
                 ) : (
                   <div
                     className={s.listAvatarFallback}
-                    style={{ background: emp.is_crew_lead ? "var(--amb)" : "var(--blu)" }}
+                    style={{ background: emp.is_crew_lead ? 'var(--amb)' : 'var(--blu)' }}
                   >
-                    {emp.first_name[0]}{emp.last_name[0]}
+                    {emp.first_name[0]}
+                    {emp.last_name[0]}
                   </div>
                 )}
                 <div className={s.listItemContent}>
                   <div className={s.listItemName}>
                     {emp.first_name} {emp.last_name}
-                    {emp.is_crew_lead && (
-                      <span className={s.leadBadge}>LEAD</span>
-                    )}
+                    {emp.is_crew_lead && <span className={s.leadBadge}>LEAD</span>}
                   </div>
-                  <div className={s.listItemSub}>
-                    {crew ? crew.name : "Unassigned"}
-                  </div>
+                  <div className={s.listItemSub}>{crew ? crew.name : 'Unassigned'}</div>
                 </div>
                 <ChevronRight size={14} className={s.listChevron} />
               </button>
@@ -153,7 +166,6 @@ export default function EmployeesPage() {
           })
         )}
       </div>
-
     </div>
   )
 
@@ -168,7 +180,7 @@ export default function EmployeesPage() {
         onBack={() => setSelectedId(null)}
         emptyMessage="Select an employee to view details."
       >
-        {selectedEmployee && activeTab === "details" && (
+        {selectedEmployee && activeTab === 'details' && (
           <DetailsTab
             employee={selectedEmployee}
             crews={crews.data}
@@ -176,11 +188,8 @@ export default function EmployeesPage() {
             onDelete={() => handleDelete(selectedEmployee.id)}
           />
         )}
-        {selectedEmployee && activeTab === "certifications" && (
-          <CertificationsTab
-            employee={selectedEmployee}
-            toast={toast}
-          />
+        {selectedEmployee && activeTab === 'certifications' && (
+          <CertificationsTab employee={selectedEmployee} toast={toast} />
         )}
       </DetailLayout>
 
@@ -193,17 +202,15 @@ export default function EmployeesPage() {
           onDelete={editing.id ? () => handleDelete(editing.id) : undefined}
         />
       )}
-
     </div>
   )
 }
-
 
 // ===================================================
 // Details Tab — Read-only view
 // ===================================================
 function DetailsTab({ employee, crews, onEdit, onDelete }) {
-  const crew = crews.find(c => c.id === employee.default_crew_id)
+  const crew = crews.find((c) => c.id === employee.default_crew_id)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   if (confirmDelete) {
@@ -211,7 +218,10 @@ function DetailsTab({ employee, crews, onEdit, onDelete }) {
       <ConfirmModal
         title={`Remove ${employee.first_name} ${employee.last_name}?`}
         message="This deactivates the employee. Existing logs preserved."
-        onConfirm={() => { onDelete(); setConfirmDelete(false) }}
+        onConfirm={() => {
+          onDelete()
+          setConfirmDelete(false)
+        }}
         onCancel={() => setConfirmDelete(false)}
       />
     )
@@ -226,9 +236,10 @@ function DetailsTab({ employee, crews, onEdit, onDelete }) {
           ) : (
             <div
               className={s.detailAvatarLg}
-              style={{ background: employee.is_crew_lead ? "var(--amb)" : "var(--blu)" }}
+              style={{ background: employee.is_crew_lead ? 'var(--amb)' : 'var(--blu)' }}
             >
-              {employee.first_name[0]}{employee.last_name[0]}
+              {employee.first_name[0]}
+              {employee.last_name[0]}
             </div>
           )}
           <div>
@@ -236,10 +247,8 @@ function DetailsTab({ employee, crews, onEdit, onDelete }) {
               {employee.first_name} {employee.last_name}
             </h2>
             <div className={s.detailSubRow}>
-              {employee.is_crew_lead && (
-                <StatusBadge variant="amber">Crew Lead</StatusBadge>
-              )}
-              <span className={s.detailCrew}>{crew ? crew.name : "Unassigned"}</span>
+              {employee.is_crew_lead && <StatusBadge variant="amber">Crew Lead</StatusBadge>}
+              <span className={s.detailCrew}>{crew ? crew.name : 'Unassigned'}</span>
             </div>
           </div>
         </div>
@@ -255,7 +264,7 @@ function DetailsTab({ employee, crews, onEdit, onDelete }) {
 
       <div className={s.fieldGrid}>
         <ReadField icon={Phone} label="Phone" value={employee.phone} mono />
-        <ReadField icon={Shield} label="Crew" value={crew?.name || "Unassigned"} />
+        <ReadField icon={Shield} label="Crew" value={crew?.name || 'Unassigned'} />
         <ReadField icon={Hash} label="License #" value={employee.license_number} mono />
       </div>
     </div>
@@ -270,14 +279,11 @@ function ReadField({ icon: Icon, label, value, mono }) {
       </div>
       <div>
         <div className={s.readLabel}>{label}</div>
-        <div className={`${s.readValue} ${mono ? s.mono : ""}`}>
-          {value || "\u2014"}
-        </div>
+        <div className={`${s.readValue} ${mono ? s.mono : ''}`}>{value || '\u2014'}</div>
       </div>
     </div>
   )
 }
-
 
 // ===================================================
 // Certifications Tab — Employee cert list + add modal
@@ -293,22 +299,24 @@ function CertificationsTab({ employee, toast }) {
       const data = await getEmployeeCertifications(employee.id)
       setCerts(data)
     } catch {
-      toast.show("Failed to load certifications")
+      toast.show('Failed to load certifications')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => { fetchCerts() }, [employee.id]) // eslint-disable-line react-hooks/exhaustive-deps -- Refetch when employee changes; fetchCerts is stable
+  useEffect(() => {
+    fetchCerts()
+  }, [employee.id]) // eslint-disable-line react-hooks/exhaustive-deps -- Refetch when employee changes; fetchCerts is stable
 
   const handleAdd = async (data) => {
     try {
       await createCertification({ ...data, employeeId: employee.id })
       await fetchCerts()
-      toast.show("Certification added")
+      toast.show('Certification added')
       setShowAdd(false)
     } catch (err) {
-      toast.show(err.message || "Failed to add certification")
+      toast.show(err.message || 'Failed to add certification')
     }
   }
 
@@ -316,38 +324,40 @@ function CertificationsTab({ employee, toast }) {
     try {
       await deleteCertification(id)
       await fetchCerts()
-      toast.show("Certification removed")
+      toast.show('Certification removed')
     } catch {
-      toast.show("Failed to remove certification")
+      toast.show('Failed to remove certification')
     }
   }
 
   const getExpiryStatus = (expiryDate) => {
-    if (!expiryDate) return { variant: "gray", label: "No Expiry" }
+    if (!expiryDate) return { variant: 'gray', label: 'No Expiry' }
     const now = new Date()
     const expiry = new Date(expiryDate)
     const daysUntil = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24))
-    if (daysUntil < 0) return { variant: "red", label: "Expired" }
-    if (daysUntil <= 30) return { variant: "amber", label: "Expiring Soon" }
-    return { variant: "green", label: "Valid" }
+    if (daysUntil < 0) return { variant: 'red', label: 'Expired' }
+    if (daysUntil <= 30) return { variant: 'amber', label: 'Expiring Soon' }
+    return { variant: 'green', label: 'Valid' }
   }
 
   const formatDate = (d) => {
-    if (!d) return "\u2014"
-    return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    if (!d) return '\u2014'
+    return new Date(d).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
   }
 
   if (loading) {
-    return (
-      <div className={s.certLoading}>Loading certifications...</div>
-    )
+    return <div className={s.certLoading}>Loading certifications...</div>
   }
 
   return (
     <div className={s.certTab}>
       <div className={s.certHeader}>
         <div className={s.certCount}>
-          {certs.length} certification{certs.length !== 1 ? "s" : ""}
+          {certs.length} certification{certs.length !== 1 ? 's' : ''}
         </div>
         <button className={s.certAddBtn} onClick={() => setShowAdd(true)}>
           <Plus size={14} /> Add Certification
@@ -364,16 +374,14 @@ function CertificationsTab({ employee, toast }) {
         </div>
       ) : (
         <div className={s.certList}>
-          {certs.map(cert => {
+          {certs.map((cert) => {
             const expiry = getExpiryStatus(cert.expiry_date)
             return (
               <div key={cert.id} className={s.certCard}>
                 <div className={s.certCardMain}>
                   <div className={s.certCardName}>{cert.name}</div>
                   <div className={s.certCardMeta}>
-                    {cert.cert_number && (
-                      <span className={s.certCardNum}>#{cert.cert_number}</span>
-                    )}
+                    {cert.cert_number && <span className={s.certCardNum}>#{cert.cert_number}</span>}
                     {cert.issuing_authority && (
                       <span className={s.certCardAuth}>{cert.issuing_authority}</span>
                     )}
@@ -401,27 +409,21 @@ function CertificationsTab({ employee, toast }) {
         </div>
       )}
 
-      {showAdd && (
-        <AddCertificationModal
-          onClose={() => setShowAdd(false)}
-          onSave={handleAdd}
-        />
-      )}
+      {showAdd && <AddCertificationModal onClose={() => setShowAdd(false)} onSave={handleAdd} />}
     </div>
   )
 }
-
 
 // ===================================================
 // Add Certification Modal
 // ===================================================
 function AddCertificationModal({ onClose, onSave }) {
-  const [name, setName] = useState("")
-  const [certNumber, setCertNumber] = useState("")
-  const [issuingAuthority, setIssuingAuthority] = useState("")
-  const [issuedDate, setIssuedDate] = useState("")
-  const [expiryDate, setExpiryDate] = useState("")
-  const [notes, setNotes] = useState("")
+  const [name, setName] = useState('')
+  const [certNumber, setCertNumber] = useState('')
+  const [issuingAuthority, setIssuingAuthority] = useState('')
+  const [issuedDate, setIssuedDate] = useState('')
+  const [expiryDate, setExpiryDate] = useState('')
+  const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
   const handleSubmit = async () => {
@@ -443,7 +445,11 @@ function AddCertificationModal({ onClose, onSave }) {
       <FormField label="Certification Name *" value={name} onChange={setName} autoFocus />
       <div className={s.formGrid}>
         <FormField label="Cert Number" value={certNumber} onChange={setCertNumber} />
-        <FormField label="Issuing Authority" value={issuingAuthority} onChange={setIssuingAuthority} />
+        <FormField
+          label="Issuing Authority"
+          value={issuingAuthority}
+          onChange={setIssuingAuthority}
+        />
       </div>
       <div className={s.formGrid}>
         <FormField label="Issued Date" value={issuedDate} onChange={setIssuedDate} type="date" />
@@ -460,21 +466,22 @@ function AddCertificationModal({ onClose, onSave }) {
   )
 }
 
-
 // ===================================================
 // Employee Modal — Create / Edit
 // ===================================================
 function EmployeeModal({ employee, crews, onClose, onSave, onDelete }) {
   const isEdit = !!employee.id
-  const [firstName, setFirstName] = useState(employee.first_name || "")
-  const [lastName, setLastName]   = useState(employee.last_name || "")
-  const [phone, setPhone]         = useState(employee.phone || "")
-  const [licenseNum, setLicenseNum] = useState(employee.license_number || "")
-  const [crewId, setCrewId]       = useState(employee.default_crew_id ? String(employee.default_crew_id) : "")
-  const [pin, setPin]             = useState("")
-  const [showPin, setShowPin]     = useState(false)
-  const [isLead, setIsLead]       = useState(employee.is_crew_lead || false)
-  const [saving, setSaving]       = useState(false)
+  const [firstName, setFirstName] = useState(employee.first_name || '')
+  const [lastName, setLastName] = useState(employee.last_name || '')
+  const [phone, setPhone] = useState(employee.phone || '')
+  const [licenseNum, setLicenseNum] = useState(employee.license_number || '')
+  const [crewId, setCrewId] = useState(
+    employee.default_crew_id ? String(employee.default_crew_id) : '',
+  )
+  const [pin, setPin] = useState('')
+  const [showPin, setShowPin] = useState(false)
+  const [isLead, setIsLead] = useState(employee.is_crew_lead || false)
+  const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const handleSubmit = async () => {
@@ -506,7 +513,7 @@ function EmployeeModal({ employee, crews, onClose, onSave, onDelete }) {
   }
 
   return (
-    <Modal title={isEdit ? "Edit Employee" : "Add Employee"} onClose={onClose}>
+    <Modal title={isEdit ? 'Edit Employee' : 'Add Employee'} onClose={onClose}>
       <div className={s.formGrid}>
         <FormField label="First Name *" value={firstName} onChange={setFirstName} autoFocus />
         <FormField label="Last Name *" value={lastName} onChange={setLastName} />
@@ -518,19 +525,19 @@ function EmployeeModal({ employee, crews, onClose, onSave, onDelete }) {
         value={crewId}
         onChange={setCrewId}
         placeholder="Unassigned"
-        options={crews.map(c => ({ value: String(c.id), label: c.name }))}
+        options={crews.map((c) => ({ value: String(c.id), label: c.name }))}
       />
 
       <div className={s.pinGroup}>
-        <label className={s.label}>{isEdit ? "New PIN (blank to keep)" : "PIN *"}</label>
+        <label className={s.label}>{isEdit ? 'New PIN (blank to keep)' : 'PIN *'}</label>
         <div className={s.pinWrapper}>
           <input
-            type={showPin ? "text" : "password"}
+            type={showPin ? 'text' : 'password'}
             inputMode="numeric"
             maxLength={6}
             value={pin}
-            onChange={e => setPin(e.target.value.replace(/\D/g, ""))}
-            placeholder={isEdit ? "••••" : "4-6 digits"}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+            placeholder={isEdit ? '••••' : '4-6 digits'}
             className={s.pinInput}
           />
           <button onClick={() => setShowPin(!showPin)} className={s.pinToggle} type="button">
@@ -543,14 +550,14 @@ function EmployeeModal({ employee, crews, onClose, onSave, onDelete }) {
         <div
           className={s.checkbox}
           style={{
-            border: `2px solid ${isLead ? "var(--amb)" : "var(--bd)"}`,
-            background: isLead ? "var(--amb)" : "transparent",
+            border: `2px solid ${isLead ? 'var(--amb)' : 'var(--bd)'}`,
+            background: isLead ? 'var(--amb)' : 'transparent',
           }}
         >
           {isLead && <span className={s.checkMark}>✓</span>}
         </div>
         <span className={s.checkLabel}>Crew Lead</span>
-        <Shield size={16} color={isLead ? "var(--amb)" : "var(--t3)"} />
+        <Shield size={16} color={isLead ? 'var(--amb)' : 'var(--t3)'} />
       </button>
 
       <ModalFooter

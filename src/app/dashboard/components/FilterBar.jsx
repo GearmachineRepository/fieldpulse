@@ -5,8 +5,8 @@
 // date range in a consistent horizontal layout.
 // ═══════════════════════════════════════════
 
-import { Search } from "lucide-react"
-import s from "./FilterBar.module.css"
+import { Search } from 'lucide-react'
+import s from './FilterBar.module.css'
 
 /**
  * @param {{
@@ -38,22 +38,24 @@ export default function FilterBar({ search, filters, dateRange, actions }) {
               type="text"
               className={s.searchInput}
               value={search.value}
-              onChange={e => search.onChange(e.target.value)}
-              placeholder={search.placeholder || "Search..."}
+              onChange={(e) => search.onChange(e.target.value)}
+              placeholder={search.placeholder || 'Search...'}
             />
           </div>
         )}
 
-        {filters?.map(filter => (
+        {filters?.map((filter) => (
           <select
             key={filter.key}
             className={s.select}
             value={filter.value}
-            onChange={e => filter.onChange(e.target.value)}
+            onChange={(e) => filter.onChange(e.target.value)}
           >
             <option value="">{filter.label}</option>
-            {filter.options.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {filter.options.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         ))}
@@ -64,14 +66,14 @@ export default function FilterBar({ search, filters, dateRange, actions }) {
               type="date"
               className={s.dateInput}
               value={dateRange.start}
-              onChange={e => dateRange.onStartChange(e.target.value)}
+              onChange={(e) => dateRange.onStartChange(e.target.value)}
             />
             <span className={s.dateSep}>to</span>
             <input
               type="date"
               className={s.dateInput}
               value={dateRange.end}
-              onChange={e => dateRange.onEndChange(e.target.value)}
+              onChange={(e) => dateRange.onEndChange(e.target.value)}
             />
           </div>
         )}

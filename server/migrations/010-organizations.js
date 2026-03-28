@@ -45,14 +45,27 @@ async function migrate() {
 
     // 2. Add org_id to all tenant-scoped tables
     const tables = [
-      'admins', 'crews', 'vehicles', 'employees', 'equipment', 'chemicals',
-      'spray_logs', 'accounts', 'account_groups', 'routes',
-      'schedule_events', 'resource_categories', 'resources',
-      'daily_crew_rosters', 'service_plans',
+      'admins',
+      'crews',
+      'vehicles',
+      'employees',
+      'equipment',
+      'chemicals',
+      'spray_logs',
+      'accounts',
+      'account_groups',
+      'routes',
+      'schedule_events',
+      'resource_categories',
+      'resources',
+      'daily_crew_rosters',
+      'service_plans',
     ]
 
     for (const table of tables) {
-      await pool.query(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES organizations(id)`)
+      await pool.query(
+        `ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES organizations(id)`,
+      )
     }
     console.log(`  ✓ Added org_id to ${tables.length} tables`)
 
@@ -63,7 +76,9 @@ async function migrate() {
     console.log('  ✓ Created org_id indexes')
 
     // 4. Create default organization from existing data
-    const existingOrg = await pool.query("SELECT id FROM organizations WHERE slug = 'default' LIMIT 1")
+    const existingOrg = await pool.query(
+      "SELECT id FROM organizations WHERE slug = 'default' LIMIT 1",
+    )
 
     let orgId
     if (existingOrg.rows.length > 0) {
@@ -71,14 +86,16 @@ async function migrate() {
       console.log('  ✓ Default organization already exists')
     } else {
       // Find the first admin to set as owner
-      const firstAdmin = await pool.query('SELECT id FROM admins WHERE active = true ORDER BY id LIMIT 1')
+      const firstAdmin = await pool.query(
+        'SELECT id FROM admins WHERE active = true ORDER BY id LIMIT 1',
+      )
       const ownerId = firstAdmin.rows[0]?.id || null
 
       const orgResult = await pool.query(
         `INSERT INTO organizations (name, slug, owner_id, plan, trial_ends_at)
          VALUES ('My Organization', 'default', $1, 'trial', NOW() + INTERVAL '14 days')
          RETURNING id`,
-        [ownerId]
+        [ownerId],
       )
       orgId = orgResult.rows[0].id
       console.log(`  ✓ Created default organization: ${orgId}`)
@@ -86,10 +103,9 @@ async function migrate() {
 
     // 5. Backfill org_id for all existing data
     for (const table of tables) {
-      const result = await pool.query(
-        `UPDATE ${table} SET org_id = $1 WHERE org_id IS NULL`,
-        [orgId]
-      )
+      const result = await pool.query(`UPDATE ${table} SET org_id = $1 WHERE org_id IS NULL`, [
+        orgId,
+      ])
       if (result.rowCount > 0) {
         console.log(`    ✓ Backfilled ${result.rowCount} rows in ${table}`)
       }

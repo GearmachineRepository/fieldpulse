@@ -8,9 +8,9 @@ const BASE = '/api'
 // sessionStorage clears on tab close — right behaviour for a shared-device app.
 const TOKEN_KEY = 'fp_auth_token'
 
-export const setAuthToken  = (t) => sessionStorage.setItem(TOKEN_KEY, t)
-export const clearAuthToken = ()  => sessionStorage.removeItem(TOKEN_KEY)
-export const getAuthToken  = ()  => sessionStorage.getItem(TOKEN_KEY)
+export const setAuthToken = (t) => sessionStorage.setItem(TOKEN_KEY, t)
+export const clearAuthToken = () => sessionStorage.removeItem(TOKEN_KEY)
+export const getAuthToken = () => sessionStorage.getItem(TOKEN_KEY)
 
 // ── Helpers ──
 

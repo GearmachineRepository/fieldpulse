@@ -7,100 +7,115 @@
 // ===============================================
 
 import {
-  LayoutDashboard, Briefcase, Calendar, Clock, MapPin,
-  Users, UserCheck, UsersRound,
-  Truck, Wrench,
-  ShieldCheck, GraduationCap, Award, AlertTriangle,
-  BookOpen, FileText, FlaskConical,
-  BarChart3, TrendingUp, ClipboardCheck,
-  Settings, Blocks,
-} from "lucide-react"
-import { ALL_MODULES } from "@/app/modules.js"
+  LayoutDashboard,
+  Briefcase,
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  UserCheck,
+  UsersRound,
+  Truck,
+  Wrench,
+  ShieldCheck,
+  GraduationCap,
+  Award,
+  AlertTriangle,
+  BookOpen,
+  FileText,
+  FlaskConical,
+  BarChart3,
+  TrendingUp,
+  ClipboardCheck,
+  Settings,
+  Blocks,
+} from 'lucide-react'
+import { ALL_MODULES } from '@/app/modules.js'
 
 export const SECTIONS = [
   {
-    key: "dashboard",
-    label: "Dashboard",
+    key: 'dashboard',
+    label: 'Dashboard',
     icon: LayoutDashboard,
-    pages: [{ key: "dashboard", label: "Dashboard" }],
+    pages: [{ key: 'dashboard', label: 'Dashboard' }],
   },
   {
-    key: "projects",
-    label: "Projects",
+    key: 'projects',
+    label: 'Projects',
     icon: Briefcase,
     pages: [
-      { key: "projects", label: "All Projects", icon: Briefcase },
-      { key: "schedule", label: "Schedule",      icon: Calendar },
+      { key: 'projects', label: 'All Projects', icon: Briefcase },
+      { key: 'schedule', label: 'Schedule', icon: Calendar },
     ],
   },
   {
-    key: "operations",
-    label: "Operations",
+    key: 'operations',
+    label: 'Operations',
     icon: Clock,
     pages: [
-      { key: "clock-in", label: "Clock-In",  icon: Clock },
-      { key: "routes",   label: "Routes",    icon: MapPin, comingSoon: true },
+      { key: 'clock-in', label: 'Clock-In', icon: Clock },
+      { key: 'routes', label: 'Routes', icon: MapPin, comingSoon: true },
     ],
   },
   {
-    key: "people",
-    label: "People",
+    key: 'people',
+    label: 'People',
     icon: Users,
     pages: [
-      { key: "employees", label: "Employees", icon: UserCheck },
-      { key: "crews",     label: "Crews",     icon: UsersRound },
+      { key: 'employees', label: 'Employees', icon: UserCheck },
+      { key: 'crews', label: 'Crews', icon: UsersRound },
     ],
   },
   {
-    key: "fleet",
-    label: "Fleet",
+    key: 'fleet',
+    label: 'Fleet',
     icon: Truck,
     pages: [
-      { key: "vehicles",  label: "Vehicles",  icon: Truck },
-      { key: "equipment", label: "Equipment", icon: Wrench },
+      { key: 'vehicles', label: 'Vehicles', icon: Truck },
+      { key: 'equipment', label: 'Equipment', icon: Wrench },
     ],
   },
   {
-    key: "compliance",
-    label: "Compliance",
+    key: 'compliance',
+    label: 'Compliance',
     icon: ShieldCheck,
     pages: [
-      { key: "training",       label: "Training",       icon: GraduationCap },
-      { key: "certifications", label: "Certifications", icon: Award },
-      { key: "incidents",      label: "Incidents",      icon: AlertTriangle },
+      { key: 'training', label: 'Training', icon: GraduationCap },
+      { key: 'certifications', label: 'Certifications', icon: Award },
+      { key: 'incidents', label: 'Incidents', icon: AlertTriangle },
     ],
   },
   {
-    key: "resources",
-    label: "Resources",
+    key: 'resources',
+    label: 'Resources',
     icon: BookOpen,
     pages: [
-      { key: "documents", label: "Documents",   icon: FileText },
-      { key: "sds",       label: "SDS Library", icon: FlaskConical, module: "spray" },
+      { key: 'documents', label: 'Documents', icon: FileText },
+      { key: 'sds', label: 'SDS Library', icon: FlaskConical, module: 'spray' },
     ],
   },
   {
-    key: "reports",
-    label: "Reports",
+    key: 'reports',
+    label: 'Reports',
     icon: BarChart3,
     pages: [
-      { key: "reports",           label: "Overview",         icon: BarChart3 },
-      { key: "crew-performance",  label: "Crew Performance", icon: TrendingUp },
-      { key: "compliance-report", label: "Compliance",       icon: ClipboardCheck },
+      { key: 'reports', label: 'Overview', icon: BarChart3 },
+      { key: 'crew-performance', label: 'Crew Performance', icon: TrendingUp },
+      { key: 'compliance-report', label: 'Compliance', icon: ClipboardCheck },
     ],
   },
   {
-    key: "modules",
-    label: "Modules",
+    key: 'modules',
+    label: 'Modules',
     icon: Blocks,
     pages: [],
     dynamic: true,
   },
   {
-    key: "settings",
-    label: "Settings",
+    key: 'settings',
+    label: 'Settings',
     icon: Settings,
-    pages: [{ key: "settings", label: "Settings", icon: Settings }],
+    pages: [{ key: 'settings', label: 'Settings', icon: Settings }],
   },
 ]
 
@@ -112,8 +127,8 @@ for (const section of SECTIONS) {
   }
 }
 // Add module pages dynamically
-ALL_MODULES.forEach(m => {
-  PAGE_TO_SECTION[`mod-${m.key}`] = "modules"
+ALL_MODULES.forEach((m) => {
+  PAGE_TO_SECTION[`mod-${m.key}`] = 'modules'
 })
 
 // -- Helper: is this a single-page section? --
@@ -123,10 +138,10 @@ export function isSinglePage(section) {
 
 // -- Get the pages for a section (handles dynamic modules) --
 export function getSectionPages(sectionKey) {
-  const section = SECTIONS.find(s => s.key === sectionKey)
+  const section = SECTIONS.find((s) => s.key === sectionKey)
   if (!section) return []
   if (section.dynamic) {
-    return ALL_MODULES.map(m => ({
+    return ALL_MODULES.map((m) => ({
       key: `mod-${m.key}`,
       label: m.label,
       icon: m.icon,
@@ -139,14 +154,14 @@ export function getSectionPages(sectionKey) {
 
 // -- Resolve page title from any page key --
 export function resolvePageTitle(pageKey) {
-  if (pageKey === "dashboard") return "Dashboard"
-  if (pageKey?.startsWith("mod-")) {
-    const mod = ALL_MODULES.find(m => `mod-${m.key}` === pageKey)
-    return mod?.label || "Module"
+  if (pageKey === 'dashboard') return 'Dashboard'
+  if (pageKey?.startsWith('mod-')) {
+    const mod = ALL_MODULES.find((m) => `mod-${m.key}` === pageKey)
+    return mod?.label || 'Module'
   }
   for (const section of SECTIONS) {
-    const page = section.pages.find(p => p.key === pageKey)
+    const page = section.pages.find((p) => p.key === pageKey)
     if (page) return page.label
   }
-  return pageKey || "Dashboard"
+  return pageKey || 'Dashboard'
 }

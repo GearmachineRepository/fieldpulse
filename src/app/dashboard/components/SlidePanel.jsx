@@ -6,9 +6,9 @@
 // below modals (300).
 // ═══════════════════════════════════════════
 
-import { useEffect, useRef } from "react"
-import { X } from "lucide-react"
-import s from "./SlidePanel.module.css"
+import { useEffect, useRef } from 'react'
+import { X } from 'lucide-react'
+import s from './SlidePanel.module.css'
 
 /**
  * @param {{
@@ -19,23 +19,17 @@ import s from "./SlidePanel.module.css"
  *   children: React.ReactNode,
  * }} props
  */
-export default function SlidePanel({
-  open,
-  onClose,
-  title,
-  width = 420,
-  children,
-}) {
+export default function SlidePanel({ open, onClose, title, width = 420, children }) {
   const panelRef = useRef(null)
 
   // Close on Escape
   useEffect(() => {
     if (!open) return
     const handleKey = (e) => {
-      if (e.key === "Escape") onClose()
+      if (e.key === 'Escape') onClose()
     }
-    document.addEventListener("keydown", handleKey)
-    return () => document.removeEventListener("keydown", handleKey)
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
   }, [open, onClose])
 
   if (!open) return null

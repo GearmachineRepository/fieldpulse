@@ -19,11 +19,14 @@ export default function useToast(duration = 2500) {
   const [message, setMessage] = useState(null)
   const timer = useRef(null)
 
-  const show = useCallback((msg) => {
-    if (timer.current) clearTimeout(timer.current)
-    setMessage(msg)
-    timer.current = setTimeout(() => setMessage(null), duration)
-  }, [duration])
+  const show = useCallback(
+    (msg) => {
+      if (timer.current) clearTimeout(timer.current)
+      setMessage(msg)
+      timer.current = setTimeout(() => setMessage(null), duration)
+    },
+    [duration],
+  )
 
   const dismiss = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)

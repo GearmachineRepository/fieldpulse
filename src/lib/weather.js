@@ -5,8 +5,22 @@
 // ═══════════════════════════════════════════
 
 const WIND_DIRS = [
-  'N','NNE','NE','ENE','E','ESE','SE','SSE',
-  'S','SSW','SW','WSW','W','WNW','NW','NNW',
+  'N',
+  'NNE',
+  'NE',
+  'ENE',
+  'E',
+  'ESE',
+  'SE',
+  'SSE',
+  'S',
+  'SSW',
+  'SW',
+  'WSW',
+  'W',
+  'WNW',
+  'NW',
+  'NNW',
 ]
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY
@@ -26,13 +40,13 @@ export function getSimulatedWeather() {
 // Real weather from OpenWeatherMap
 export async function getWeatherByCoords(lat, lon) {
   if (!API_KEY) {
-    console.log('No weather API key — using simulated weather')
+    // No API key configured — fall back to simulated data
     return getSimulatedWeather()
   }
 
   try {
     const res = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=imperial`
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=imperial`,
     )
     if (!res.ok) throw new Error(`Weather API: ${res.status}`)
 

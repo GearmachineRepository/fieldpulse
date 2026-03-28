@@ -47,7 +47,9 @@ async function migrate() {
 
     // 2. Create indexes for training_sessions
     await pool.query('CREATE INDEX IF NOT EXISTS idx_training_org ON training_sessions(org_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_training_date ON training_sessions(training_date)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_training_date ON training_sessions(training_date)',
+    )
     console.log('  ✓ Created training_sessions indexes')
 
     // 3. Create training_signoffs table (append-only)
@@ -66,8 +68,12 @@ async function migrate() {
     console.log('  ✓ Created training_signoffs table')
 
     // 4. Create indexes for training_signoffs
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_signoffs_session ON training_signoffs(training_session_id)')
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_signoffs_employee ON training_signoffs(employee_id)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_signoffs_session ON training_signoffs(training_session_id)',
+    )
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_signoffs_employee ON training_signoffs(employee_id)',
+    )
     console.log('  ✓ Created training_signoffs indexes')
 
     console.log('\n  Migration complete.\n')

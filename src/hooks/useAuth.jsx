@@ -8,21 +8,16 @@
 
 import { useState, useCallback, useEffect, useRef, createContext, useContext } from 'react'
 import { clearAuthToken } from '@/lib/api/core.js'
-import {
-  signup as signupApi,
-  loginWithEmail,
-  crewLogin,
-  restoreSession,
-} from '@/lib/api/auth.js'
+import { signup as signupApi, loginWithEmail, crewLogin, restoreSession } from '@/lib/api/auth.js'
 import { getCrewLoginTiles } from '@/lib/api/crews.js'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [admin, setAdmin]       = useState(null)
+  const [admin, setAdmin] = useState(null)
   const [employee, setEmployee] = useState(null)
-  const [crew, setCrew]         = useState(null)
-  const [vehicle, setVehicle]   = useState(null)
+  const [crew, setCrew] = useState(null)
+  const [vehicle, setVehicle] = useState(null)
   const [restoring, setRestoring] = useState(true)
   const restored = useRef(false)
 
@@ -32,7 +27,7 @@ export function AuthProvider({ children }) {
     restored.current = true
 
     restoreSession()
-      .then(session => {
+      .then((session) => {
         if (!session) return
         if (session.type === 'admin') {
           setAdmin(session.admin)

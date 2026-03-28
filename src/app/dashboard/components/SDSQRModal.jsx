@@ -4,11 +4,11 @@
 // the public SDS PDF view for field use.
 // ═══════════════════════════════════════════
 
-import { useEffect, useRef } from "react"
-import QRCode from "qrcode"
-import { Download, Printer } from "lucide-react"
-import { Modal } from "./PageUI.jsx"
-import s from "./SDSQRModal.module.css"
+import { useEffect, useRef } from 'react'
+import QRCode from 'qrcode'
+import { Download, Printer } from 'lucide-react'
+import { Modal } from './PageUI.jsx'
+import s from './SDSQRModal.module.css'
 
 export default function SDSQRModal({ sds, onClose }) {
   const canvasRef = useRef(null)
@@ -19,15 +19,15 @@ export default function SDSQRModal({ sds, onClose }) {
       QRCode.toCanvas(canvasRef.current, url, {
         width: 256,
         margin: 2,
-        color: { dark: "#1a1a1a", light: "#ffffff" },
+        color: { dark: '#1a1a1a', light: '#ffffff' },
       })
     }
   }, [url])
 
   const handleDownload = () => {
     if (!canvasRef.current) return
-    const link = document.createElement("a")
-    const safeName = (sds.product_name || sds.name || "sds").replace(/\s+/g, "-").toLowerCase()
+    const link = document.createElement('a')
+    const safeName = (sds.product_name || sds.name || 'sds').replace(/\s+/g, '-').toLowerCase()
     link.download = `sds-${safeName}-qr.png`
     link.href = canvasRef.current.toDataURL()
     link.click()
@@ -36,8 +36,8 @@ export default function SDSQRModal({ sds, onClose }) {
   const handlePrint = () => {
     if (!canvasRef.current) return
     const dataUrl = canvasRef.current.toDataURL()
-    const name = sds.product_name || sds.name || "SDS"
-    const printWindow = window.open("", "_blank")
+    const name = sds.product_name || sds.name || 'SDS'
+    const printWindow = window.open('', '_blank')
     if (!printWindow) return
     printWindow.document.write(`
       <html>
@@ -57,12 +57,13 @@ export default function SDSQRModal({ sds, onClose }) {
   }
 
   return (
-    <Modal title={`QR Code — ${sds.product_name || sds.name || "SDS"}`} onClose={onClose} size="sm">
+    <Modal title={`QR Code — ${sds.product_name || sds.name || 'SDS'}`} onClose={onClose} size="sm">
       <div className={s.body}>
         <canvas ref={canvasRef} className={s.canvas} />
         <div className={s.url}>{url}</div>
         <div className={s.hint}>
-          Scan this code to view the Safety Data Sheet. Works without login — safe for posting on trucks, trailers, and job sites.
+          Scan this code to view the Safety Data Sheet. Works without login — safe for posting on
+          trucks, trailers, and job sites.
         </div>
       </div>
       <div className={s.actions}>

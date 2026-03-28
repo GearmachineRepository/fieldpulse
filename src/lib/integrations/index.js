@@ -6,7 +6,7 @@ export const PROVIDERS = {
   SDS_MANAGER: 'sds_manager',
   ADP: 'adp',
   GUSTO: 'gusto',
-};
+}
 
 export const PROVIDER_META = {
   [PROVIDERS.QUICKBOOKS]: {
@@ -54,15 +54,15 @@ export const PROVIDER_META = {
     status: 'coming_soon',
     scopes: [],
   },
-};
+}
 
 // Group providers by category for UI display
 export function getProvidersByCategory() {
-  const groups = {};
+  const groups = {}
   for (const [key, meta] of Object.entries(PROVIDER_META)) {
-    const cat = meta.category;
-    if (!groups[cat]) groups[cat] = [];
-    groups[cat].push({ key, ...meta });
+    const cat = meta.category
+    if (!groups[cat]) groups[cat] = []
+    groups[cat].push({ key, ...meta })
   }
-  return groups;
+  return groups
 }

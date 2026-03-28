@@ -26,10 +26,13 @@ export function validateBody(schema) {
       }
       if (value == null) continue
 
-      if (rules.type === 'string'  && typeof value !== 'string')                      errors.push(`${field} must be a string`)
-      if (rules.type === 'number'  && typeof value !== 'number' && isNaN(Number(value))) errors.push(`${field} must be a number`)
-      if (rules.type === 'boolean' && typeof value !== 'boolean')                     errors.push(`${field} must be a boolean`)
-      if (rules.type === 'array'   && !Array.isArray(value))                          errors.push(`${field} must be an array`)
+      if (rules.type === 'string' && typeof value !== 'string')
+        errors.push(`${field} must be a string`)
+      if (rules.type === 'number' && typeof value !== 'number' && isNaN(Number(value)))
+        errors.push(`${field} must be a number`)
+      if (rules.type === 'boolean' && typeof value !== 'boolean')
+        errors.push(`${field} must be a boolean`)
+      if (rules.type === 'array' && !Array.isArray(value)) errors.push(`${field} must be an array`)
       if (rules.maxLength && typeof value === 'string' && value.length > rules.maxLength) {
         errors.push(`${field} exceeds max length of ${rules.maxLength}`)
       }

@@ -47,21 +47,24 @@ async function migrate() {
     `)
     console.log('  ✓ Created categories table')
 
-    await pool.query('CREATE INDEX IF NOT EXISTS idx_categories_org_scope ON categories(org_id, scope)')
+    await pool.query(
+      'CREATE INDEX IF NOT EXISTS idx_categories_org_scope ON categories(org_id, scope)',
+    )
     console.log('  ✓ Created indexes')
 
     // 3. Seed default categories for each org
     const orgs = await pool.query('SELECT id FROM organizations')
     for (const org of orgs.rows) {
-      const existing = await pool.query(
-        'SELECT COUNT(*) FROM categories WHERE org_id = $1', [org.id]
-      )
+      const existing = await pool.query('SELECT COUNT(*) FROM categories WHERE org_id = $1', [
+        org.id,
+      ])
       if (parseInt(existing.rows[0].count) > 0) {
         console.log(`  ⊘ Org ${org.id} already has categories — skipping seed`)
         continue
       }
 
-      await pool.query(`
+      await pool.query(
+        `
         INSERT INTO categories (org_id, scope, name, sort_order) VALUES
           ($1, 'sds', 'Herbicides', 1),
           ($1, 'sds', 'Pesticides', 2),
@@ -73,7 +76,9 @@ async function migrate() {
           ($1, 'equipment', 'Compactors', 3),
           ($1, 'equipment', 'Blowers', 4),
           ($1, 'equipment', 'Other', 5)
-      `, [org.id])
+      `,
+        [org.id],
+      )
       console.log(`  ✓ Seeded categories for org ${org.id}`)
     }
 

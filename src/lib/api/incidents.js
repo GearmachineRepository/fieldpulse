@@ -5,8 +5,10 @@ import { request, multipartRequest } from './core.js'
 
 export const getIncidents = () => request('/incidents')
 export const getIncident = (id) => request(`/incidents/${id}`)
-export const createIncident = (data) => request('/incidents', { method: 'POST', body: JSON.stringify(data) })
-export const updateIncident = (id, data) => request(`/incidents/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const createIncident = (data) =>
+  request('/incidents', { method: 'POST', body: JSON.stringify(data) })
+export const updateIncident = (id, data) =>
+  request(`/incidents/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 export const lockIncident = (id) => request(`/incidents/${id}/lock`, { method: 'PUT' })
 export const deleteIncident = (id) => request(`/incidents/${id}`, { method: 'DELETE' })
 

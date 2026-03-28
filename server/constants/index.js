@@ -5,15 +5,20 @@
 // ═══════════════════════════════════════════
 
 export const DAY_NAMES = [
-  'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-  'Thursday', 'Friday', 'Saturday',
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ]
 
 export const ROUTE_STATUS_OPTIONS = [
-  { value: 'completed',    label: 'Completed' },
-  { value: 'partial',      label: 'Partial' },
-  { value: 'skipped',      label: 'Skipped' },
-  { value: 'not_home',     label: 'Not Home' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'partial', label: 'Partial' },
+  { value: 'skipped', label: 'Skipped' },
+  { value: 'not_home', label: 'Not Home' },
 ]
 
 export const MAX_UPLOAD_SIZE_MB = 15

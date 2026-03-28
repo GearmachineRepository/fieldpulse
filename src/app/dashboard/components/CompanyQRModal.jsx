@@ -6,24 +6,37 @@
 // QR, copy, download, print, revoke.
 // ═══════════════════════════════════════════
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
-  X, QrCode, Copy, Check, Loader2, Download, Printer,
-  Plus, Trash2, Clock, Shield, AlertCircle, ChevronLeft,
-} from "lucide-react"
-import QRCodeLib from "qrcode"
+  X,
+  QrCode,
+  Copy,
+  Check,
+  Loader2,
+  Download,
+  Printer,
+  Plus,
+  Trash2,
+  Clock,
+  Shield,
+  AlertCircle,
+  ChevronLeft,
+} from 'lucide-react'
+import QRCodeLib from 'qrcode'
 import {
-  getRegistrationCodes, createRegistrationCode,
-  revokeRegistrationCode, getRegistrationCodeQR,
-} from "@/lib/api/device.js"
-import s from "./CompanyQRModal.module.css"
+  getRegistrationCodes,
+  createRegistrationCode,
+  revokeRegistrationCode,
+  getRegistrationCodeQR,
+} from '@/lib/api/device.js'
+import s from './CompanyQRModal.module.css'
 
 const EXPIRY_OPTIONS = [
-  { value: "",    label: "Never expires" },
-  { value: "1h",  label: "1 hour" },
-  { value: "24h", label: "24 hours" },
-  { value: "7d",  label: "7 days" },
-  { value: "30d", label: "30 days" },
+  { value: '', label: 'Never expires' },
+  { value: '1h', label: '1 hour' },
+  { value: '24h', label: '24 hours' },
+  { value: '7d', label: '7 days' },
+  { value: '30d', label: '30 days' },
 ]
 
 function isExpired(code) {
@@ -35,10 +48,10 @@ function isActive(code) {
 }
 
 function formatExpiry(expiresAt) {
-  if (!expiresAt) return "Never"
+  if (!expiresAt) return 'Never'
   const d = new Date(expiresAt)
   const now = new Date()
-  if (d < now) return "Expired"
+  if (d < now) return 'Expired'
   const diff = d - now
   const hours = Math.floor(diff / (1000 * 60 * 60))
   const days = Math.floor(hours / 24)
@@ -56,8 +69,8 @@ export default function CompanyQRModal({ open, onClose }) {
 
   // Create form
   const [showCreate, setShowCreate] = useState(false)
-  const [newLabel, setNewLabel] = useState("")
-  const [newExpiry, setNewExpiry] = useState("")
+  const [newLabel, setNewLabel] = useState('')
+  const [newExpiry, setNewExpiry] = useState('')
 
   // QR view
   const [qrView, setQrView] = useState(null) // { code, svg, company }
@@ -72,7 +85,7 @@ export default function CompanyQRModal({ open, onClose }) {
       const data = await getRegistrationCodes()
       setCodes(data)
     } catch (e) {
-      setError(e.message || "Failed to load codes")
+      setError(e.message || 'Failed to load codes')
     } finally {
       setLoading(false)
     }
@@ -80,17 +93,20 @@ export default function CompanyQRModal({ open, onClose }) {
 
   useEffect(() => {
     if (open) loadCodes()
-    if (!open) { setQrView(null); setShowCreate(false) }
+    if (!open) {
+      setQrView(null)
+      setShowCreate(false)
+    }
   }, [open, loadCodes])
 
   // Render QR to hidden canvas when qrView changes
   useEffect(() => {
     if (!qrView?.code || !canvasRef.current) return
-    const payload = JSON.stringify({ app: "crupoint", code: qrView.code })
+    const payload = JSON.stringify({ app: 'crupoint', code: qrView.code })
     QRCodeLib.toCanvas(canvasRef.current, payload, {
       width: 280,
       margin: 2,
-      color: { dark: "#0F172A", light: "#FFFFFF" },
+      color: { dark: '#0F172A', light: '#FFFFFF' },
     })
   }, [qrView])
 
@@ -101,12 +117,12 @@ export default function CompanyQRModal({ open, onClose }) {
         label: newLabel.trim() || undefined,
         expiresIn: newExpiry || undefined,
       })
-      setNewLabel("")
-      setNewExpiry("")
+      setNewLabel('')
+      setNewExpiry('')
       setShowCreate(false)
       await loadCodes()
     } catch (e) {
-      setError(e.message || "Failed to create code")
+      setError(e.message || 'Failed to create code')
     } finally {
       setCreating(false)
     }
@@ -118,7 +134,7 @@ export default function CompanyQRModal({ open, onClose }) {
       await loadCodes()
       if (qrView) setQrView(null)
     } catch (e) {
-      setError(e.message || "Failed to revoke code")
+      setError(e.message || 'Failed to revoke code')
     }
   }
 
@@ -128,7 +144,7 @@ export default function CompanyQRModal({ open, onClose }) {
       const data = await getRegistrationCodeQR(codeRow.id)
       setQrView(data)
     } catch (e) {
-      setError(e.message || "Failed to generate QR")
+      setError(e.message || 'Failed to generate QR')
     } finally {
       setQrLoading(false)
     }
@@ -140,13 +156,15 @@ export default function CompanyQRModal({ open, onClose }) {
       await navigator.clipboard.writeText(qrView.code)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch { /* clipboard not available */ }
+    } catch {
+      /* clipboard not available */
+    }
   }
 
   const handleDownload = () => {
     if (!canvasRef.current) return
-    const link = document.createElement("a")
-    link.download = `crupoint-${qrView?.code || "device"}-qr.png`
+    const link = document.createElement('a')
+    link.download = `crupoint-${qrView?.code || 'device'}-qr.png`
     link.href = canvasRef.current.toDataURL()
     link.click()
   }
@@ -154,8 +172,8 @@ export default function CompanyQRModal({ open, onClose }) {
   const handlePrint = () => {
     if (!canvasRef.current || !qrView) return
     const dataUrl = canvasRef.current.toDataURL()
-    const companyName = qrView.company || "CruPoint"
-    const printWindow = window.open("", "_blank")
+    const companyName = qrView.company || 'CruPoint'
+    const printWindow = window.open('', '_blank')
     if (!printWindow) return
     printWindow.document.write(`
       <html>
@@ -179,11 +197,11 @@ export default function CompanyQRModal({ open, onClose }) {
   if (!open) return null
 
   const activeCodes = codes.filter(isActive)
-  const inactiveCodes = codes.filter(c => !isActive(c))
+  const inactiveCodes = codes.filter((c) => !isActive(c))
 
   return (
     <div className={s.overlay} onClick={onClose}>
-      <div className={s.modal} onClick={e => e.stopPropagation()}>
+      <div className={s.modal} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className={s.header}>
           <div className={s.headerLeft}>
@@ -194,7 +212,7 @@ export default function CompanyQRModal({ open, onClose }) {
             ) : (
               <Shield size={18} />
             )}
-            <span>{qrView ? `QR — ${qrView.code}` : "Registration Codes"}</span>
+            <span>{qrView ? `QR — ${qrView.code}` : 'Registration Codes'}</span>
           </div>
           <button className={s.closeBtn} onClick={onClose} aria-label="Close">
             <X size={20} />
@@ -206,18 +224,17 @@ export default function CompanyQRModal({ open, onClose }) {
             <div className={s.errorBanner}>
               <AlertCircle size={14} />
               <span>{error}</span>
-              <button onClick={() => setError(null)}><X size={12} /></button>
+              <button onClick={() => setError(null)}>
+                <X size={12} />
+              </button>
             </div>
           )}
 
           {/* ── QR View ── */}
           {qrView ? (
             <>
-              <div
-                className={s.qrContainer}
-                dangerouslySetInnerHTML={{ __html: qrView.svg }}
-              />
-              <canvas ref={canvasRef} style={{ display: "none" }} />
+              <div className={s.qrContainer} dangerouslySetInnerHTML={{ __html: qrView.svg }} />
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
 
               <div className={s.codeSection}>
                 <span className={s.codeLabel}>Manual code:</span>
@@ -225,7 +242,7 @@ export default function CompanyQRModal({ open, onClose }) {
                   <code className={s.codeValue}>{qrView.code}</code>
                   <button className={s.copyBtn} onClick={handleCopy}>
                     {copied ? <Check size={16} /> : <Copy size={16} />}
-                    {copied ? "Copied" : "Copy"}
+                    {copied ? 'Copied' : 'Copy'}
                   </button>
                 </div>
               </div>
@@ -240,7 +257,8 @@ export default function CompanyQRModal({ open, onClose }) {
               </div>
 
               <p className={s.hint}>
-                Print and post this QR code for crews to scan with their phones. Revoke it anytime from this panel.
+                Print and post this QR code for crews to scan with their phones. Revoke it anytime
+                from this panel.
               </p>
             </>
           ) : (
@@ -262,7 +280,7 @@ export default function CompanyQRModal({ open, onClose }) {
                           className={s.fieldInput}
                           type="text"
                           value={newLabel}
-                          onChange={e => setNewLabel(e.target.value)}
+                          onChange={(e) => setNewLabel(e.target.value)}
                           placeholder='e.g. "Truck QR", "Office poster"'
                         />
                       </div>
@@ -271,17 +289,21 @@ export default function CompanyQRModal({ open, onClose }) {
                         <select
                           className={s.fieldInput}
                           value={newExpiry}
-                          onChange={e => setNewExpiry(e.target.value)}
+                          onChange={(e) => setNewExpiry(e.target.value)}
                         >
-                          {EXPIRY_OPTIONS.map(o => (
-                            <option key={o.value} value={o.value}>{o.label}</option>
+                          {EXPIRY_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
                           ))}
                         </select>
                       </div>
                       <div className={s.createActions}>
-                        <button className={s.cancelBtn} onClick={() => setShowCreate(false)}>Cancel</button>
+                        <button className={s.cancelBtn} onClick={() => setShowCreate(false)}>
+                          Cancel
+                        </button>
                         <button className={s.primaryBtn} onClick={handleCreate} disabled={creating}>
-                          {creating ? "Creating..." : "Generate Code"}
+                          {creating ? 'Creating...' : 'Generate Code'}
                         </button>
                       </div>
                     </div>
@@ -303,7 +325,7 @@ export default function CompanyQRModal({ open, onClose }) {
                   {activeCodes.length > 0 && (
                     <div className={s.codeList}>
                       <div className={s.listLabel}>Active</div>
-                      {activeCodes.map(c => (
+                      {activeCodes.map((c) => (
                         <div key={c.id} className={s.codeItem}>
                           <div className={s.codeItemLeft}>
                             <code className={s.codeItemCode}>{c.code}</code>
@@ -338,13 +360,13 @@ export default function CompanyQRModal({ open, onClose }) {
                   {inactiveCodes.length > 0 && (
                     <div className={s.codeList}>
                       <div className={s.listLabel}>Revoked / Expired</div>
-                      {inactiveCodes.map(c => (
+                      {inactiveCodes.map((c) => (
                         <div key={c.id} className={`${s.codeItem} ${s.codeItemInactive}`}>
                           <div className={s.codeItemLeft}>
                             <code className={s.codeItemCode}>{c.code}</code>
                             {c.label && <span className={s.codeItemLabel}>{c.label}</span>}
                             <span className={s.codeItemExpiry}>
-                              {c.revoked ? "Revoked" : "Expired"}
+                              {c.revoked ? 'Revoked' : 'Expired'}
                             </span>
                           </div>
                         </div>

@@ -7,21 +7,61 @@
  * Returns the input unchanged if not found.
  */
 const STATE_MAP = {
-  alabama:"AL", alaska:"AK", arizona:"AZ", arkansas:"AR", california:"CA",
-  colorado:"CO", connecticut:"CT", delaware:"DE", florida:"FL", georgia:"GA",
-  hawaii:"HI", idaho:"ID", illinois:"IL", indiana:"IN", iowa:"IA", kansas:"KS",
-  kentucky:"KY", louisiana:"LA", maine:"ME", maryland:"MD", massachusetts:"MA",
-  michigan:"MI", minnesota:"MN", mississippi:"MS", missouri:"MO", montana:"MT",
-  nebraska:"NE", nevada:"NV", "new hampshire":"NH", "new jersey":"NJ",
-  "new mexico":"NM", "new york":"NY", "north carolina":"NC", "north dakota":"ND",
-  ohio:"OH", oklahoma:"OK", oregon:"OR", pennsylvania:"PA", "rhode island":"RI",
-  "south carolina":"SC", "south dakota":"SD", tennessee:"TN", texas:"TX",
-  utah:"UT", vermont:"VT", virginia:"VA", washington:"WA", "west virginia":"WV",
-  wisconsin:"WI", wyoming:"WY", "district of columbia":"DC",
+  alabama: 'AL',
+  alaska: 'AK',
+  arizona: 'AZ',
+  arkansas: 'AR',
+  california: 'CA',
+  colorado: 'CO',
+  connecticut: 'CT',
+  delaware: 'DE',
+  florida: 'FL',
+  georgia: 'GA',
+  hawaii: 'HI',
+  idaho: 'ID',
+  illinois: 'IL',
+  indiana: 'IN',
+  iowa: 'IA',
+  kansas: 'KS',
+  kentucky: 'KY',
+  louisiana: 'LA',
+  maine: 'ME',
+  maryland: 'MD',
+  massachusetts: 'MA',
+  michigan: 'MI',
+  minnesota: 'MN',
+  mississippi: 'MS',
+  missouri: 'MO',
+  montana: 'MT',
+  nebraska: 'NE',
+  nevada: 'NV',
+  'new hampshire': 'NH',
+  'new jersey': 'NJ',
+  'new mexico': 'NM',
+  'new york': 'NY',
+  'north carolina': 'NC',
+  'north dakota': 'ND',
+  ohio: 'OH',
+  oklahoma: 'OK',
+  oregon: 'OR',
+  pennsylvania: 'PA',
+  'rhode island': 'RI',
+  'south carolina': 'SC',
+  'south dakota': 'SD',
+  tennessee: 'TN',
+  texas: 'TX',
+  utah: 'UT',
+  vermont: 'VT',
+  virginia: 'VA',
+  washington: 'WA',
+  'west virginia': 'WV',
+  wisconsin: 'WI',
+  wyoming: 'WY',
+  'district of columbia': 'DC',
 }
 
 export function abbreviateState(input) {
-  if (!input) return "CA"
+  if (!input) return 'CA'
   const trimmed = input.trim()
   if (trimmed.length <= 2) return trimmed.toUpperCase()
   return STATE_MAP[trimmed.toLowerCase()] || trimmed
@@ -32,22 +72,33 @@ export function abbreviateState(input) {
  * e.g. 1536 → "1.5 KB", 2621440 → "2.5 MB"
  */
 export function formatFileSize(bytes) {
-  if (!bytes) return "0 B"
-  const units = ["B", "KB", "MB", "GB"]
+  if (!bytes) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB']
   let i = 0
   let size = bytes
-  while (size >= 1024 && i < units.length - 1) { size /= 1024; i++ }
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024
+    i++
+  }
   return `${size.toFixed(i > 0 ? 1 : 0)} ${units[i]}`
 }
 
 /** Color presets for groups, categories, and tags */
 export const ITEM_COLORS = [
-  "#2F6FED", "#3B82F6", "#F59E0B", "#EF4444", "#7C3AED",
-  "#0891B2", "#DB2777", "#65A30D", "#92400E", "#475569",
+  '#2F6FED',
+  '#3B82F6',
+  '#F59E0B',
+  '#EF4444',
+  '#7C3AED',
+  '#0891B2',
+  '#DB2777',
+  '#65A30D',
+  '#92400E',
+  '#475569',
 ]
 
 /** Standard asset statuses shared across fleet and equipment */
-export const ASSET_STATUSES = ["Active", "Out of Service", "Retired"]
+export const ASSET_STATUSES = ['Active', 'Out of Service', 'Retired']
 
 /**
  * Maps an asset status string to a StatusBadge variant.
@@ -55,9 +106,13 @@ export const ASSET_STATUSES = ["Active", "Out of Service", "Retired"]
  */
 export function getStatusVariant(status) {
   switch (status) {
-    case "Active":         return "green"
-    case "Out of Service": return "amber"
-    case "Retired":        return "gray"
-    default:               return "green"
+    case 'Active':
+      return 'green'
+    case 'Out of Service':
+      return 'amber'
+    case 'Retired':
+      return 'gray'
+    default:
+      return 'green'
   }
 }

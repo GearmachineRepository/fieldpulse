@@ -8,9 +8,9 @@
 //   </BottomSheet>
 // ═══════════════════════════════════════════
 
-import { useEffect, useRef } from "react"
-import { X, Check } from "lucide-react"
-import { T } from "@/app/tokens.js"
+import { useEffect, useRef } from 'react'
+import { X, Check } from 'lucide-react'
+import { T } from '@/app/tokens.js'
 
 export function BottomSheet({ open, onClose, title, children }) {
   const sheetRef = useRef(null)
@@ -18,54 +18,94 @@ export function BottomSheet({ open, onClose, title, children }) {
   // Prevent body scroll when open
   useEffect(() => {
     if (open) {
-      document.body.style.overflow = "hidden"
-      return () => { document.body.style.overflow = "" }
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = ''
+      }
     }
   }, [open])
 
   if (!open) return null
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 200,
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
-    }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 200,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+      }}
+    >
       {/* Backdrop */}
-      <div onClick={onClose} style={{
-        position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)",
-        animation: "fadeIn 0.2s ease",
-      }} />
+      <div
+        onClick={onClose}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0,0,0,0.4)',
+          animation: 'fadeIn 0.2s ease',
+        }}
+      />
 
       {/* Sheet */}
-      <div ref={sheetRef} style={{
-        position: "relative", width: "100%", maxWidth: 430,
-        background: T.card, borderRadius: "4px 4px 0 0",
-        maxHeight: "75vh", display: "flex", flexDirection: "column",
-        animation: "slideUp 0.25s cubic-bezier(0.4,0,0.2,1)",
-        boxShadow: "0 -10px 40px rgba(0,0,0,0.15)",
-      }}>
+      <div
+        ref={sheetRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 430,
+          background: T.card,
+          borderRadius: '4px 4px 0 0',
+          maxHeight: '75vh',
+          display: 'flex',
+          flexDirection: 'column',
+          animation: 'slideUp 0.25s cubic-bezier(0.4,0,0.2,1)',
+          boxShadow: '0 -10px 40px rgba(0,0,0,0.15)',
+        }}
+      >
         {/* Handle + header */}
-        <div style={{ padding: "12px 20px 0", flexShrink: 0 }}>
-          <div style={{
-            width: 36, height: 4, borderRadius: 2, background: T.border,
-            margin: "0 auto 14px",
-          }} />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div style={{ padding: '12px 20px 0', flexShrink: 0 }}>
+          <div
+            style={{
+              width: 36,
+              height: 4,
+              borderRadius: 2,
+              background: T.border,
+              margin: '0 auto 14px',
+            }}
+          />
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
             <div style={{ fontSize: 18, fontWeight: 600, color: T.text }}>{title}</div>
-            <button onClick={onClose} style={{
-              width: 32, height: 32, borderRadius: 3, border: "none",
-              background: T.bg, cursor: "pointer", display: "flex",
-              alignItems: "center", justifyContent: "center",
-            }}>
+            <button
+              onClick={onClose}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 3,
+                border: 'none',
+                background: T.bg,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <X size={18} color={T.textMed} />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div style={{ overflowY: "auto", padding: "0 20px 28px" }}>
-          {children}
-        </div>
+        <div style={{ overflowY: 'auto', padding: '0 20px 28px' }}>{children}</div>
       </div>
 
       <style>{`
@@ -78,13 +118,24 @@ export function BottomSheet({ open, onClose, title, children }) {
 
 export function BottomSheetOption({ label, count, color, icon: Icon, active, onClick }) {
   return (
-    <button onClick={onClick} style={{
-      display: "flex", alignItems: "center", gap: 12, width: "100%",
-      padding: "14px 16px", borderRadius: 3, border: "none", cursor: "pointer",
-      background: active ? `${color || T.accent}08` : "transparent",
-      fontFamily: T.font, textAlign: "left", marginBottom: 4,
-      transition: "background 0.1s",
-    }}>
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        width: '100%',
+        padding: '14px 16px',
+        borderRadius: 3,
+        border: 'none',
+        cursor: 'pointer',
+        background: active ? `${color || T.accent}08` : 'transparent',
+        fontFamily: T.font,
+        textAlign: 'left',
+        marginBottom: 4,
+        transition: 'background 0.1s',
+      }}
+    >
       {/* Color dot or icon */}
       {color && !Icon && (
         <div style={{ width: 10, height: 10, borderRadius: 5, background: color, flexShrink: 0 }} />
@@ -93,24 +144,32 @@ export function BottomSheetOption({ label, count, color, icon: Icon, active, onC
 
       {/* Label */}
       <div style={{ flex: 1 }}>
-        <span style={{
-          fontSize: 15, fontWeight: active ? 700 : 500,
-          color: active ? (color || T.accent) : T.text,
-        }}>{label}</span>
+        <span
+          style={{
+            fontSize: 15,
+            fontWeight: active ? 700 : 500,
+            color: active ? color || T.accent : T.text,
+          }}
+        >
+          {label}
+        </span>
       </div>
 
       {/* Count */}
       {count !== undefined && (
-        <span style={{
-          fontSize: 13, fontWeight: 600,
-          color: active ? (color || T.accent) : T.textLight,
-        }}>{count}</span>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: active ? color || T.accent : T.textLight,
+          }}
+        >
+          {count}
+        </span>
       )}
 
       {/* Active check */}
-      {active && (
-        <Check size={18} color={color || T.accent} style={{ flexShrink: 0 }} />
-      )}
+      {active && <Check size={18} color={color || T.accent} style={{ flexShrink: 0 }} />}
     </button>
   )
 }
@@ -122,14 +181,34 @@ export function BottomSheetOption({ label, count, color, icon: Icon, active, onC
 export function FilterButton({ label, activeLabel, onClick }) {
   const hasFilter = !!activeLabel
   return (
-    <button onClick={onClick} style={{
-      display: "flex", alignItems: "center", gap: 8, padding: "10px 14px",
-      borderRadius: 3, border: `1.5px solid ${hasFilter ? T.accent : T.border}`,
-      background: hasFilter ? T.accentLight : T.card, cursor: "pointer",
-      fontFamily: T.font, fontSize: 13, fontWeight: 600,
-      color: hasFilter ? T.accent : T.textMed, whiteSpace: "nowrap",
-    }}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '10px 14px',
+        borderRadius: 3,
+        border: `1.5px solid ${hasFilter ? T.accent : T.border}`,
+        background: hasFilter ? T.accentLight : T.card,
+        cursor: 'pointer',
+        fontFamily: T.font,
+        fontSize: 13,
+        fontWeight: 600,
+        color: hasFilter ? T.accent : T.textMed,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
       </svg>
       {activeLabel || label}

@@ -51,7 +51,7 @@ async function migrate() {
     console.log('  ✓ Created indexes')
 
     // 3. Add permissions column to admins
-    await pool.query('ALTER TABLE admins ADD COLUMN IF NOT EXISTS permissions JSONB DEFAULT \'{}\'')
+    await pool.query("ALTER TABLE admins ADD COLUMN IF NOT EXISTS permissions JSONB DEFAULT '{}'")
     console.log('  ✓ Added permissions column to admins')
 
     console.log('\n  Migration complete ✓\n')
