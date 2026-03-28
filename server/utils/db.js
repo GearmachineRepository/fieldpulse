@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════
 
 import pool from '../db.js'
+import { AppError } from './AppError.js'
 
 /**
  * Runs a callback inside a PostgreSQL transaction.
@@ -32,7 +33,7 @@ export async function withTransaction(callback) {
  */
 export function getOrgId(req) {
   const orgId = req.user?.orgId
-  if (!orgId) throw Object.assign(new Error('Organization context required'), { statusCode: 403, isOperational: true })
+  if (!orgId) throw new AppError('Organization context required', 403)
   return orgId
 }
 

@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════
-// Migration 023 — Add location + notes to sds_entries
+// Migration 016 — Add location + notes to sds_entries
 //
-// Run: node server/migrations/023-sds-location-notes.js
+// Run: node server/migrations/016-sds-location-notes.js
 // ═══════════════════════════════════════════
 
 import pg from 'pg'
@@ -10,7 +10,7 @@ dotenv.config()
 
 async function migrate() {
   console.log('\n═══════════════════════════════════════')
-  console.log('  Migration 023: SDS location + notes')
+  console.log('  Migration 016: SDS location + notes')
   console.log('═══════════════════════════════════════\n')
 
   const pool = new pg.Pool({
